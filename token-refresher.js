@@ -261,7 +261,7 @@ const server = http.createServer(async (req, res) => {
   sendJson(res, 404, { error: `Unknown route: ${method} ${url}` });
 });
 
-server.listen(PORT, '127.0.0.1', () => {
+server.listen(PORT, process.env.HOST || '0.0.0.0', () => {
   console.log('');
   console.log('╔══════════════════════════════════════════════════════════════╗');
   console.log('║  M365 Token Refresher Server  ✓ Running                     ║');

@@ -5,9 +5,9 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev --ignore-scripts && \
+RUN npm ci --omit=dev && \
+    npm rebuild better-sqlite3 && \
     npm cache clean --force
-
 # Copy source code
 COPY . .
 
