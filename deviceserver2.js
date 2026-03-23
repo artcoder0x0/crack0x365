@@ -381,7 +381,7 @@ const server = http.createServer(async (req, res) => {
   res.end(JSON.stringify({ error: 'Not found' }));
 });
 
-const PORT = 3220;
+const PORT = 3210;
 server.listen(PORT, process.env.HOST || '0.0.0.0', () => {
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
