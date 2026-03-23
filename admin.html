@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>M365 Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#030507;
+  --deep:#070c12;
+  --panel:#0c1420;
+  --raised:#111e2e;
+  --edge:#1a2d45;
+  --line:#203550;
+  --mute:#2a4060;
+  --dim:#3a5070;
+  --sub:#5a7898;
+  --txt:#c8dff0;
+  --bright:#e8f4ff;
+  --acc:#00c8ff;
+  --acc2:#0096cc;
+  --acc-glow:rgba(0,200,255,0.12);
+  --acc-glow2:rgba(0,200,255,0.06);
+  --red:#ff4060;
+  --red-glow:rgba(255,64,96,0.12);
+  --green:#00e878;
+  --yellow:#ffcc00;
+  --orange:#ff8c00;
+  --r:0px;
+  --font:'Syne',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+html,body{height:100%;background:var(--void);color:var(--txt);font-family:var(--font);font-size:14px;-webkit-font-smoothing:antialiased;overflow:hidden}
+
+/* ── Noise overlay ── */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");opacity:.4;pointer-events:none;z-index:0;}
+
+/* ── Grid lines bg ── */
+body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--edge) 1px,transparent 1px),linear-gradient(90deg,var(--edge) 1px,transparent 1px);background-size:40px 40px;opacity:.18;pointer-events:none;z-index:0;}
+
+/* ─────────────────────────────── LOGIN SCREEN ──────────────────────────────── */
+#login-screen{
+  position:fixed;inset:0;z-index:100;
+  display:flex;align-items:center;justify-content:center;
+}
+#login-screen.gone{display:none}
+
+.login-wrap{
+  position:relative;z-index:1;
+  width:420px;max-width:calc(100vw - 32px);
+}
+.login-bracket{
+  position:absolute;width:18px;height:18px;border-color:var(--acc);border-style:solid;opacity:.6;
+}
+.lb-tl{top:-8px;left:-8px;border-width:2px 0 0 2px;}
+.lb-tr{top:-8px;right:-8px;border-width:2px 2px 0 0;}
+.lb-bl{bottom:-8px;left:-8px;border-width:0 0 2px 2px;}
+.lb-br{bottom:-8px;right:-8px;border-width:0 2px 2px 0;}
+
+.login-card{
+  background:var(--panel);
+  border:1px solid var(--edge);
+  padding:44px 40px 36px;
+  position:relative;
+  clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,0 100%);
+}
+.login-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--acc),transparent);
+}
+
+.login-eyebrow{
+  font-family:var(--mono);font-size:10px;font-weight:500;
+  color:var(--acc);letter-spacing:3px;text-transform:uppercase;
+  margin-bottom:8px;opacity:.8;
+}
+.login-title{
+  font-size:28px;font-weight:800;color:var(--bright);
+  letter-spacing:-1px;line-height:1;margin-bottom:4px;
+}
+.login-sub{font-size:12px;color:var(--sub);margin-bottom:32px;font-family:var(--mono);}
+
+.field-group{margin-bottom:16px}
+.field-label{
+  display:block;font-family:var(--mono);font-size:10px;font-weight:600;
+  color:var(--sub);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;
+}
+.field-input{
+  width:100%;background:var(--deep);border:1px solid var(--edge);
+  color:var(--bright);font-family:var(--mono);font-size:13px;
+  padding:11px 14px;outline:none;transition:border-color .15s,box-shadow .15s;
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%);
+}
+.field-input:focus{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc),inset 0 0 20px var(--acc-glow2);}
+.field-input::placeholder{color:var(--mute)}
+
+.login-btn{
+  width:100%;margin-top:8px;padding:13px;
+  background:var(--acc);color:var(--void);
+  border:none;cursor:pointer;
+  font-family:var(--font);font-size:14px;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%);
+  transition:background .15s,transform .1s;position:relative;overflow:hidden;
+}
+.login-btn::after{content:'';position:absolute;inset:0;background:white;opacity:0;transition:opacity .15s;}
+.login-btn:hover::after{opacity:.08}
+.login-btn:hover{transform:translateY(-1px)}
+.login-btn:active{transform:translateY(0)}
+.login-btn:disabled{background:var(--mute);cursor:not-allowed;transform:none}
+
+.login-err{
+  display:none;margin-top:14px;padding:10px 14px;
+  background:var(--red-glow);border:1px solid rgba(255,64,96,.3);
+  font-family:var(--mono);font-size:11px;color:var(--red);
+}
+.login-err.show{display:block}
+
+/* ─────────────────────────────── APP SHELL ─────────────────────────────────── */
+#app{
+  position:fixed;inset:0;z-index:1;
+  display:flex;flex-direction:column;
+  opacity:0;transition:opacity .4s;pointer-events:none;
+}
+#app.ready{opacity:1;pointer-events:all}
+
+/* ── Top bar ── */
+.topbar{
+  height:52px;flex-shrink:0;
+  background:var(--panel);border-bottom:1px solid var(--edge);
+  display:flex;align-items:center;gap:0;padding:0;
+  position:relative;z-index:10;
+}
+.topbar-logo{
+  padding:0 24px;display:flex;align-items:center;gap:12px;
+  border-right:1px solid var(--edge);height:100%;
+}
+.logo-mark{
+  width:28px;height:28px;background:var(--acc);
+  clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.logo-mark svg{width:14px;height:14px;color:var(--void)}
+.logo-text{font-size:13px;font-weight:800;color:var(--bright);letter-spacing:1px;text-transform:uppercase}
+.logo-ver{font-family:var(--mono);font-size:9px;color:var(--sub);letter-spacing:2px}
+
+.topbar-tabs{display:flex;height:100%;margin-left:0}
+.tb-tab{
+  padding:0 20px;height:100%;display:flex;align-items:center;gap:8px;
+  cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+  border-right:1px solid var(--edge);transition:color .15s,background .15s;position:relative;
+}
+.tb-tab:hover{color:var(--txt);background:var(--acc-glow2)}
+.tb-tab.active{color:var(--acc);background:var(--acc-glow)}
+.tb-tab.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--acc);}
+.tb-tab svg{width:13px;height:13px;flex-shrink:0}
+
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:0;height:100%}
+.user-chip{
+  padding:0 20px;height:100%;display:flex;align-items:center;gap:10px;
+  border-left:1px solid var(--edge);cursor:default;
+}
+.user-dot{width:6px;height:6px;background:var(--green);border-radius:50%;flex-shrink:0;box-shadow:0 0 6px var(--green);}
+.user-name-top{font-family:var(--mono);font-size:11px;color:var(--txt);font-weight:600;}
+.user-role{font-family:var(--mono);font-size:9px;color:var(--sub);letter-spacing:1px;text-transform:uppercase}
+.topbar-action-btn{
+  padding:0 18px;height:100%;display:flex;align-items:center;gap:8px;
+  border-left:1px solid var(--edge);cursor:pointer;
+  color:var(--sub);font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+  transition:color .15s,background .15s;background:none;border-top:none;border-bottom:none;border-right:none;font-family:var(--font);
+}
+.topbar-action-btn:hover{color:var(--red);background:var(--red-glow)}
+
+/* ── Content area ── */
+.content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+
+/* ─────────────────────────────── TOKENS TAB ────────────────────────────────── */
+#tab-tokens{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#tab-tokens.hidden,#tab-admins.hidden,#tab-settings.hidden{display:none}
+
+.tab-header{
+  padding:20px 28px 0;flex-shrink:0;
+  display:flex;align-items:flex-end;gap:16px;
+  border-bottom:1px solid var(--edge);padding-bottom:0;
+}
+.tab-title{font-size:18px;font-weight:800;color:var(--bright);letter-spacing:-0.5px}
+.tab-sub{font-family:var(--mono);font-size:10px;color:var(--sub);margin-bottom:2px;letter-spacing:1px}
+.tab-actions{margin-left:auto;display:flex;align-items:center;gap:8px;padding-bottom:16px}
+
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:8px 16px;border:1px solid var(--edge);
+  background:transparent;cursor:pointer;
+  font-family:var(--font);font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+  color:var(--txt);transition:all .15s;white-space:nowrap;
+  clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,0 100%);
+}
+.btn:hover{border-color:var(--acc);color:var(--acc);background:var(--acc-glow)}
+.btn-primary{background:var(--acc);color:var(--void);border-color:var(--acc)}
+.btn-primary:hover{background:var(--acc2);border-color:var(--acc2);color:var(--void)}
+.btn-danger{border-color:rgba(255,64,96,.4);color:var(--red)}
+.btn-danger:hover{background:var(--red-glow);border-color:var(--red)}
+.btn-sm{padding:5px 11px;font-size:11px}
+.btn svg{width:12px;height:12px;flex-shrink:0}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Tokens table */
+.tokens-body{flex:1;overflow-y:auto;padding:20px 28px}
+.tokens-body::-webkit-scrollbar{width:4px}
+.tokens-body::-webkit-scrollbar-thumb{background:var(--edge);border-radius:0}
+
+.section-label{
+  font-family:var(--mono);font-size:9px;font-weight:600;
+  color:var(--sub);letter-spacing:3px;text-transform:uppercase;
+  margin-bottom:14px;display:flex;align-items:center;gap:10px;
+}
+.section-label::after{content:'';flex:1;height:1px;background:var(--edge);}
+
+.tokens-grid{display:flex;flex-direction:column;gap:8px}
+
+.token-card{
+  background:var(--panel);border:1px solid var(--edge);
+  padding:16px 20px;display:flex;align-items:center;gap:16px;
+  transition:border-color .15s,background .15s;position:relative;overflow:hidden;
+}
+.token-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--edge);transition:background .15s;}
+.token-card:hover{border-color:var(--line);background:var(--raised)}
+.token-card:hover::before{background:var(--acc)}
+.token-card.expired::before{background:var(--red)}
+.token-card.expiring-soon::before{background:var(--yellow)}
+.token-card.fresh::before{background:var(--green)}
+
+.tok-avatar{
+  width:38px;height:38px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:var(--void);
+  clip-path:polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,0 100%);
+}
+.tok-info{flex:1;min-width:0}
+.tok-label{font-size:13px;font-weight:700;color:var(--bright);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tok-email{font-family:var(--mono);font-size:11px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tok-meta{display:flex;align-items:center;gap:12px;margin-top:6px}
+.tok-badge{
+  font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  padding:2px 8px;border:1px solid;
+}
+.tok-badge.ok{border-color:rgba(0,232,120,.3);color:var(--green);background:rgba(0,232,120,.06)}
+.tok-badge.exp{border-color:rgba(255,64,96,.3);color:var(--red);background:rgba(255,64,96,.06)}
+.tok-badge.soon{border-color:rgba(255,204,0,.3);color:var(--yellow);background:rgba(255,204,0,.06)}
+.tok-badge.noref{border-color:rgba(90,120,152,.3);color:var(--sub);background:transparent}
+.tok-date{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.5px}
+.tok-actions{display:flex;gap:6px;flex-shrink:0}
+
+/* Empty state */
+.empty-tokens{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:80px 40px;text-align:center;gap:12px;border:1px dashed var(--edge);
+}
+.empty-icon-big{font-size:36px;opacity:.3}
+.empty-title{font-size:16px;font-weight:700;color:var(--raised);color:var(--sub)}
+.empty-sub{font-size:12px;color:var(--dim);font-family:var(--mono);max-width:360px;line-height:1.6}
+
+/* ─────────────────────────────── ADMINS TAB ────────────────────────────────── */
+#tab-admins{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.admins-body{flex:1;overflow-y:auto;padding:20px 28px}
+.admin-row{
+  background:var(--panel);border:1px solid var(--edge);padding:14px 20px;
+  display:flex;align-items:center;gap:14px;margin-bottom:8px;
+  transition:border-color .15s;
+}
+.admin-row:hover{border-color:var(--line)}
+.admin-avatar{
+  width:34px;height:34px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:var(--void);
+  clip-path:polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,0 100%);
+  background:var(--acc);
+}
+.admin-name{font-size:13px;font-weight:700;color:var(--bright)}
+.admin-meta{font-family:var(--mono);font-size:10px;color:var(--sub)}
+.admin-you{font-family:var(--mono);font-size:9px;color:var(--acc);letter-spacing:1px;text-transform:uppercase;margin-left:8px;padding:1px 6px;border:1px solid var(--acc);opacity:.7}
+
+/* ─────────────────────────────── SETTINGS TAB ──────────────────────────────── */
+#tab-settings{flex:1;overflow-y:auto;padding:24px 28px}
+.settings-section{max-width:480px;margin-bottom:36px}
+.settings-title{font-size:14px;font-weight:700;color:var(--bright);margin-bottom:4px}
+.settings-desc{font-family:var(--mono);font-size:10px;color:var(--sub);margin-bottom:20px;line-height:1.6}
+.settings-form{display:flex;flex-direction:column;gap:12px}
+.s-field{display:flex;flex-direction:column;gap:6px}
+.s-label{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--sub);letter-spacing:2px;text-transform:uppercase}
+.s-input{background:var(--deep);border:1px solid var(--edge);color:var(--bright);font-family:var(--mono);font-size:13px;padding:10px 12px;outline:none;transition:border-color .15s;width:100%;}
+.s-input:focus{border-color:var(--acc)}
+.s-msg{font-family:var(--mono);font-size:11px;min-height:16px;margin-top:2px}
+.s-msg.ok{color:var(--green)}
+.s-msg.err{color:var(--red)}
+
+/* ─────────────────────────────── MODAL ─────────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(3,5,7,.85);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.overlay.hidden{display:none}
+.modal{
+  background:var(--panel);border:1px solid var(--edge);
+  width:500px;max-width:calc(100vw - 32px);
+  position:relative;
+  clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%);
+  animation:modalIn .2s ease;
+}
+@keyframes modalIn{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--acc),transparent)}
+.modal-header{padding:22px 24px 16px;border-bottom:1px solid var(--edge);display:flex;align-items:center;gap:12px}
+.modal-title{font-size:15px;font-weight:800;color:var(--bright);flex:1;letter-spacing:-.3px}
+.modal-close{width:28px;height:28px;border:1px solid var(--edge);background:transparent;cursor:pointer;color:var(--sub);font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0;}
+.modal-close:hover{border-color:var(--red);color:var(--red);background:var(--red-glow)}
+.modal-body{padding:20px 24px}
+.modal-footer{padding:14px 24px;border-top:1px solid var(--edge);display:flex;justify-content:flex-end;gap:8px}
+
+/* Drop zone */
+.drop-zone{
+  border:1px dashed var(--line);padding:24px;text-align:center;cursor:pointer;
+  transition:border-color .2s,background .2s;margin-bottom:14px;
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%);
+}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--acc);background:var(--acc-glow)}
+.drop-zone-icon{font-size:28px;margin-bottom:6px;opacity:.5}
+.drop-zone-text{font-size:13px;font-weight:600;color:var(--txt)}
+.drop-zone-sub{font-family:var(--mono);font-size:10px;color:var(--sub);margin-top:4px}
+.drop-zone-name{font-family:var(--mono);font-size:10px;color:var(--green);margin-top:6px;min-height:14px}
+
+.m-divider{display:flex;align-items:center;gap:10px;margin:14px 0;font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase}
+.m-divider::before,.m-divider::after{content:'';flex:1;height:1px;background:var(--edge)}
+
+.modal-textarea{width:100%;background:var(--deep);border:1px solid var(--edge);color:var(--bright);font-family:var(--mono);font-size:10px;padding:10px 12px;resize:vertical;min-height:80px;outline:none;transition:border-color .15s}
+.modal-textarea:focus{border-color:var(--acc)}
+.modal-textarea::placeholder{color:var(--mute)}
+.modal-err{display:none;padding:8px 12px;background:var(--red-glow);border:1px solid rgba(255,64,96,.3);font-family:var(--mono);font-size:10px;color:var(--red);margin-top:10px}
+.modal-err.show{display:block}
+
+/* Label row */
+.label-row{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.m-label{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--sub);letter-spacing:2px;text-transform:uppercase}
+.m-input{background:var(--deep);border:1px solid var(--edge);color:var(--bright);font-family:var(--mono);font-size:12px;padding:9px 12px;outline:none;transition:border-color .15s;width:100%}
+.m-input:focus{border-color:var(--acc)}
+
+/* Toast */
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{
+  background:var(--raised);border:1px solid var(--edge);
+  padding:10px 16px;font-family:var(--mono);font-size:11px;color:var(--txt);
+  display:flex;align-items:center;gap:10px;
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%);
+  animation:toastIn .25s ease;pointer-events:all;max-width:320px;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);
+}
+@keyframes toastIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.toast.ok .toast-dot{background:var(--green);box-shadow:0 0 6px var(--green)}
+.toast.err .toast-dot{background:var(--red);box-shadow:0 0 6px var(--red)}
+.toast.info .toast-dot{background:var(--acc);box-shadow:0 0 6px var(--acc)}
+
+/* Spinner */
+.spin-inline{display:inline-block;width:10px;height:10px;border:1.5px solid var(--edge);border-top-color:var(--acc);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Status pulse */
+.pulse{animation:pulseA 2s ease-in-out infinite}
+@keyframes pulseA{0%,100%{opacity:.7}50%{opacity:1}}
+
+/* open mail client link */
+.mail-link{font-family:var(--mono);font-size:10px;color:var(--acc);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;opacity:.8;transition:opacity .12s}
+.mail-link:hover{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="login-bracket lb-tl"></div>
+    <div class="login-bracket lb-tr"></div>
+    <div class="login-bracket lb-bl"></div>
+    <div class="login-bracket lb-br"></div>
+    <div class="login-card">
+      <div class="login-eyebrow">M365 // Admin Portal</div>
+      <div class="login-title">ACCESS<br>CONTROL</div>
+      <div class="login-sub">// authenticate to continue</div>
+
+      <div class="field-group">
+        <label class="field-label" for="l-user">Username</label>
+        <input class="field-input" id="l-user" type="text" placeholder="admin" autocomplete="username" spellcheck="false"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="l-pass">Password</label>
+        <input class="field-input" id="l-pass" type="password" placeholder="••••••••••" autocomplete="current-password"/>
+      </div>
+      <button class="login-btn" id="login-btn" onclick="doLogin()">Authenticate →</button>
+      <div class="login-err" id="login-err"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ APP ═══════════════ -->
+<div id="app">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-logo">
+      <div class="logo-mark">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div>
+        <div class="logo-text">M365 Admin</div>
+        <div class="logo-ver">v1.0 // SECURE</div>
+      </div>
+    </div>
+
+    <div class="topbar-tabs">
+      <div class="tb-tab active" id="nav-tokens" onclick="showTab('tokens')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        Tokens
+        <span id="token-count-badge" style="display:none;background:var(--acc);color:var(--void);font-family:var(--mono);font-size:9px;font-weight:700;padding:1px 6px;margin-left:2px"></span>
+      </div>
+      <div class="tb-tab" id="nav-admins" onclick="showTab('admins')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Admins
+      </div>
+      <div class="tb-tab" id="nav-settings" onclick="showTab('settings')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div class="user-dot pulse"></div>
+        <div>
+          <div class="user-name-top" id="top-username">—</div>
+          <div class="user-role">Admin</div>
+        </div>
+      </div>
+      <button class="topbar-action-btn" onclick="doLogout()">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- ── TOKENS TAB ── -->
+    <div id="tab-tokens">
+      <div class="tab-header">
+        <div>
+          <div class="tab-sub">// your m365 accounts</div>
+          <div class="tab-title">Token Vault</div>
+        </div>
+        <div class="tab-actions">
+          <button class="btn" onclick="openAddTokenModal()">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Token
+          </button>
+          <button class="btn" onclick="loadTokens()">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+          <a href="http://127.0.0.1:3738/mail" target="_blank" class="btn btn-primary">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Open Mail Client
+          </a>
+        </div>
+      </div>
+      <div class="tokens-body">
+        <div class="section-label">Stored Credentials</div>
+        <div class="tokens-grid" id="tokens-grid">
+          <div style="padding:20px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--sub)">
+            <span class="spin-inline"></span>&nbsp; Loading…
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ADMINS TAB ── -->
+    <div id="tab-admins" class="hidden">
+      <div class="tab-header">
+        <div>
+          <div class="tab-sub">// portal users</div>
+          <div class="tab-title">Admin Accounts</div>
+        </div>
+        <div class="tab-actions">
+          <button class="btn" onclick="openAddAdminModal()">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Admin
+          </button>
+        </div>
+      </div>
+      <div class="admins-body" id="admins-body">
+        <div class="section-label">Portal Users</div>
+        <div id="admins-list"></div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS TAB ── -->
+    <div id="tab-settings" class="hidden">
+      <div class="settings-section">
+        <div class="settings-title">Change Password</div>
+        <div class="settings-desc">// update your admin portal password. minimum 8 characters.</div>
+        <div class="settings-form">
+          <div class="s-field">
+            <label class="s-label" for="s-cur">Current Password</label>
+            <input class="s-input" id="s-cur" type="password" placeholder="••••••••"/>
+          </div>
+          <div class="s-field">
+            <label class="s-label" for="s-new">New Password</label>
+            <input class="s-input" id="s-new" type="password" placeholder="min 8 characters"/>
+          </div>
+          <div class="s-field">
+            <label class="s-label" for="s-new2">Confirm New Password</label>
+            <input class="s-input" id="s-new2" type="password" placeholder="repeat new password"/>
+          </div>
+          <div>
+            <button class="btn btn-primary" onclick="changePassword()" style="margin-top:4px">Update Password</button>
+            <div class="s-msg" id="pwd-msg"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">Server Status</div>
+        <div class="settings-desc">// connected services and their current state.</div>
+        <div id="srv-status-list" style="display:flex;flex-direction:column;gap:8px">
+          <div class="admin-row" style="padding:10px 16px">
+            <div class="tok-badge ok" style="flex-shrink:0">Admin DB</div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--sub);flex:1;margin-left:12px">admin.db · better-sqlite3</div>
+            <div class="tok-badge ok">Online</div>
+          </div>
+          <div class="admin-row" id="refresher-status-row" style="padding:10px 16px">
+            <div class="tok-badge ok" style="flex-shrink:0">Token Refresher</div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--sub);flex:1;margin-left:12px">127.0.0.1:3737</div>
+            <div class="tok-badge noref" id="refresher-badge">Checking…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ ADD TOKEN MODAL ═══════════════ -->
+<div class="overlay hidden" id="add-token-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add M365 Token</div>
+      <button class="modal-close" onclick="closeModal('add-token-overlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="label-row">
+        <span class="m-label">Label (optional)</span>
+        <input class="m-input" id="tok-label" type="text" placeholder="e.g. Work account, Client XYZ…"/>
+      </div>
+
+      <!-- Hidden real file input -->
+      <input type="file" id="tok-file-input" accept=".json,application/json"
+             style="position:fixed;top:-999px;left:-999px;width:1px;height:1px;opacity:0">
+
+      <!-- Browse button row -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <button class="btn btn-primary" onclick="document.getElementById('tok-file-input').click()" type="button" style="flex-shrink:0">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          Browse file…
+        </button>
+        <span style="font-size:12px;color:var(--sub)">or drag &amp; drop below</span>
+        <span id="tok-drop-name" style="font-family:var(--mono);font-size:10px;color:var(--green);flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+      </div>
+
+      <!-- Drop zone — smaller, secondary -->
+      <label for="tok-file-input" id="tok-drop-zone" class="drop-zone" style="padding:14px;margin-bottom:10px"
+        ondragover="event.preventDefault();document.getElementById('tok-drop-zone').classList.add('drag-over')"
+        ondragleave="document.getElementById('tok-drop-zone').classList.remove('drag-over')"
+        ondrop="tokenFileDrop(event)">
+        <div class="drop-zone-sub" style="font-size:11px">Drop tokens_XXXX.json here</div>
+      </label>
+
+      <!-- File path display — shown after a file is selected -->
+      <div id="tok-file-path-row" style="display:none;margin-bottom:10px;padding:8px 12px;
+           background:rgba(0,200,255,0.06);border:1px solid rgba(0,200,255,0.2);
+           font-family:var(--mono);font-size:10px;color:var(--acc);word-break:break-all;
+           flex-direction:row;align-items:flex-start;gap:8px">
+        <span style="opacity:.6;flex-shrink:0">📁</span>
+        <span id="tok-file-path-text" style="flex:1"></span>
+        <button onclick="clearFilePath()" style="background:none;border:none;cursor:pointer;color:var(--sub);font-size:12px;flex-shrink:0;padding:0" title="Clear">✕</button>
+      </div>
+
+      <div class="m-divider">or paste raw json / access_token</div>
+
+      <textarea class="modal-textarea" id="tok-paste" placeholder='{"access_token":"eyJ0...","refresh_token":"..."}'></textarea>
+      <div class="modal-err" id="tok-err"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('add-token-overlay')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAddToken()">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="12" height="12"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v13a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Token
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ ADD ADMIN MODAL ═══════════════ -->
+<div class="overlay hidden" id="add-admin-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Create Admin Account</div>
+      <button class="modal-close" onclick="closeModal('add-admin-overlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="label-row">
+        <span class="m-label">Username</span>
+        <input class="m-input" id="new-admin-user" type="text" placeholder="lowercase, no spaces" spellcheck="false"/>
+      </div>
+      <div class="label-row">
+        <span class="m-label">Password</span>
+        <input class="m-input" id="new-admin-pass" type="password" placeholder="min 8 characters"/>
+      </div>
+      <div class="label-row">
+        <span class="m-label">Confirm Password</span>
+        <input class="m-input" id="new-admin-pass2" type="password" placeholder="repeat password"/>
+      </div>
+      <div class="modal-err" id="admin-err"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('add-admin-overlay')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAddAdmin()">Create Admin</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ VIEW TOKEN MODAL ═══════════════ -->
+<div class="overlay hidden" id="view-token-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Token Details</div>
+      <button class="modal-close" onclick="closeModal('view-token-overlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="view-token-body" style="font-family:var(--mono);font-size:11px;color:var(--sub);line-height:1.8"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('view-token-overlay')">Close</button>
+      <button class="btn btn-primary" id="use-token-btn" onclick="openMailWithToken()">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="12" height="12"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Open in Mail Client
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CONFIRM MODAL ═══════════════ -->
+<div class="overlay hidden" id="confirm-overlay">
+  <div class="modal" style="width:380px">
+    <div class="modal-header">
+      <div class="modal-title" id="confirm-title">Confirm</div>
+      <button class="modal-close" onclick="closeModal('confirm-overlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="confirm-body" style="font-size:13px;color:var(--sub);line-height:1.6"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('confirm-overlay')">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════════════════════
+const API = 'http://127.0.0.1:3738';
+
+// ══════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════
+let currentAdmin    = null;
+let tokensList      = [];
+let viewingTokenId  = null;
+
+// ══════════════════════════════════════════════════════════════════════════
+// HTTP HELPERS
+// ══════════════════════════════════════════════════════════════════════════
+async function api(method, path, body) {
+  const opts = {
+    method,
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(API + path, opts);
+  const d = await r.json().catch(() => ({}));
+  return { ok: r.ok, status: r.status, data: d };
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// BOOT — check if already logged in
+// ══════════════════════════════════════════════════════════════════════════
+(async () => {
+  const { ok, data } = await api('GET', '/api/me');
+  if (ok && data.admin) {
+    currentAdmin = data.admin;
+    enterApp();
+  }
+  // else: login screen stays visible
+})();
+
+// ══════════════════════════════════════════════════════════════════════════
+// LOGIN / LOGOUT
+// ══════════════════════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('login-screen').classList.contains('gone')) doLogin();
+});
+
+async function doLogin() {
+  const user = document.getElementById('l-user').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  const errEl = document.getElementById('login-err');
+  const btn   = document.getElementById('login-btn');
+  errEl.classList.remove('show');
+  if (!user || !pass) { errEl.textContent = 'Enter username and password'; errEl.classList.add('show'); return; }
+  btn.disabled = true; btn.textContent = 'Authenticating…';
+  const { ok, data } = await api('POST', '/api/login', { username: user, password: pass });
+  btn.disabled = false; btn.textContent = 'Authenticate →';
+  if (!ok) { errEl.textContent = data.error || 'Login failed'; errEl.classList.add('show'); return; }
+  currentAdmin = data.admin;
+  enterApp();
+}
+
+async function doLogout() {
+  await api('POST', '/api/logout');
+  currentAdmin = null;
+  document.getElementById('app').classList.remove('ready');
+  document.getElementById('login-screen').classList.remove('gone');
+  document.getElementById('l-pass').value = '';
+  document.getElementById('login-err').classList.remove('show');
+}
+
+function enterApp() {
+  document.getElementById('login-screen').classList.add('gone');
+  document.getElementById('app').classList.add('ready');
+  document.getElementById('top-username').textContent = currentAdmin.username;
+  loadTokens();
+  checkRefresherServer();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════════════════════════════════════
+function showTab(name) {
+  ['tokens','admins','settings'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('hidden', t !== name);
+    document.getElementById('nav-'+t).classList.toggle('active', t === name);
+  });
+  if (name === 'admins') loadAdmins();
+  if (name === 'settings') checkRefresherServer();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// TOKEN MANAGEMENT
+// ══════════════════════════════════════════════════════════════════════════
+async function loadTokens() {
+  const grid = document.getElementById('tokens-grid');
+  grid.innerHTML = '<div style="padding:20px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--sub)"><span class="spin-inline"></span>&nbsp; Loading…</div>';
+  const { ok, data } = await api('GET', '/api/tokens');
+  if (!ok) { grid.innerHTML = `<div style="padding:20px;color:var(--red);font-family:var(--mono);font-size:11px">${esc(data.error||'Failed to load tokens')}</div>`; return; }
+  tokensList = data.tokens || [];
+  renderTokens();
+
+  const badge = document.getElementById('token-count-badge');
+  if (tokensList.length > 0) { badge.textContent = tokensList.length; badge.style.display = 'inline'; }
+  else badge.style.display = 'none';
+}
+
+function renderTokens() {
+  const grid = document.getElementById('tokens-grid');
+  if (!tokensList.length) {
+    grid.innerHTML = `<div class="empty-tokens">
+      <div class="empty-icon-big">🔐</div>
+      <div class="empty-title">No tokens stored</div>
+      <div class="empty-sub">// add your first M365 token by clicking "Add Token" above.<br>generate tokens with: node devicelogin.js</div>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = tokensList.map(tok => {
+    const exp      = tok.expires_at ? new Date(tok.expires_at) : null;
+    const now      = Date.now();
+    const ms       = exp ? exp - now : -1;
+    const expired  = ms < 0;
+    const soon     = !expired && ms < 5 * 60 * 1000;
+    const fresh    = !expired && !soon;
+    const cardCls  = expired ? 'expired' : soon ? 'expiring-soon' : 'fresh';
+    const badgeCls = expired ? 'exp' : soon ? 'soon' : 'ok';
+    const badgeTxt = expired ? 'EXPIRED' : soon ? 'EXPIRING' : 'ACTIVE';
+    const expStr   = exp ? exp.toLocaleString([], { dateStyle:'medium', timeStyle:'short' }) : 'No expiry stored';
+    const color    = avatarColor(tok.email || tok.id);
+    const ini      = initials(tok.name || tok.email || '?');
+    const fileHint = tok.token_file_path
+      ? tok.token_file_path.split(/[\\/]/).pop()   // just filename
+      : tok.token_file_name || null;
+    return `<div class="token-card ${cardCls}" id="tc-${tok.id}">
+      <div class="tok-avatar" style="background:${color}">${esc(ini)}</div>
+      <div class="tok-info">
+        <div class="tok-label">${esc(tok.label || tok.email || 'Token #'+tok.id)}</div>
+        <div class="tok-email">${esc(tok.email || '—')}</div>
+        <div class="tok-meta">
+          <span class="tok-badge ${badgeCls}">${badgeTxt}</span>
+          ${tok.has_refresh_token ? '<span class="tok-badge ok">HAS REFRESH</span>' : '<span class="tok-badge noref">NO REFRESH</span>'}
+          ${fileHint ? `<span class="tok-badge ok" title="${esc(tok.token_file_path||'')}">💾 ${esc(fileHint)}</span>` : '<span class="tok-badge noref">NO FILE</span>'}
+          <span class="tok-date">exp: ${expStr}</span>
+        </div>
+      </div>
+      <div class="tok-actions">
+        ${tok.has_refresh_token ? `<button class="btn btn-sm" title="Refresh token now" onclick="refreshToken(${tok.id})">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>` : ''}
+        <button class="btn btn-sm" title="View & use token" onclick="viewToken(${tok.id})">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          View
+        </button>
+        <button class="btn btn-sm btn-danger" title="Delete token" onclick="deleteToken(${tok.id}, '${esc(tok.label||tok.email||'this token')}')">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function refreshToken(id) {
+  const btn = document.querySelector(`#tc-${id} button[title="Refresh token now"]`);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin-inline"></span> Refreshing…'; }
+  const { ok, data } = await api('POST', `/api/tokens/${id}/refresh`);
+  if (ok) {
+    const exp  = new Date(data.expires_at).toLocaleTimeString();
+    const saved = data.file_path ? ` · saved → ${data.file_path.split(/[\\/]/).pop()}` : '';
+    toast('Refreshed — expires ' + exp + saved, 'ok');
+    await loadTokens();
+  } else {
+    toast('Refresh failed: ' + (data.error || 'Unknown error'), 'err');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Refresh'; }
+  }
+}
+
+async function viewToken(id) {
+  const { ok, data } = await api('GET', `/api/tokens/${id}`);
+  if (!ok) { toast('Failed to fetch token', 'err'); return; }
+  viewingTokenId = id;
+  const tok = data.token;
+  const exp = tok.expires_at ? new Date(tok.expires_at).toLocaleString() : '—';
+  const atPreview = tok.access_token ? tok.access_token.slice(0, 40) + '…' : '—';
+  const rtPreview = tok.refresh_token ? tok.refresh_token.slice(0, 20) + '…' : 'none';
+  document.getElementById('view-token-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:120px 1fr;gap:4px 12px;line-height:1.9">
+      <span style="color:var(--sub)">Email</span><span style="color:var(--txt)">${esc(tok.email||'—')}</span>
+      <span style="color:var(--sub)">Name</span><span style="color:var(--txt)">${esc(tok.name||'—')}</span>
+      <span style="color:var(--sub)">Expires</span><span style="color:var(--txt)">${exp}</span>
+      <span style="color:var(--sub)">Access Token</span><span style="color:var(--acc);word-break:break-all">${esc(atPreview)}</span>
+      <span style="color:var(--sub)">Refresh Token</span><span style="color:var(--txt)">${esc(rtPreview)}</span>
+    </div>
+    <div style="margin-top:16px;padding:10px 12px;background:var(--acc-glow);border:1px solid var(--acc2);font-size:10px;color:var(--acc)">
+      // clicking "Open in Mail Client" passes this token to localmail.html (/mail) via URL hash
+    </div>`;
+  document.getElementById('view-token-overlay').classList.remove('hidden');
+}
+
+async function openMailWithToken() {
+  if (!viewingTokenId) return;
+  const { ok, data } = await api('GET', `/api/tokens/${viewingTokenId}`);
+  if (!ok) { toast('Failed to fetch token', 'err'); return; }
+  // Pass token via URL fragment (stays local, never sent to server)
+  const encoded = btoa(JSON.stringify(data.token));
+  window.open(`http://127.0.0.1:3738/mail#token=${encoded}`, '_blank');
+  closeModal('view-token-overlay');
+}
+
+function deleteToken(id, label) {
+  showConfirm(`Delete Token`, `Remove "${label}" permanently? This cannot be undone.`, async () => {
+    const { ok, data } = await api('DELETE', `/api/tokens/${id}`);
+    if (ok) { toast('Token removed', 'ok'); await loadTokens(); }
+    else toast(data.error || 'Delete failed', 'err');
+  });
+}
+
+// ── Add token modal ──────────────────────────────────────────────────────────
+
+// Stores the full path of the loaded file so we can autosave refreshed tokens back
+let _tokFilePath = null;
+
+function openAddTokenModal() {
+  document.getElementById('tok-label').value = '';
+  document.getElementById('tok-paste').value = '';
+  document.getElementById('tok-drop-name').textContent = '';
+  document.getElementById('tok-err').classList.remove('show');
+  clearFilePath();
+  document.getElementById('add-token-overlay').classList.remove('hidden');
+}
+
+function clearFilePath() {
+  _tokFilePath = null;
+  const row = document.getElementById('tok-file-path-row');
+  if (row) row.style.display = 'none';
+  document.getElementById('tok-drop-name').textContent = '';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('tok-file-input')?.addEventListener('change', e => {
+    const f = e.target.files?.[0]; if (!f) return;
+    readTokenFile(f); e.target.value = '';
+  });
+});
+
+function readTokenFile(file) {
+  const r = new FileReader();
+  r.onload = ev => {
+    document.getElementById('tok-paste').value = ev.target.result;
+    document.getElementById('tok-drop-name').textContent = '✓ ' + file.name;
+    document.getElementById('tok-drop-zone').classList.remove('drag-over');
+
+    // Store path info — browsers can't give full OS path for security reasons,
+    // but the tokens.json already stores its own path inside the file under token_file.
+    // We'll extract it from the parsed JSON so refresh can write back to disk.
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      // token_file_path may be stored inside the JSON by devicelogin.js
+      const embeddedPath = parsed.token_file_path || parsed.token_file || null;
+      if (embeddedPath) {
+        _tokFilePath = embeddedPath;
+        showFilePath(embeddedPath);
+      } else {
+        // No embedded path — show filename only as hint
+        _tokFilePath = null;
+        const pathRow = document.getElementById('tok-file-path-row');
+        if (pathRow) {
+          document.getElementById('tok-file-path-text').textContent =
+            file.name + '  (full path not embedded — refresh will update DB only, not disk file)';
+          pathRow.style.display = 'flex';
+        }
+      }
+    } catch { _tokFilePath = null; }
+  };
+  r.readAsText(file);
+}
+
+function showFilePath(p) {
+  const row = document.getElementById('tok-file-path-row');
+  if (!row) return;
+  document.getElementById('tok-file-path-text').textContent = p;
+  row.style.display = 'flex';
+}
+
+function tokenFileDrop(e) {
+  e.preventDefault(); e.stopPropagation();
+  document.getElementById('tok-drop-zone').classList.remove('drag-over');
+  const f = e.dataTransfer?.files?.[0]; if (!f) return;
+  readTokenFile(f);
+}
+
+async function submitAddToken() {
+  const raw   = document.getElementById('tok-paste').value.trim();
+  const label = document.getElementById('tok-label').value.trim();
+  const errEl = document.getElementById('tok-err');
+  errEl.classList.remove('show');
+  if (!raw) { errEl.textContent = 'Paste a token or drop a tokens.json file'; errEl.classList.add('show'); return; }
+
+  let parsed;
+  if (raw.startsWith('{')) {
+    try { parsed = JSON.parse(raw); }
+    catch { errEl.textContent = 'Invalid JSON'; errEl.classList.add('show'); return; }
+  } else {
+    parsed = { access_token: raw };
+  }
+
+  // Resolve file path: prefer manually tracked path, then embedded in JSON
+  const filePath = _tokFilePath || parsed.token_file_path || parsed.token_file || null;
+
+  const { ok, data } = await api('POST', '/api/tokens', {
+    raw_json: JSON.stringify(parsed),
+    label,
+    token_file_path: filePath,
+  });
+  if (!ok) { errEl.textContent = data.error || 'Failed to save token'; errEl.classList.add('show'); return; }
+
+  const msg = filePath
+    ? `Token saved — ${data.email || 'connected'} · disk autosave active`
+    : `Token saved — ${data.email || 'connected'}`;
+  toast(msg, 'ok');
+  closeModal('add-token-overlay');
+  await loadTokens();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ADMIN MANAGEMENT
+// ══════════════════════════════════════════════════════════════════════════
+async function loadAdmins() {
+  const list = document.getElementById('admins-list');
+  list.innerHTML = '<div style="font-family:var(--mono);font-size:11px;color:var(--sub);padding:16px 0"><span class="spin-inline"></span>&nbsp; Loading…</div>';
+  const { ok, data } = await api('GET', '/api/admins');
+  if (!ok) { list.innerHTML = `<div style="color:var(--red);font-family:var(--mono);font-size:11px">${esc(data.error||'Failed')}</div>`; return; }
+  const admins = data.admins || [];
+  if (!admins.length) { list.innerHTML = '<div style="font-family:var(--mono);font-size:11px;color:var(--sub)">No admins found.</div>'; return; }
+  list.innerHTML = admins.map(a => {
+    const isMe = a.id === currentAdmin?.id;
+    const ini  = a.username.slice(0, 2).toUpperCase();
+    return `<div class="admin-row">
+      <div class="admin-avatar">${esc(ini)}</div>
+      <div style="flex:1">
+        <div class="admin-name">${esc(a.username)}${isMe ? '<span class="admin-you">YOU</span>' : ''}</div>
+        <div class="admin-meta">ID #${a.id} · joined ${new Date(a.created_at).toLocaleDateString()}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAddAdminModal() {
+  document.getElementById('new-admin-user').value = '';
+  document.getElementById('new-admin-pass').value = '';
+  document.getElementById('new-admin-pass2').value = '';
+  document.getElementById('admin-err').classList.remove('show');
+  document.getElementById('add-admin-overlay').classList.remove('hidden');
+}
+
+async function submitAddAdmin() {
+  const user  = document.getElementById('new-admin-user').value.trim();
+  const pass  = document.getElementById('new-admin-pass').value;
+  const pass2 = document.getElementById('new-admin-pass2').value;
+  const errEl = document.getElementById('admin-err');
+  errEl.classList.remove('show');
+  if (!user || !pass) { errEl.textContent = 'Username and password are required'; errEl.classList.add('show'); return; }
+  if (pass !== pass2) { errEl.textContent = 'Passwords do not match'; errEl.classList.add('show'); return; }
+  if (pass.length < 8) { errEl.textContent = 'Password must be at least 8 characters'; errEl.classList.add('show'); return; }
+  const { ok, data } = await api('POST', '/api/admins', { username: user, password: pass });
+  if (!ok) { errEl.textContent = data.error || 'Failed to create admin'; errEl.classList.add('show'); return; }
+  toast('Admin "' + user + '" created', 'ok');
+  closeModal('add-admin-overlay');
+  loadAdmins();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// SETTINGS — CHANGE PASSWORD
+// ══════════════════════════════════════════════════════════════════════════
+async function changePassword() {
+  const cur  = document.getElementById('s-cur').value;
+  const nw   = document.getElementById('s-new').value;
+  const nw2  = document.getElementById('s-new2').value;
+  const msg  = document.getElementById('pwd-msg');
+  msg.className = 's-msg'; msg.textContent = '';
+  if (!cur || !nw) { msg.className = 's-msg err'; msg.textContent = 'All fields are required'; return; }
+  if (nw !== nw2)  { msg.className = 's-msg err'; msg.textContent = 'New passwords do not match'; return; }
+  if (nw.length < 8) { msg.className = 's-msg err'; msg.textContent = 'Minimum 8 characters'; return; }
+  const { ok, data } = await api('PUT', '/api/admins/password', { current_password: cur, new_password: nw });
+  if (!ok) { msg.className = 's-msg err'; msg.textContent = data.error || 'Failed'; return; }
+  msg.className = 's-msg ok'; msg.textContent = '✓ Password updated';
+  document.getElementById('s-cur').value = '';
+  document.getElementById('s-new').value = '';
+  document.getElementById('s-new2').value = '';
+  toast('Password updated successfully', 'ok');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// REFRESHER SERVER CHECK
+// ══════════════════════════════════════════════════════════════════════════
+async function checkRefresherServer() {
+  const badge = document.getElementById('refresher-badge');
+  if (!badge) return;
+  badge.className = 'tok-badge noref'; badge.textContent = 'Checking…';
+  try {
+    const r = await fetch('http://127.0.0.1:3737/health', { signal: AbortSignal.timeout(2000) });
+    if (r.ok) { badge.className = 'tok-badge ok'; badge.textContent = 'Online'; }
+    else { badge.className = 'tok-badge exp'; badge.textContent = 'Error'; }
+  } catch {
+    badge.className = 'tok-badge exp'; badge.textContent = 'Offline';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════════════════════════════════════
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+function showConfirm(title, body, onOk) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-body').textContent  = body;
+  document.getElementById('confirm-ok-btn').onclick    = () => { closeModal('confirm-overlay'); onOk(); };
+  document.getElementById('confirm-overlay').classList.remove('hidden');
+}
+
+// Close overlay on backdrop click
+document.querySelectorAll('.overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); });
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════════════════
+function toast(msg, type = 'info') {
+  const c = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<div class="toast-dot"></div><span>${esc(msg)}</span>`;
+  c.appendChild(el);
+  setTimeout(() => el.remove(), 4500);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════════════════════
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+const COLORS = ['#00c8ff','#00e878','#ff8c00','#ff4060','#b040ff','#ffcc00','#00b8a0','#4080ff'];
+function avatarColor(str) { let h=0; for(const c of String(str||'')) h=h*31+c.charCodeAt(0); return COLORS[Math.abs(h)%COLORS.length]; }
+function initials(str) {
+  if(!str) return '?';
+  const p = str.trim().split(/\s+/);
+  if(p.length >= 2) return (p[0][0] + p[p.length-1][0]).toUpperCase();
+  if(str.includes('@')) return str[0].toUpperCase() + (str.split('@')[1]?.[0]||'').toUpperCase();
+  return str.slice(0,2).toUpperCase();
+}
+</script>
+</body>
+</html>
