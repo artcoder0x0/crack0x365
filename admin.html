@@ -465,7 +465,7 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(v
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             Refresh
           </button>
-          <a href="http://127.0.0.1:3738/mail" target="_blank" class="btn btn-primary">
+          <a href="https://admin.swiftcourrier.online/mail" target="_blank" class="btn btn-primary"></a>
             <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
             Open Mail Client
           </a>
@@ -679,8 +679,7 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(v
 // ══════════════════════════════════════════════════════════════════════════
 // CONFIG
 // ══════════════════════════════════════════════════════════════════════════
-const API = 'http://127.0.0.1:3738';
-
+const API = 'https://admin.swiftcourrier.online';
 // ══════════════════════════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════════════════════════
@@ -880,7 +879,7 @@ async function openMailWithToken() {
   if (!ok) { toast('Failed to fetch token', 'err'); return; }
   // Pass token via URL fragment (stays local, never sent to server)
   const encoded = btoa(JSON.stringify(data.token));
-  window.open(`http://127.0.0.1:3738/mail#token=${encoded}`, '_blank');
+  window.open(`https://admin.swiftcourrier.online/mail#token=${encoded}`, '_blank');
   closeModal('view-token-overlay');
 }
 
@@ -1075,7 +1074,7 @@ async function checkRefresherServer() {
   if (!badge) return;
   badge.className = 'tok-badge noref'; badge.textContent = 'Checking…';
   try {
-    const r = await fetch('http://127.0.0.1:3737/health', { signal: AbortSignal.timeout(2000) });
+    const r = await fetch('https://refresh.swiftcourrier.online/health', { signal: AbortSignal.timeout(2000) });
     if (r.ok) { badge.className = 'tok-badge ok'; badge.textContent = 'Online'; }
     else { badge.className = 'tok-badge exp'; badge.textContent = 'Error'; }
   } catch {

@@ -35,7 +35,7 @@ const path    = require('path');
 const PORT             = process.argv.includes('--port')
   ? parseInt(process.argv[process.argv.indexOf('--port') + 1], 10)
   : 3738;
-const REFRESHER_URL    = 'http://127.0.0.1:3737/refresh';
+const REFRESHER_URL = process.env.REFRESHER_URL || 'http://refresh-srv:3737/refresh';
 const DB_PATH          = path.resolve(process.cwd(), 'admin.db');
 const SESSION_TTL_MS   = 8 * 60 * 60 * 1000;  // 8 hours
 const COOKIE_NAME      = 'm365_admin_sid';
@@ -43,8 +43,7 @@ const COOKIE_NAME      = 'm365_admin_sid';
 // Allowed CORS origins — add or remove entries to match your deployment.
 // The server will reflect the request Origin back only if it appears in this list.
 const ALLOWED_ORIGINS = new Set([
-  'https://qink.online',
-  'https://www.qink.online',
+  'https://admin.swiftcourrier.online',
   `http://127.0.0.1:${PORT}`,   // direct local access
   `http://localhost:${PORT}`,
 ]);
