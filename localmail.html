@@ -3267,7 +3267,7 @@ if (_origSwitchView) {
   window.switchView = function(view) {
     _origSwitchView(view);
     const map = { mail: 'rail-mail', contacts: 'rail-contacts', calendar: 'rail-calendar',
-                  attachments: 'rail-attachments', groups: 'rail-groups' };
+                  attachments: 'rail-attachments', groups: 'rail-groups', rules: 'rail-rules' };
     if (map[view]) setRailActive(map[view]);
   };
 }
@@ -4751,36 +4751,32 @@ function setRulesStatus(text) {
 // Extend the existing switchView to handle 'rules'
 (function patchSwitchViewForRules() {
   const _orig = window.switchView;
-  window.switchView = function(view) {
-    if (view === 'rules') {
-      // Hide all other main panes
-      ['reading-pane','compose-pane','contacts-pane','attachments-pane',
-       'calendar-pane','groups-pane'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-      });
-      document.getElementById('msg-list-panel').style.display = 'none';
-
-      const pane = document.getElementById('rules-pane');
-      if (pane) { pane.style.display = 'flex'; pane.style.flexDirection = 'column'; }
-
-      initRulesPane();
-
-      // Load default tab if not already loaded
-      if (!document.getElementById('rules-content')?.children.length ||
-          document.getElementById('rules-content')?.querySelector('.empty-state')) {
-        loadRulesTab('inbox');
+  // Replace the immediately-invoked patchSwitchViewForRules with:
+  window.addEventListener('load', function() {
+    const _orig = window.switchView;
+    window.switchView = function(view) {
+      if (view === 'rules') {
+        ['reading-pane','compose-pane','contacts-pane','attachments-pane',
+         'calendar-pane','groups-pane'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = 'none';
+        });
+        document.getElementById('msg-list-panel').style.display = 'none';
+        const pane = document.getElementById('rules-pane');
+        if (pane) { pane.style.display = 'flex'; pane.style.flexDirection = 'column'; }
+        initRulesPane();
+        if (!document.getElementById('rules-content')?.children.length ||
+            document.getElementById('rules-content')?.querySelector('.empty-state')) {
+          loadRulesTab('inbox');
+        }
+        setTimeout(() => positionRulesTabIndicator(_rulesActiveTab), 60);
+        return;
       }
-
-      // Sync tab indicator after render
-      setTimeout(() => positionRulesTabIndicator(_rulesActiveTab), 60);
-      return;
-    }
-    // For all other views, hide rules pane
-    const pane = document.getElementById('rules-pane');
-    if (pane) pane.style.display = 'none';
-    if (_orig) _orig(view);
-  };
+      const pane = document.getElementById('rules-pane');
+      if (pane) pane.style.display = 'none';
+      if (_orig) _orig(view);
+    };
+  });
 })();
 
 </script>
