@@ -2661,32 +2661,31 @@ const FI={
 
 async function loadFolders() {
   try {
-    const res=await graphGet('/me/mailFolders?$top=100&$select=id,displayName,unreadItemCount,totalItemCount,childFolderCount');
-    const rawFolders=res.value||[];
-    const wkMap={};
-    await Promise.allSettled(WELL_KNOWN_ORDER.map(wk=>graphGet(`/me/mailFolders/${wk}?$select=id`).then(f=>{wkMap[wk]=f.id;}).catch(()=>{})));
-    S.folders=rawFolders.map(f=>{
-      const wkByName=WELL_KNOWN_NAMES[f.displayName.toLowerCase()]||null;
-      const wkById=Object.entries(wkMap).find(([,id])=>id===f.id)?.[0]||null;
-      return{id:f.id,name:f.displayName,unreadCount:f.unreadItemCount||0,totalCount:f.totalItemCount||0,childFolderCount:f.childFolderCount||0,wellKnown:wkById||wkByName||null,children:[],expanded:true,depth:0};
-    });
-    S.folderMap={};
-    for(const f of S.folders)S.folderMap[f.id]=f;
-    await loadChildFolders(S.folders,1);
-    S.folders.sort((a,b)=>{const ai=a.wellKnown?WELL_KNOWN_ORDER.indexOf(a.wellKnown):999,bi=b.wellKnown?WELL_KNOWN_ORDER.indexOf(b.wellKnown):999;if(ai!==bi)return ai-bi;if(ai===999)return a.name.localeCompare(b.name);return 0;});
+    await loadAllFoldersRecursive();
     renderFolderTree();
-    const inbox=S.folders.find(f=>f.wellKnown==='inbox')||S.folders[0];
-    if(inbox){S.currentFolderId=inbox.id;S.currentFolder=inbox.wellKnown||inbox.id;markFolderActive(inbox.id);document.getElementById('list-title').textContent=inbox.name;}
-    await loadFolder(S.currentFolderId,true);
+
+    const inbox = S.folders.find(f => f.wellKnown === 'inbox') || S.folders[0];
+    if (inbox) {
+      S.currentFolderId = inbox.id;
+      S.currentFolder   = inbox.wellKnown || inbox.id;
+      markFolderActive(inbox.id);
+      document.getElementById('list-title').textContent = inbox.name;
+    }
+    await loadFolder(S.currentFolderId, true);
     setOfflineMode(false);
   } catch(e) {
     setOfflineMode(true);
-    const cached=loadFromCache('inbox');
-    if(cached){S.allMessages=cached.messages;S.messages=cached.messages;renderMessageList(S.messages,false);setSyncState('offline','From cache '+new Date(cached.cachedAt).toLocaleTimeString());updateCacheBar(cached.messages.length,cached.totalFetched||cached.messages.length);}
-    toast('Folders unavailable: '+e.message,'error');
+    const cached = loadFromCache('inbox');
+    if (cached) {
+      S.allMessages = cached.messages;
+      S.messages    = cached.messages;
+      renderMessageList(S.messages, false);
+      setSyncState('offline', 'From cache ' + new Date(cached.cachedAt).toLocaleTimeString());
+      updateCacheBar(cached.messages.length, cached.totalFetched || cached.messages.length);
+    }
+    toast('Folders unavailable: ' + e.message, 'error');
   }
 }
-
 async function loadChildFolders(nodes,depth) {
   const withKids=nodes.filter(n=>n.childFolderCount>0);
   if(!withKids.length)return;
@@ -2730,6 +2729,111 @@ function selectFolderById(folderId,name){
   document.getElementById('list-title').textContent=name;markFolderActive(folderId);
   S.allMessages=[];S.messages=[];S.currentSkip=0;S.hasMore=false;
   loadFolder(folderId,true);closeEmailView();switchView('mail');
+}
+async function loadAllFoldersRecursive() {
+  // Fetch every mail folder the account has, with no depth cap
+  // Builds S.folders and S.folderMap completely before rendering
+  const allFolders = [];
+  const folderMap  = {};
+
+  async function fetchChildrenOf(parentId, depth) {
+    let skip = 0;
+    while (true) {
+      const res = await graphGet(
+        `/me/mailFolders/${encodeURIComponent(parentId)}/childFolders` +
+        `?$top=100&$skip=${skip}&$select=id,displayName,unreadItemCount,totalItemCount,childFolderCount`
+      ).catch(() => null);
+      if (!res) break;
+      const items = res.value || [];
+      for (const f of items) {
+        const node = {
+          id: f.id, name: f.displayName,
+          unreadCount: f.unreadItemCount || 0,
+          totalCount:  f.totalItemCount  || 0,
+          childFolderCount: f.childFolderCount || 0,
+          wellKnown: null, children: [], expanded: depth < 2,
+          depth, parentId,
+        };
+        allFolders.push(node);
+        folderMap[f.id] = node;
+        // Wire up parent-child relationship
+        const parent = folderMap[parentId];
+        if (parent) parent.children.push(node);
+        // Recurse if has children
+        if (f.childFolderCount > 0) {
+          await fetchChildrenOf(f.id, depth + 1);
+        }
+      }
+      if (items.length < 100) break;
+      skip += 100;
+    }
+  }
+
+  // Step 1: fetch top-level folders
+  let skip = 0;
+  const topLevel = [];
+  while (true) {
+    const res = await graphGet(
+      `/me/mailFolders?$top=100&$skip=${skip}` +
+      `&$select=id,displayName,unreadItemCount,totalItemCount,childFolderCount`
+    ).catch(() => null);
+    if (!res) break;
+    const items = res.value || [];
+    for (const f of items) {
+      const node = {
+        id: f.id, name: f.displayName,
+        unreadCount: f.unreadItemCount || 0,
+        totalCount:  f.totalItemCount  || 0,
+        childFolderCount: f.childFolderCount || 0,
+        wellKnown: null, children: [], expanded: true,
+        depth: 0, parentId: null,
+      };
+      topLevel.push(node);
+      allFolders.push(node);
+      folderMap[f.id] = node;
+    }
+    if (items.length < 100) break;
+    skip += 100;
+  }
+
+  // Step 2: resolve well-known IDs
+  const wkMap = {};
+  await Promise.allSettled(
+    WELL_KNOWN_ORDER.map(wk =>
+      graphGet(`/me/mailFolders/${wk}?$select=id`)
+        .then(f => { wkMap[wk] = f.id; })
+        .catch(() => {})
+    )
+  );
+  for (const node of allFolders) {
+    const wkById = Object.entries(wkMap).find(([, id]) => id === node.id)?.[0] || null;
+    const wkByName = WELL_KNOWN_NAMES[node.name.toLowerCase()] || null;
+    node.wellKnown = wkById || wkByName || null;
+  }
+
+  // Step 3: recurse into all top-level folders that have children
+  for (const node of topLevel) {
+    if (node.childFolderCount > 0) {
+      await fetchChildrenOf(node.id, 1);
+    }
+  }
+
+  // Step 4: sort top-level by well-known order, then alpha
+  topLevel.sort((a, b) => {
+    const ai = a.wellKnown ? WELL_KNOWN_ORDER.indexOf(a.wellKnown) : 999;
+    const bi = b.wellKnown ? WELL_KNOWN_ORDER.indexOf(b.wellKnown) : 999;
+    if (ai !== bi) return ai - bi;
+    return a.name.localeCompare(b.name);
+  });
+  // Sort children alpha at every level
+  function sortChildren(nodes) {
+    nodes.sort((a, b) => a.name.localeCompare(b.name));
+    nodes.forEach(n => { if (n.children.length) sortChildren(n.children); });
+  }
+  topLevel.forEach(n => { if (n.children.length) sortChildren(n.children); });
+
+  S.folders    = topLevel;
+  S.folderMap  = folderMap;
 }
 async function loadFolderCounts(){
   try{const res=await graphGet('/me/mailFolders?$top=100&$select=id,unreadItemCount,totalItemCount');
@@ -3264,48 +3368,21 @@ function toggleRibbon() {
 
   chrome.classList.toggle('ribbon-collapsed', _ribbonCollapsed);
 
-  // Measure actual chrome height AFTER class toggle so layout is settled
   requestAnimationFrame(() => {
     const h = chrome.getBoundingClientRect().height;
-    if (app)  app.style.paddingTop  = h + 'px';
-    if (rail) rail.style.top        = h + 'px';
+    if (app)  app.style.paddingTop = h + 'px';
+    if (rail) rail.style.top       = h + 'px';
   });
 
-  // Flip chevron direction
   if (icon) {
     icon.querySelector('polyline').setAttribute('points',
       _ribbonCollapsed ? '6 9 12 15 18 9' : '18 15 12 9 6 15'
     );
   }
 
-  // Keep settings panel checkbox in sync if open
   const cb = document.getElementById('setting-ribbon');
   if (cb) cb.checked = _ribbonCollapsed;
 }
-  _ribbonCollapsed = !_ribbonCollapsed;
-  const chrome = document.getElementById('owa-topchrome');
-  const app    = document.getElementById('app');
-  const icon   = document.getElementById('ribbon-toggle-icon');
-
-  chrome.classList.toggle('ribbon-collapsed', _ribbonCollapsed);
-  if (app) {
-    if (_ribbonCollapsed) {
-      app.style.paddingTop = '40px';
-    } else {
-      app.style.paddingTop = 'var(--topchrome-h)';
-    }
-  }
-  // Flip chevron
-  if (icon) {
-    icon.querySelector('polyline').setAttribute('points',
-      _ribbonCollapsed ? '6 9 12 15 18 9' : '18 15 12 9 6 15'
-    );
-  }
-
-  // Also fix left-rail top offset
-  const rail = document.getElementById('owa-left-rail');
-  if (rail) rail.style.top = _ribbonCollapsed ? '40px' : 'var(--topchrome-h)';
-
 
 // Ctrl+F1 shortcut
 document.addEventListener('keydown', e => {
@@ -4706,6 +4783,291 @@ function setRulesStatus(text) {
   };
 })();
 
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// OUTLOOK-ACCURATE RIGHT-CLICK / HOVER CONTEXT MENU
+// ═══════════════════════════════════════════════════════════════════
+
+const OWA_CTX_MENU_ITEMS = [
+  { label: 'Reply',        icon: 'reply',    action: 'replyTo()',     color: '#881798' },
+  { label: 'Reply all',    icon: 'replyall', action: 'replyAll()',    color: '#881798' },
+  { label: 'Forward',      icon: 'forward',  action: 'forwardMsg()',  color: '#0078d4' },
+  { type: 'divider' },
+  { label: 'Delete',       icon: 'delete',   action: 'ctxDelete()',   color: '' },
+  { label: 'Archive',      icon: 'archive',  action: 'archiveMsg()',  color: '#498205' },
+  { label: 'Move',         icon: 'move',     action: 'ctxMove(event)',color: '#0078d4', sub: true },
+  { type: 'divider' },
+  { label: 'Mark as unread', icon: 'unread', action: 'ctxMarkUnread()', color: '' },
+  { label: 'Pin',          icon: 'pin',      action: 'ctxPin()',      color: '#0078d4' },
+  { label: 'Categorise',   icon: 'cat',      action: 'ctxCat()',      color: '',        sub: true },
+  { label: 'Flag',         icon: 'flag',     action: 'ctxFlag()',     color: '#a4262c', sub: true },
+  { type: 'divider' },
+  { label: 'Report',       icon: 'report',   action: 'ctxReport()',   color: '#a4262c', sub: true },
+  { label: 'Ignore',       icon: 'ignore',   action: 'ctxIgnore()',   color: '#a4262c' },
+  { type: 'divider' },
+  { label: 'Download',     icon: 'dl',       action: 'ctxDownload()', color: '',        sub: true },
+  { label: 'Find related', icon: '',         action: '',              color: '',        sub: true },
+  { label: 'View',         icon: '',         action: '',              color: '',        sub: true },
+  { label: 'Advanced actions', icon: '',     action: '',              color: '',        sub: true },
+];
+
+// SVG icon paths keyed by name
+const CTX_ICONS = {
+  reply:   `<path d="M9 17 4 12l5-5M4 12h16" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`,
+  replyall:`<path d="M7 17 2 12l5-5M2 12h16M12 17l-5-5 5-5" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`,
+  forward: `<path d="M15 17l5-5-5-5M4 12h16" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`,
+  delete:  `<polyline points="3 6 5 6 21 6" stroke="currentColor" fill="none" stroke-width="1.8"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke="currentColor" fill="none" stroke-width="1.8"/>`,
+  archive: `<polyline points="21 8 21 21 3 21 3 8" stroke="currentColor" fill="none" stroke-width="1.8"/><rect x="1" y="3" width="22" height="5" stroke="currentColor" fill="none" stroke-width="1.8"/><line x1="10" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="1.8"/>`,
+  move:    `<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" stroke="currentColor" fill="none" stroke-width="1.8"/>`,
+  unread:  `<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" fill="none" stroke-width="1.8"/><polyline points="22,6 12,13 2,6" stroke="currentColor" fill="none" stroke-width="1.8"/>`,
+  pin:     `<line x1="12" y1="17" x2="12" y2="22" stroke="currentColor" fill="none" stroke-width="1.8"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17z" stroke="currentColor" fill="none" stroke-width="1.8"/>`,
+  cat:     `<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" stroke="currentColor" fill="none" stroke-width="1.8"/><line x1="7" y1="7" x2="7.01" y2="7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`,
+  flag:    `<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" stroke="currentColor" fill="none" stroke-width="1.8"/><line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" stroke-width="1.8"/>`,
+  report:  `<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" fill="none" stroke-width="1.8"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="1.8"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>`,
+  ignore:  `<circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="1.8"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="currentColor" stroke-width="1.8"/>`,
+  dl:      `<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" fill="none" stroke-width="1.8"/><polyline points="7 10 12 15 17 10" stroke="currentColor" fill="none" stroke-width="1.8"/><line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="1.8"/>`,
+  chevron: `<polyline points="9 18 15 12 9 6" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`,
+};
+
+let _ctxMenuEl   = null;
+let _ctxMsgId    = null;  // message ID the menu is open for
+let _hoverTimers = new Map();
+
+function removeCtxMenu() {
+  if (_ctxMenuEl) { _ctxMenuEl.remove(); _ctxMenuEl = null; }
+}
+
+function buildCtxMenuHtml(x, y, msgId) {
+  _ctxMsgId = msgId;
+
+  const items = OWA_CTX_MENU_ITEMS.map(item => {
+    if (item.type === 'divider') {
+      return `<div role="presentation" aria-hidden="true" style="height:1px;background:var(--border-light);margin:3px 0"></div>`;
+    }
+    const iconSvg = item.icon && CTX_ICONS[item.icon]
+      ? `<svg width="16" height="16" viewBox="0 0 24 24" style="flex-shrink:0;color:${item.color || 'var(--txt-muted)'}">${CTX_ICONS[item.icon]}</svg>`
+      : `<span style="width:16px;display:inline-block;flex-shrink:0"></span>`;
+
+    const subArrow = item.sub
+      ? `<svg width="12" height="12" viewBox="0 0 24 24" style="flex-shrink:0;color:var(--txt-hint);margin-left:auto">${CTX_ICONS.chevron}</svg>`
+      : '';
+
+    const onclick = item.action
+      ? `onclick="removeCtxMenu();${item.action}"`
+      : '';
+
+    return `<div role="menuitem" tabindex="0" class="_ctx-item"
+                 style="display:flex;align-items:center;gap:9px;padding:7px 14px;
+                        cursor:pointer;font-size:13px;color:var(--txt-sub);
+                        transition:background .08s;white-space:nowrap;user-select:none"
+                 ${onclick}
+                 onmouseover="this.style.background='var(--neutral-lighter)';this.style.color='var(--txt)'"
+                 onmouseout="this.style.background='';this.style.color='var(--txt-sub)'">
+               ${iconSvg}
+               <span style="flex:1">${item.label}</span>
+               ${subArrow}
+             </div>`;
+  }).join('');
+
+  return `<div id="_owa-ctx-menu" role="menu"
+               style="position:fixed;z-index:9500;
+                      background:var(--bg-raised);
+                      border:1px solid var(--border);
+                      border-radius:var(--radius-lg);
+                      padding:4px 0;
+                      min-width:220px;
+                      box-shadow:var(--shadow-xl);
+                      animation:ctxIn .1s ease">
+            ${items}
+          </div>`;
+}
+
+function showCtxMenu(e, msgId) {
+  e.preventDefault();
+  e.stopPropagation();
+  removeCtxMenu();
+
+  // Set this message as selected so actions work
+  _ctxMsgId = msgId;
+
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = buildCtxMenuHtml(e.clientX, e.clientY, msgId);
+  _ctxMenuEl = wrapper.firstElementChild;
+
+  // Position — keep on screen
+  document.body.appendChild(_ctxMenuEl);
+  const rect  = _ctxMenuEl.getBoundingClientRect();
+  const vw    = window.innerWidth, vh = window.innerHeight;
+  let left    = e.clientX, top = e.clientY;
+  if (left + rect.width  > vw - 8) left = vw - rect.width - 8;
+  if (top  + rect.height > vh - 8) top  = vh - rect.height - 8;
+  _ctxMenuEl.style.left = left + 'px';
+  _ctxMenuEl.style.top  = top  + 'px';
+
+  // Close on outside click or scroll
+  setTimeout(() => {
+    document.addEventListener('mousedown', removeCtxMenu, { once: true });
+    document.addEventListener('scroll',    removeCtxMenu, { once: true, capture: true });
+  }, 0);
+}
+
+// ── Wire up right-click and hover three-dot button on every message item ──
+// We use event delegation on the msg-list container
+
+function wireCtxMenuDelegation() {
+  const list = document.getElementById('msg-list');
+  if (!list || list.dataset.ctxWired) return;
+  list.dataset.ctxWired = '1';
+
+  // Right-click
+  list.addEventListener('contextmenu', e => {
+    const item = e.target.closest('.msg-item');
+    if (!item) return;
+    const msgId = item.id.replace('mi-', '');
+    // Activate it so actions like reply work
+    selectMsgForCtx(msgId);
+    showCtxMenu(e, msgId);
+  });
+
+  // Hover → show three-dot button
+  list.addEventListener('mouseover', e => {
+    const item = e.target.closest('.msg-item');
+    if (!item) return;
+    showHoverActions(item);
+  });
+  list.addEventListener('mouseout', e => {
+    const item = e.target.closest('.msg-item');
+    if (!item) return;
+    // Small delay so user can click the button
+    const id = item.id;
+    _hoverTimers.set(id, setTimeout(() => hideHoverActions(item), 300));
+  });
+}
+
+function showHoverActions(item) {
+  const id = item.id;
+  if (_hoverTimers.has(id)) { clearTimeout(_hoverTimers.get(id)); _hoverTimers.delete(id); }
+  if (item.querySelector('._msg-hover-btns')) return;
+
+  const msgId = id.replace('mi-', '');
+
+  const wrap = document.createElement('div');
+  wrap.className = '_msg-hover-btns';
+  wrap.style.cssText = `
+    position:absolute;top:6px;right:6px;
+    display:flex;gap:2px;align-items:center;
+    background:var(--white);border:1px solid var(--border-light);
+    border-radius:6px;padding:2px;
+    box-shadow:var(--shadow-sm);
+    z-index:10;
+  `;
+
+  // Quick-action buttons matching Outlook's hover row
+  const quickBtns = [
+    { title:'Delete',  svg:`<polyline points="3 6 5 6 21 6" stroke="currentColor" fill="none" stroke-width="2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke="currentColor" fill="none" stroke-width="2"/>`, fn:`ctxDeleteId('${msgId}')` },
+    { title:'Archive', svg:`<polyline points="21 8 21 21 3 21 3 8" stroke="currentColor" fill="none" stroke-width="2"/><rect x="1" y="3" width="22" height="5" stroke="currentColor" fill="none" stroke-width="2"/><line x1="10" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="2"/>`, fn:`ctxArchiveId('${msgId}')` },
+    { title:'Reply',   svg:`<polyline points="9 17 4 12 9 7" stroke="currentColor" fill="none" stroke-width="2"/><path d="M20 18v-2a4 4 0 0 0-4-4H4" stroke="currentColor" fill="none" stroke-width="2"/>`, fn:`ctxReplyId('${msgId}')` },
+    { title:'More',    svg:`<circle cx="12" cy="5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="19" r="1" fill="currentColor"/>`, fn:`ctxMoreId(event,'${msgId}')` },
+  ];
+
+  quickBtns.forEach(btn => {
+    const b = document.createElement('button');
+    b.title = btn.title;
+    b.style.cssText = `width:26px;height:26px;border:none;background:transparent;cursor:pointer;border-radius:4px;
+      display:flex;align-items:center;justify-content:center;color:var(--txt-muted);flex-shrink:0;`;
+    b.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24">${btn.svg}</svg>`;
+    b.setAttribute('onclick', btn.fn);
+    b.addEventListener('mouseover', () => { b.style.background = 'var(--neutral-light)'; b.style.color = 'var(--txt)'; });
+    b.addEventListener('mouseout',  () => { b.style.background = ''; b.style.color = 'var(--txt-muted)'; });
+    // Stop propagation so message click doesn't fire
+    b.addEventListener('mousedown', e => e.stopPropagation());
+    wrap.appendChild(b);
+  });
+
+  // Keep hover buttons visible when mouse is over them
+  wrap.addEventListener('mouseover', () => {
+    if (_hoverTimers.has(id)) { clearTimeout(_hoverTimers.get(id)); _hoverTimers.delete(id); }
+  });
+  wrap.addEventListener('mouseout', () => {
+    _hoverTimers.set(id, setTimeout(() => hideHoverActions(item), 300));
+  });
+
+  item.style.position = 'relative';
+  item.appendChild(wrap);
+}
+
+function hideHoverActions(item) {
+  const btns = item.querySelector('._msg-hover-btns');
+  if (btns) btns.remove();
+}
+
+// ── Context-aware action helpers (load message then act) ─────────────────
+
+async function selectMsgForCtx(msgId) {
+  // If already selected, nothing to do
+  if (window.S?.selectedMsg?.id === msgId) return;
+  // Find in current list
+  const m = (window.S?.allMessages || []).find(x => x.id === msgId);
+  if (m) {
+    // Lightweight: set selectedMsg to the list-item version
+    // (enough for delete/archive/reply)
+    if (window.S) window.S.selectedMsg = m;
+  }
+}
+
+// Right-click menu stubs (operate on _ctxMsgId)
+function ctxDelete()      { if (_ctxMsgId) ctxDeleteId(_ctxMsgId); }
+function ctxMarkUnread()  { if (_ctxMsgId) { selectMsgForCtx(_ctxMsgId).then(() => toggleRead()); } }
+function ctxPin()         { toast('Pin — coming soon', 'info'); }
+function ctxCat()         { toast('Categorise — coming soon', 'info'); }
+function ctxFlag()        { toggleFlagMsg(); }
+function ctxReport()      { toast('Report — coming soon', 'info'); }
+function ctxIgnore()      { toast('Ignore — coming soon', 'info'); }
+function ctxDownload()    { toast('Download — coming soon', 'info'); }
+function ctxMove(e)       { showMoveToMenuForId(e, _ctxMsgId); }
+
+// Hover button actions (operate on specific ID)
+async function ctxDeleteId(msgId) {
+  await selectMsgForCtx(msgId);
+  deleteMsg();
+}
+async function ctxArchiveId(msgId) {
+  await selectMsgForCtx(msgId);
+  archiveMsg();
+}
+async function ctxReplyId(msgId) {
+  // Open message first so compose has body
+  await openMessage(msgId);
+  replyTo();
+}
+function ctxMoreId(e, msgId) {
+  e.stopPropagation();
+  selectMsgForCtx(msgId);
+  _ctxMsgId = msgId;
+  showCtxMenu(e, msgId);
+}
+
+// Move-to for a specific message ID without requiring selectedMsg
+async function showMoveToMenuForId(e, msgId) {
+  if (!msgId) return;
+  await selectMsgForCtx(msgId);
+  showMoveToMenu(e);
+}
+
+// ── Re-wire after every message list render ──────────────────────────────
+// Patch renderMessageList to always wire delegation after render
+(function patchRenderForCtx() {
+  const _orig = window.renderMessageList;
+  if (!_orig) return;
+  window.renderMessageList = function(msgs, hasMore) {
+    _orig(msgs, hasMore);
+    wireCtxMenuDelegation();
+  };
+})();
+
+// Wire immediately in case list already rendered
+wireCtxMenuDelegation();
 </script>
 <!-- END PATCH 5 -->
  
