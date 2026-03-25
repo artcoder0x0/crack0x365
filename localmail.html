@@ -1064,6 +1064,19 @@
   ::-webkit-scrollbar-thumb:hover { background: var(--neutral-tertiary); }
   
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  /* ── Ribbon collapse ─────────────────────────────────────────────── */
+  .ribbon-collapsed .owa-ribbon-tabs  { display: none; }
+  .ribbon-collapsed .owa-ribbon-panel { display: none !important; }
+  
+  #ribbon-toggle-btn {
+    position: absolute; right: 6px; bottom: -11px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--white); border: 1px solid var(--border-light);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--txt-hint); font-size: 10px; z-index: 201;
+    box-shadow: var(--shadow-sm); transition: color .12s, background .12s;
+  }
+  #ribbon-toggle-btn:hover { color: var(--acc); background: var(--acc-lightest); }
 </style>
 </head>
 <body>
@@ -1414,6 +1427,7 @@
       <polyline points="18 15 12 9 6 15"/>
     </svg>
   </button>
+  
   </div>
   <div id="owa-left-rail" class="owa-left-rail" role="navigation" aria-label="App bar">
    
@@ -1487,6 +1501,17 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
           <polyline points="9 11 12 14 22 4"/>
           <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+      </button>
+      <button class="owa-rail-btn" id="rail-rules"
+              aria-label="Rules & Policies" title="Rules & Policies"
+              onclick="switchView('rules'); setRailActive('rail-rules')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
         </svg>
       </button>
    
@@ -3234,6 +3259,32 @@ function toggleRibbon() {
   _ribbonCollapsed = !_ribbonCollapsed;
   const chrome = document.getElementById('owa-topchrome');
   const app    = document.getElementById('app');
+  const rail   = document.getElementById('owa-left-rail');
+  const icon   = document.getElementById('ribbon-toggle-icon');
+
+  chrome.classList.toggle('ribbon-collapsed', _ribbonCollapsed);
+
+  // Measure actual chrome height AFTER class toggle so layout is settled
+  requestAnimationFrame(() => {
+    const h = chrome.getBoundingClientRect().height;
+    if (app)  app.style.paddingTop  = h + 'px';
+    if (rail) rail.style.top        = h + 'px';
+  });
+
+  // Flip chevron direction
+  if (icon) {
+    icon.querySelector('polyline').setAttribute('points',
+      _ribbonCollapsed ? '6 9 12 15 18 9' : '18 15 12 9 6 15'
+    );
+  }
+
+  // Keep settings panel checkbox in sync if open
+  const cb = document.getElementById('setting-ribbon');
+  if (cb) cb.checked = _ribbonCollapsed;
+}
+  _ribbonCollapsed = !_ribbonCollapsed;
+  const chrome = document.getElementById('owa-topchrome');
+  const app    = document.getElementById('app');
   const icon   = document.getElementById('ribbon-toggle-icon');
 
   chrome.classList.toggle('ribbon-collapsed', _ribbonCollapsed);
@@ -3582,6 +3633,1079 @@ function toggleSettingsPanel() {
     });
   }, 0);
 }
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// RULES PANE — full inbox rules, transport policies, blocked senders,
+//              safe senders, mail-flow policy visibility
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Rail button (paste this in left-rail BEFORE the admin icon button) ──
+// Find the <!-- Admin portal --> comment and paste ABOVE it:
+//
+//  <button class="owa-rail-btn" id="rail-rules"
+//          aria-label="Rules & Policies" title="Rules & Policies"
+//          onclick="switchView('rules'); setRailActive('rail-rules')">
+//    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+//      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+//      <polyline points="14 2 14 8 20 8"/>
+//      <line x1="16" y1="13" x2="8" y2="13"/>
+//      <line x1="16" y1="17" x2="8" y2="17"/>
+//      <polyline points="10 9 9 9 8 9"/>
+//    </svg>
+//  </button>
+//
+// ── Pane HTML (paste inside #app, after #rules-pane opening div) ─────────
+// Find:  <div id="rules-pane" ...>
+// The pane is already declared in your HTML as an empty flex div.
+// This script renders everything into it dynamically.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Tab state ────────────────────────────────────────────────────────────
+const RULES_TABS = [
+  { id: 'inbox',     label: 'Inbox Rules' },
+  { id: 'blocked',   label: 'Blocked Senders' },
+  { id: 'safe',      label: 'Safe Senders' },
+  { id: 'transport', label: 'Transport Rules' },
+  { id: 'focus',     label: 'Focused Inbox' },
+];
+
+let _rulesActiveTab   = 'inbox';
+let _rulesData        = { inbox: [], blocked: [], safe: [], transport: [], focus: null };
+let _rulesLoading     = false;
+let _editingRule       = null;   // rule object being edited in modal
+
+// ── Inject pane HTML on first open ──────────────────────────────────────
+function initRulesPane() {
+  const pane = document.getElementById('rules-pane');
+  if (!pane || pane.dataset.rulesInit) return;
+  pane.dataset.rulesInit = '1';
+  pane.style.flexDirection = 'column';
+
+  pane.innerHTML = `
+    <!-- Header -->
+    <div class="rules-header" style="flex-shrink:0;padding:0;flex-direction:column;gap:0">
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 20px 0;min-height:48px">
+        <span class="rules-title">Rules &amp; Policies</span>
+        <div style="flex:1"></div>
+        <button class="btn btn-sm btn-ghost" onclick="rulesRefreshTab()" title="Refresh">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+          Refresh
+        </button>
+        <button class="btn btn-sm btn-primary" onclick="openNewRuleModal()" id="rules-new-btn">
+          + New Rule
+        </button>
+      </div>
+
+      <!-- Tab strip -->
+      <div id="rules-tab-strip" style="display:flex;padding:0 20px;border-bottom:1px solid var(--border-light);margin-top:8px;gap:0">
+        ${RULES_TABS.map(t => `
+          <button class="owa-rtab ${t.id === 'inbox' ? 'active' : ''}"
+                  id="rtab-rules-${t.id}"
+                  onclick="switchRulesTab('${t.id}')">
+            ${t.label}
+          </button>`).join('')}
+        <div class="owa-rtab-indicator" id="rules-tab-indicator"></div>
+      </div>
+    </div>
+
+    <!-- Permission banner slot -->
+    <div id="rules-perm-banner" style="display:none;margin:10px 20px 0;padding:12px 14px;
+         background:#FFF9F0;border:1px solid #FDCFB4;border-radius:8px;font-size:12px;color:#6B3A00;
+         align-items:flex-start;gap:10px">
+      <svg width="16" height="16" fill="none" stroke="#D83B01" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <div style="flex:1">
+        <strong id="rules-perm-title">Permission required</strong><br>
+        <span id="rules-perm-body" style="color:#8A4A00;line-height:1.7"></span>
+      </div>
+      <button onclick="document.getElementById('rules-perm-banner').style.display='none'"
+              style="background:none;border:none;cursor:pointer;color:#8A4A00;font-size:16px;line-height:1;padding:0">✕</button>
+    </div>
+
+    <!-- Content area -->
+    <div id="rules-content" style="flex:1;overflow-y:auto;padding:16px 20px">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">Select a tab to load rules</div>
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <div id="rules-status-bar" style="padding:5px 20px;font-size:11px;color:var(--txt-hint);
+         border-top:1px solid var(--border-light);min-height:24px;display:flex;align-items:center;gap:8px">
+      <span id="rules-status-text"></span>
+    </div>
+  `;
+
+  // Inject modal HTML once
+  injectRuleModal();
+  injectBlockedModal();
+
+  // Init tab indicator
+  setTimeout(() => positionRulesTabIndicator('inbox'), 50);
+}
+
+// ── Tab switching ────────────────────────────────────────────────────────
+function switchRulesTab(tabId) {
+  _rulesActiveTab = tabId;
+
+  // Update tab UI
+  RULES_TABS.forEach(t => {
+    const el = document.getElementById('rtab-rules-' + t.id);
+    if (el) el.classList.toggle('active', t.id === tabId);
+  });
+  positionRulesTabIndicator(tabId);
+
+  // Show/hide new rule button
+  const newBtn = document.getElementById('rules-new-btn');
+  if (newBtn) {
+    newBtn.style.display = ['inbox', 'blocked', 'safe'].includes(tabId) ? '' : 'none';
+    newBtn.textContent = tabId === 'blocked' ? '+ Block Sender'
+                       : tabId === 'safe'    ? '+ Add Safe Sender'
+                       : '+ New Rule';
+    newBtn.onclick = tabId === 'blocked' ? openBlockedSenderModal
+                   : tabId === 'safe'    ? openSafeSenderModal
+                   : openNewRuleModal;
+  }
+
+  loadRulesTab(tabId);
+}
+
+function positionRulesTabIndicator(tabId) {
+  const btn = document.getElementById('rtab-rules-' + tabId);
+  const ind = document.getElementById('rules-tab-indicator');
+  if (btn && ind) {
+    ind.style.left  = btn.offsetLeft + 'px';
+    ind.style.width = btn.offsetWidth + 'px';
+  }
+}
+
+async function rulesRefreshTab() {
+  _rulesData[_rulesActiveTab] = [];
+  loadRulesTab(_rulesActiveTab);
+}
+
+// ── Load tab content ─────────────────────────────────────────────────────
+async function loadRulesTab(tabId) {
+  const content = document.getElementById('rules-content');
+  if (!content) return;
+  content.innerHTML = `<div style="padding:40px;text-align:center;color:var(--txt-hint);font-size:13px">
+    <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.3;display:block;margin:0 auto 10px">
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+    </svg>
+    Loading…</div>`;
+  setRulesStatus('Loading ' + RULES_TABS.find(t => t.id === tabId)?.label + '…');
+  hideRulesPermBanner();
+
+  try {
+    switch (tabId) {
+      case 'inbox':     await loadInboxRules();     break;
+      case 'blocked':   await loadBlockedSenders();  break;
+      case 'safe':      await loadSafeSenders();     break;
+      case 'transport': await loadTransportRules();  break;
+      case 'focus':     await loadFocusedInbox();    break;
+    }
+  } catch(e) {
+    handleRulesError(e, tabId);
+  }
+}
+
+// ── INBOX RULES ──────────────────────────────────────────────────────────
+async function loadInboxRules() {
+  const res = await graphGet('/me/mailFolders/inbox/messageRules?$top=100');
+  _rulesData.inbox = res.value || [];
+  renderInboxRules(_rulesData.inbox);
+  setRulesStatus(`${_rulesData.inbox.length} inbox rule${_rulesData.inbox.length !== 1 ? 's' : ''}`);
+}
+
+function renderInboxRules(rules) {
+  const content = document.getElementById('rules-content');
+  if (!rules.length) {
+    content.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📭</div>
+      <div class="empty-title">No inbox rules</div>
+      <div class="empty-sub">Rules automatically organise incoming mail.<br>Click "+ New Rule" to create one.</div>
+    </div>`;
+    return;
+  }
+
+  content.innerHTML = rules.map((r, i) => `
+    <div class="_rule-card" id="rulecard-${r.id}" style="
+      background:var(--neutral-lighter-alt);border:1px solid var(--border-light);
+      border-radius:8px;padding:14px 16px;margin-bottom:8px;
+      border-left:3px solid ${r.isEnabled ? 'var(--acc)' : 'var(--neutral-tertiary)'}">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <!-- Toggle enabled -->
+        <button onclick="toggleInboxRule('${r.id}',${!r.isEnabled})"
+                title="${r.isEnabled ? 'Disable rule' : 'Enable rule'}"
+                style="background:none;border:none;cursor:pointer;padding:2px;flex-shrink:0;margin-top:1px">
+          <div style="width:32px;height:18px;border-radius:9px;background:${r.isEnabled ? 'var(--acc)' : 'var(--neutral-tertiary)'};
+               position:relative;transition:background .15s">
+            <div style="position:absolute;top:2px;left:${r.isEnabled ? '14px' : '2px'};width:14px;height:14px;
+                 border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+          </div>
+        </button>
+
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:13px;font-weight:600;color:var(--txt)">${esc(r.displayName || 'Unnamed rule')}</span>
+            <span style="font-size:10px;padding:2px 7px;border-radius:10px;
+                  background:${r.isEnabled ? 'var(--acc-lightest)' : 'var(--neutral-light)'};
+                  color:${r.isEnabled ? 'var(--acc-dark)' : 'var(--txt-hint)'};font-weight:600">
+              ${r.isEnabled ? 'ENABLED' : 'DISABLED'}
+            </span>
+            <span style="font-size:10px;color:var(--txt-hint);margin-left:auto">Priority: ${r.sequence}</span>
+          </div>
+
+          <!-- Conditions -->
+          ${renderRuleConditions(r.conditions)}
+
+          <!-- Actions -->
+          ${renderRuleActions(r.actions)}
+
+          <!-- Exceptions -->
+          ${r.exceptions && hasRuleConditions(r.exceptions) ? `
+            <div style="margin-top:6px;font-size:11px;color:var(--txt-muted)">
+              <strong>Except:</strong> ${summariseConditions(r.exceptions)}
+            </div>` : ''}
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <button class="icon-btn" title="Edit rule" onclick="openEditRuleModal(${i})">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+          <button class="icon-btn" title="Delete rule" onclick="deleteInboxRule('${r.id}','${esc(r.displayName)}')"
+                  style="color:var(--txt-hint)" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--txt-hint)'">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderRuleConditions(c) {
+  if (!c || !hasRuleConditions(c)) return `<div style="font-size:11px;color:var(--txt-hint)">No conditions (applies to all messages)</div>`;
+  return `<div style="font-size:11px;color:var(--txt-muted);margin-bottom:4px"><strong>If:</strong> ${summariseConditions(c)}</div>`;
+}
+
+function renderRuleActions(a) {
+  if (!a) return '';
+  const acts = [];
+  if (a.moveToFolder)          acts.push('Move to folder');
+  if (a.copyToFolder)          acts.push('Copy to folder');
+  if (a.delete)                acts.push('Delete');
+  if (a.permanentDelete)       acts.push('Permanently delete');
+  if (a.markAsRead)            acts.push('Mark as read');
+  if (a.markImportance)        acts.push('Mark as ' + a.markImportance);
+  if (a.forwardTo?.length)     acts.push('Forward to ' + a.forwardTo.map(r => r.emailAddress?.address).join(', '));
+  if (a.forwardAsAttachmentTo?.length) acts.push('Forward as attachment');
+  if (a.redirectTo?.length)    acts.push('Redirect to ' + a.redirectTo.map(r => r.emailAddress?.address).join(', '));
+  if (a.assignCategories?.length) acts.push('Categorise: ' + a.assignCategories.join(', '));
+  if (a.stopProcessingRules)   acts.push('Stop processing more rules');
+  if (!acts.length) return '';
+  return `<div style="font-size:11px;color:var(--green);margin-bottom:2px"><strong>Then:</strong> ${acts.join(' · ')}</div>`;
+}
+
+function hasRuleConditions(c) {
+  if (!c) return false;
+  return Object.values(c).some(v => v !== null && v !== undefined && v !== false && !(Array.isArray(v) && v.length === 0));
+}
+
+function summariseConditions(c) {
+  const parts = [];
+  if (c.senderContains?.length)           parts.push('sender contains ' + c.senderContains.join(', '));
+  if (c.recipientContains?.length)        parts.push('recipient contains ' + c.recipientContains.join(', '));
+  if (c.subjectContains?.length)          parts.push('subject contains "' + c.subjectContains.join('", "') + '"');
+  if (c.bodyContains?.length)             parts.push('body contains "' + c.bodyContains.join('", "') + '"');
+  if (c.fromAddresses?.length)            parts.push('from ' + c.fromAddresses.map(r => r.emailAddress?.address).join(', '));
+  if (c.sentToAddresses?.length)          parts.push('to ' + c.sentToAddresses.map(r => r.emailAddress?.address).join(', '));
+  if (c.hasAttachments)                   parts.push('has attachments');
+  if (c.importance)                       parts.push('importance is ' + c.importance);
+  if (c.sensitivity)                      parts.push('sensitivity is ' + c.sensitivity);
+  if (c.isAutomaticForward)               parts.push('is auto-forwarded');
+  if (c.isAutomaticReply)                 parts.push('is auto-reply');
+  if (c.isMeetingRequest)                 parts.push('is meeting request');
+  if (c.isNDR)                            parts.push('is NDR');
+  if (c.isPermissionControlled)           parts.push('is permission controlled');
+  if (c.isEncrypted)                      parts.push('is encrypted');
+  if (c.subjectOrBodyContains?.length)    parts.push('subject/body contains "' + c.subjectOrBodyContains.join('", "') + '"');
+  if (c.bodyOrSubjectContains?.length)    parts.push('body/subject contains "' + c.bodyOrSubjectContains.join('", "') + '"');
+  if (c.messageActionFlag)                parts.push('flagged as ' + c.messageActionFlag);
+  if (c.withinSizeRange)                  parts.push(`size ${c.withinSizeRange.minimumSize || 0}–${c.withinSizeRange.maximumSize || '∞'} KB`);
+  return parts.length ? parts.join(' AND ') : 'all messages';
+}
+
+// ── Toggle / Delete inbox rules ──────────────────────────────────────────
+async function toggleInboxRule(ruleId, enable) {
+  try {
+    await graphPatch(`/me/mailFolders/inbox/messageRules/${ruleId}`, { isEnabled: enable });
+    const rule = _rulesData.inbox.find(r => r.id === ruleId);
+    if (rule) rule.isEnabled = enable;
+    renderInboxRules(_rulesData.inbox);
+    toast(enable ? 'Rule enabled' : 'Rule disabled', 'success');
+  } catch(e) { handleRulesError(e, 'inbox'); }
+}
+
+async function deleteInboxRule(ruleId, name) {
+  showConfirm('Delete rule', `Delete rule "${name}"? This cannot be undone.`, async () => {
+    try {
+      await graphDelete(`/me/mailFolders/inbox/messageRules/${ruleId}`);
+      _rulesData.inbox = _rulesData.inbox.filter(r => r.id !== ruleId);
+      renderInboxRules(_rulesData.inbox);
+      setRulesStatus(`${_rulesData.inbox.length} rules`);
+      toast('Rule deleted', 'success');
+    } catch(e) { handleRulesError(e, 'inbox'); }
+  });
+}
+
+// ── BLOCKED SENDERS ──────────────────────────────────────────────────────
+async function loadBlockedSenders() {
+  const res = await graphGet('/me/inferenceClassification/overrides?$top=250');
+  const all = res.value || [];
+  _rulesData.blocked = all.filter(o => o.classifyAs === 'other');
+  _rulesData.safe    = all.filter(o => o.classifyAs === 'focused');
+  renderBlockedSenders(_rulesData.blocked);
+  setRulesStatus(`${_rulesData.blocked.length} blocked sender${_rulesData.blocked.length !== 1 ? 's' : ''}`);
+}
+
+function renderBlockedSenders(list) {
+  const content = document.getElementById('rules-content');
+  if (!list.length) {
+    content.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🚫</div>
+      <div class="empty-title">No blocked senders</div>
+      <div class="empty-sub">Blocked senders are automatically moved to Junk.<br>Click "+ Block Sender" to add one.</div>
+    </div>`;
+    return;
+  }
+  content.innerHTML = `
+    <div style="margin-bottom:10px;font-size:12px;color:var(--txt-muted)">
+      Emails from these senders are automatically classified as <strong>Junk / Other</strong>.
+    </div>
+    ${list.map(o => `
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 14px;
+           background:var(--neutral-lighter-alt);border:1px solid var(--border-light);
+           border-radius:8px;margin-bottom:6px;border-left:3px solid var(--red)">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--red-light);
+             display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" fill="none" stroke="var(--red)" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+          </svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;color:var(--txt)">${esc(o.senderEmailAddress?.name || o.senderEmailAddress?.address || '—')}</div>
+          <div style="font-size:11px;color:var(--txt-muted)">${esc(o.senderEmailAddress?.address || '')}</div>
+        </div>
+        <button class="btn btn-sm btn-ghost" onclick="unblockSender('${o.id}','${esc(o.senderEmailAddress?.address)}')"
+                style="color:var(--green);border-color:var(--green)">Unblock</button>
+        <button class="icon-btn" onclick="deleteOverride('${o.id}','blocked')" title="Remove"
+                style="color:var(--txt-hint)" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--txt-hint)'">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+        </button>
+      </div>`).join('')}`;
+}
+
+async function unblockSender(overrideId, address) {
+  try {
+    // Change classifyAs to 'focused' (safe) instead of deleting
+    await graphPatch(`/me/inferenceClassification/overrides/${overrideId}`, { classifyAs: 'focused' });
+    toast(`${address} unblocked and moved to Safe Senders`, 'success');
+    await loadBlockedSenders();
+  } catch(e) { handleRulesError(e, 'blocked'); }
+}
+
+async function deleteOverride(overrideId, type) {
+  showConfirm('Remove override', 'Remove this sender override?', async () => {
+    try {
+      await graphDelete(`/me/inferenceClassification/overrides/${overrideId}`);
+      toast('Override removed', 'success');
+      type === 'blocked' ? await loadBlockedSenders() : await loadSafeSenders();
+    } catch(e) { handleRulesError(e, type); }
+  });
+}
+
+// ── SAFE SENDERS ─────────────────────────────────────────────────────────
+async function loadSafeSenders() {
+  if (!_rulesData.safe.length) {
+    const res = await graphGet('/me/inferenceClassification/overrides?$top=250');
+    const all = res.value || [];
+    _rulesData.blocked = all.filter(o => o.classifyAs === 'other');
+    _rulesData.safe    = all.filter(o => o.classifyAs === 'focused');
+  }
+  renderSafeSenders(_rulesData.safe);
+  setRulesStatus(`${_rulesData.safe.length} safe sender${_rulesData.safe.length !== 1 ? 's' : ''}`);
+}
+
+function renderSafeSenders(list) {
+  const content = document.getElementById('rules-content');
+  if (!list.length) {
+    content.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">✅</div>
+      <div class="empty-title">No safe senders</div>
+      <div class="empty-sub">Safe senders always land in Focused inbox.<br>Click "+ Add Safe Sender" to add one.</div>
+    </div>`;
+    return;
+  }
+  content.innerHTML = `
+    <div style="margin-bottom:10px;font-size:12px;color:var(--txt-muted)">
+      Emails from these senders always go to your <strong>Focused Inbox</strong>.
+    </div>
+    ${list.map(o => `
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 14px;
+           background:var(--neutral-lighter-alt);border:1px solid var(--border-light);
+           border-radius:8px;margin-bottom:6px;border-left:3px solid var(--green)">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--green-light);
+             display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" fill="none" stroke="var(--green)" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;color:var(--txt)">${esc(o.senderEmailAddress?.name || o.senderEmailAddress?.address || '—')}</div>
+          <div style="font-size:11px;color:var(--txt-muted)">${esc(o.senderEmailAddress?.address || '')}</div>
+        </div>
+        <button class="btn btn-sm btn-ghost" onclick="blockSafeAsSender('${o.id}','${esc(o.senderEmailAddress?.address)}')"
+                style="color:var(--red);border-color:var(--red)">Block</button>
+        <button class="icon-btn" onclick="deleteOverride('${o.id}','safe')" title="Remove"
+                style="color:var(--txt-hint)" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--txt-hint)'">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+        </button>
+      </div>`).join('')}`;
+}
+
+async function blockSafeAsSender(overrideId, address) {
+  try {
+    await graphPatch(`/me/inferenceClassification/overrides/${overrideId}`, { classifyAs: 'other' });
+    toast(`${address} moved to Blocked Senders`, 'success');
+    _rulesData.safe = [];
+    await loadSafeSenders();
+  } catch(e) { handleRulesError(e, 'safe'); }
+}
+
+// ── TRANSPORT RULES (read-only via Graph — requires admin scope) ──────────
+async function loadTransportRules() {
+  const content = document.getElementById('rules-content');
+  // Transport rules require EXO PowerShell or admin Graph endpoint
+  // Graph v1 /admin/serviceAnnouncement or compliance endpoints
+  // Show what we can: junk mail settings + auto-reply settings
+  try {
+    const [junk, autoReply] = await Promise.all([
+      graphGet('/me/mailboxSettings/automaticRepliesSetting').catch(() => null),
+      graphGet('/me/mailboxSettings/junkEmailFilteringEnabled').catch(() => null),
+    ]);
+
+    const mailboxSettings = await graphGet('/me/mailboxSettings');
+
+    content.innerHTML = `
+      <div style="margin-bottom:16px;padding:12px 14px;background:var(--blue-light);border:1px solid rgba(0,120,212,.2);border-radius:8px;font-size:12px;color:#004e8c">
+        <strong>ℹ Transport &amp; Mail-Flow rules</strong> are managed at the tenant level by your Exchange administrator.
+        The settings below are your personal mailbox policies accessible via your token.
+      </div>
+
+      ${renderMailboxSettingsCards(mailboxSettings)}
+    `;
+    setRulesStatus('Mailbox policy settings loaded');
+  } catch(e) {
+    handleRulesError(e, 'transport');
+  }
+}
+
+function renderMailboxSettingsCards(s) {
+  if (!s) return '<div class="empty-state"><div class="empty-icon">⚙️</div><div class="empty-title">Could not load mailbox settings</div></div>';
+
+  const ar = s.automaticRepliesSetting;
+  const arStatus = ar?.status === 'alwaysEnabled' ? 'Always On'
+                 : ar?.status === 'scheduled'      ? 'Scheduled'
+                 : 'Off';
+  const arColor  = ar?.status !== 'disabled' ? 'var(--green)' : 'var(--txt-hint)';
+
+  const cards = [
+    {
+      icon: '↩️', title: 'Automatic Replies (Out of Office)',
+      status: arStatus, statusColor: arColor,
+      detail: ar?.internalReplyMessage
+        ? `<div style="font-size:11px;color:var(--txt-muted);margin-top:6px;max-height:60px;overflow:hidden">
+             ${esc(ar.internalReplyMessage.replace(/<[^>]+>/g,'').slice(0,200))}
+           </div>` : '',
+      actions: `<button class="btn btn-sm btn-ghost" onclick="toggleAutoReply('${ar?.status}')">
+        ${ar?.status === 'disabled' ? 'Enable' : 'Disable'}
+      </button>`,
+    },
+    {
+      icon: '🌐', title: 'Language & Timezone',
+      status: (s.language?.displayName || s.language?.locale || '—') + ' / ' + (s.timeZone || '—'),
+      statusColor: 'var(--txt-muted)',
+      detail: '', actions: '',
+    },
+    {
+      icon: '📬', title: 'Archive Policy',
+      status: s.archiveFolder ? 'Archive enabled' : 'No archive configured',
+      statusColor: s.archiveFolder ? 'var(--green)' : 'var(--txt-hint)',
+      detail: '', actions: '',
+    },
+    {
+      icon: '🔒', title: 'User Purpose (Account Type)',
+      status: s.userPurpose || '—',
+      statusColor: 'var(--txt-muted)',
+      detail: '', actions: '',
+    },
+    {
+      icon: '📅', title: 'Working Hours',
+      status: s.workingHours
+        ? `${s.workingHours.startTime?.slice(0,5) || '?'} – ${s.workingHours.endTime?.slice(0,5) || '?'} (${(s.workingHours.daysOfWeek || []).join(', ')})`
+        : 'Not configured',
+      statusColor: 'var(--txt-muted)',
+      detail: '', actions: '',
+    },
+  ];
+
+  return cards.map(c => `
+    <div style="background:var(--neutral-lighter-alt);border:1px solid var(--border-light);
+         border-radius:8px;padding:14px 16px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:22px;flex-shrink:0">${c.icon}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:3px">${c.title}</div>
+          <div style="font-size:12px;color:${c.statusColor};font-weight:500">${c.status}</div>
+          ${c.detail}
+        </div>
+        ${c.actions}
+      </div>
+    </div>`).join('');
+}
+
+async function toggleAutoReply(currentStatus) {
+  const newStatus = currentStatus === 'disabled' ? 'alwaysEnabled' : 'disabled';
+  try {
+    await graphPatch('/me/mailboxSettings', {
+      automaticRepliesSetting: { status: newStatus }
+    });
+    toast('Auto-reply ' + (newStatus === 'disabled' ? 'disabled' : 'enabled'), 'success');
+    await loadTransportRules();
+  } catch(e) { handleRulesError(e, 'transport'); }
+}
+
+// ── FOCUSED INBOX ────────────────────────────────────────────────────────
+async function loadFocusedInbox() {
+  const content = document.getElementById('rules-content');
+  try {
+    // Check if focused inbox is enabled via inference classification
+    const overrides = await graphGet('/me/inferenceClassification/overrides?$top=10');
+    const focusEnabled = true; // Graph doesn't expose on/off directly; overrides imply it's on
+
+    content.innerHTML = `
+      <div style="background:var(--neutral-lighter-alt);border:1px solid var(--border-light);
+           border-radius:8px;padding:20px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="font-size:36px">🎯</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--txt);margin-bottom:4px">Focused Inbox</div>
+            <div style="font-size:12px;color:var(--txt-muted);line-height:1.6">
+              Focused Inbox separates important mail from other messages.<br>
+              You can override per-sender using the <strong>Safe Senders</strong> and <strong>Blocked Senders</strong> tabs.
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:11px;color:var(--green);font-weight:600;margin-bottom:8px">● Active</div>
+            <div style="font-size:10px;color:var(--txt-hint)">${(overrides.value || []).length} overrides</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:10px">
+        Current Overrides Summary
+      </div>
+      ${renderOverridesSummary(overrides.value || [])}
+
+      <div style="margin-top:16px;padding:12px 14px;background:var(--acc-lightest);border:1px solid var(--acc-lighter);border-radius:8px;font-size:12px;color:var(--acc-dark)">
+        <strong>Tip:</strong> To move a specific sender to Focused or Other, open their email,
+        right-click → "Always move to Focused" or "Always move to Other" — or use the
+        <strong>Safe Senders</strong> / <strong>Blocked Senders</strong> tabs above.
+      </div>
+    `;
+    setRulesStatus('Focused Inbox settings loaded');
+  } catch(e) { handleRulesError(e, 'focus'); }
+}
+
+function renderOverridesSummary(overrides) {
+  if (!overrides.length) return `<div style="font-size:12px;color:var(--txt-hint);padding:12px 0">No overrides configured yet.</div>`;
+  const focused = overrides.filter(o => o.classifyAs === 'focused');
+  const other   = overrides.filter(o => o.classifyAs === 'other');
+  return `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="background:var(--green-light);border:1px solid rgba(16,124,16,.2);border-radius:8px;padding:12px 14px">
+        <div style="font-size:20px;font-weight:700;color:var(--green)">${focused.length}</div>
+        <div style="font-size:12px;color:var(--green);font-weight:500">Safe / Focused</div>
+        <div style="font-size:11px;color:var(--txt-muted);margin-top:4px">${focused.slice(0,3).map(o=>esc(o.senderEmailAddress?.address||'')).join('<br>')}</div>
+      </div>
+      <div style="background:var(--red-light);border:1px solid rgba(164,38,44,.2);border-radius:8px;padding:12px 14px">
+        <div style="font-size:20px;font-weight:700;color:var(--red)">${other.length}</div>
+        <div style="font-size:12px;color:var(--red);font-weight:500">Blocked / Other</div>
+        <div style="font-size:11px;color:var(--txt-muted);margin-top:4px">${other.slice(0,3).map(o=>esc(o.senderEmailAddress?.address||'')).join('<br>')}</div>
+      </div>
+    </div>`;
+}
+
+// ── NEW / EDIT INBOX RULE MODAL ──────────────────────────────────────────
+function injectRuleModal() {
+  if (document.getElementById('_rule-modal')) return;
+  const m = document.createElement('div');
+  m.id = '_rule-modal';
+  m.className = 'modal-overlay hidden';
+  m.innerHTML = `
+    <div class="modal" style="width:520px;max-width:calc(100vw - 32px);max-height:80vh;overflow-y:auto">
+      <h2 id="_rule-modal-title">New Inbox Rule</h2>
+
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+
+        <div>
+          <label style="font-size:12px;color:var(--txt-muted);display:block;margin-bottom:4px">Rule name *</label>
+          <input id="_rule-name" type="text" placeholder="e.g. Move newsletters to folder"
+                 style="width:100%;padding:8px 10px;border:1px solid var(--border-med);border-radius:6px;font-size:13px;color:var(--txt);background:var(--white);outline:none;box-sizing:border-box"/>
+        </div>
+
+        <details open style="border:1px solid var(--border-light);border-radius:6px;padding:10px 12px">
+          <summary style="font-size:12px;font-weight:600;color:var(--txt-muted);cursor:pointer;user-select:none">CONDITIONS (If…)</summary>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:11px;color:var(--txt-muted);width:140px;flex-shrink:0">Subject contains</label>
+              <input id="_rule-c-subject" type="text" placeholder='e.g. "newsletter", "unsubscribe"'
+                     style="flex:1;padding:6px 8px;border:1px solid var(--border-med);border-radius:5px;font-size:12px;outline:none"/>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:11px;color:var(--txt-muted);width:140px;flex-shrink:0">From address contains</label>
+              <input id="_rule-c-from" type="text" placeholder="e.g. noreply@example.com"
+                     style="flex:1;padding:6px 8px;border:1px solid var(--border-med);border-radius:5px;font-size:12px;outline:none"/>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:11px;color:var(--txt-muted);width:140px;flex-shrink:0">Sender address</label>
+              <input id="_rule-c-fromaddr" type="text" placeholder="exact address"
+                     style="flex:1;padding:6px 8px;border:1px solid var(--border-med);border-radius:5px;font-size:12px;outline:none"/>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:11px;color:var(--txt-muted);width:140px;flex-shrink:0">Body contains</label>
+              <input id="_rule-c-body" type="text" placeholder="e.g. unsubscribe"
+                     style="flex:1;padding:6px 8px;border:1px solid var(--border-med);border-radius:5px;font-size:12px;outline:none"/>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:11px;color:var(--txt-muted);width:140px;flex-shrink:0">Has attachments</label>
+              <select id="_rule-c-att" style="flex:1;padding:6px 8px;border:1px solid var(--border-med);border-radius:5px;font-size:12px;background:var(--white)">
+                <option value="">— any —</option>
+                <option value="true">Yes</option>
+              </select>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:11px;color:var(--txt-muted);width:140px;flex-shrink:0">Importance</label>
+              <select id="_rule-c-importance" style="flex:1;padding:6px 8px;border:1px solid var(--border-med);border-radius:5px;font-size:12px;background:var(--white)">
+                <option value="">— any —</option>
+                <option value="high">High</option>
+                <option value="normal">Normal</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+          </div>
+        </details>
+
+        <details open style="border:1px solid var(--border-light);border-radius:6px;padding:10px 12px">
+          <summary style="font-size:12px;font-weight:600;color:var(--txt-muted);cursor:pointer;user-select:none">ACTIONS (Then…)</summary>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:11px;color:var(--txt-muted);width:140px;flex-shrink:0">Move to folder (ID)</label>
+              <select id="_rule-a-movefolder" style="flex:1;padding:6px 8px;border:1px solid var(--border-med);border-radius:5px;font-size:12px;background:var(--white)">
+                <option value="">— don't move —</option>
+                ${(window.S?.folders || []).map(f => `<option value="${f.id}">${esc(f.name)}</option>`).join('')}
+              </select>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:11px;color:var(--txt-muted);width:140px;flex-shrink:0">Mark as read</label>
+              <select id="_rule-a-markread" style="flex:1;padding:6px 8px;border:1px solid var(--border-med);border-radius:5px;font-size:12px;background:var(--white)">
+                <option value="">— no —</option>
+                <option value="true">Yes</option>
+              </select>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:11px;color:var(--txt-muted);width:140px;flex-shrink:0">Mark importance</label>
+              <select id="_rule-a-importance" style="flex:1;padding:6px 8px;border:1px solid var(--border-med);border-radius:5px;font-size:12px;background:var(--white)">
+                <option value="">— no change —</option>
+                <option value="high">High</option>
+                <option value="normal">Normal</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:11px;color:var(--txt-muted);width:140px;flex-shrink:0">Forward to</label>
+              <input id="_rule-a-forward" type="text" placeholder="email@example.com"
+                     style="flex:1;padding:6px 8px;border:1px solid var(--border-med);border-radius:5px;font-size:12px;outline:none"/>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:11px;color:var(--txt-muted);width:140px;flex-shrink:0">Delete message</label>
+              <select id="_rule-a-delete" style="flex:1;padding:6px 8px;border:1px solid var(--border-med);border-radius:5px;font-size:12px;background:var(--white)">
+                <option value="">— no —</option>
+                <option value="true">Yes (move to trash)</option>
+              </select>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="font-size:11px;color:var(--txt-muted);width:140px;flex-shrink:0">Stop processing rules</label>
+              <select id="_rule-a-stop" style="flex:1;padding:6px 8px;border:1px solid var(--border-med);border-radius:5px;font-size:12px;background:var(--white)">
+                <option value="true">Yes</option>
+                <option value="">No</option>
+              </select>
+            </div>
+          </div>
+        </details>
+
+        <div style="display:flex;gap:8px;align-items:center">
+          <label style="font-size:12px;color:var(--txt-muted);width:80px;flex-shrink:0">Enabled</label>
+          <select id="_rule-enabled" style="padding:6px 8px;border:1px solid var(--border-med);border-radius:5px;font-size:12px;background:var(--white)">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div id="_rule-modal-err" style="display:none;color:var(--red);font-size:12px;margin-bottom:12px;
+           padding:8px 10px;background:var(--red-light);border-radius:5px"></div>
+
+      <div class="modal-row">
+        <button class="btn btn-ghost" onclick="closeRuleModal()">Cancel</button>
+        <button class="btn btn-primary" id="_rule-modal-save" onclick="saveRuleModal()">
+          Create Rule
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(m);
+}
+
+function openNewRuleModal() {
+  _editingRule = null;
+  injectRuleModal();
+  document.getElementById('_rule-modal-title').textContent = 'New Inbox Rule';
+  document.getElementById('_rule-modal-save').textContent  = 'Create Rule';
+  // Clear fields
+  ['_rule-name','_rule-c-subject','_rule-c-from','_rule-c-fromaddr','_rule-c-body',
+   '_rule-a-forward'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['_rule-c-att','_rule-c-importance','_rule-a-movefolder','_rule-a-markread',
+   '_rule-a-importance','_rule-a-delete','_rule-a-stop'].forEach(id => { const el=document.getElementById(id); if(el) el.value=el.id==='_rule-a-stop'?'true':''; });
+  document.getElementById('_rule-enabled').value = 'true';
+  document.getElementById('_rule-modal-err').style.display = 'none';
+  document.getElementById('_rule-modal').classList.remove('hidden');
+}
+
+function openEditRuleModal(index) {
+  const rule = _rulesData.inbox[index];
+  if (!rule) return;
+  _editingRule = rule;
+  injectRuleModal();
+  document.getElementById('_rule-modal-title').textContent = 'Edit Rule';
+  document.getElementById('_rule-modal-save').textContent  = 'Save Changes';
+
+  const get = id => document.getElementById(id);
+  get('_rule-name').value = rule.displayName || '';
+  get('_rule-c-subject').value   = (rule.conditions?.subjectContains || []).join(', ');
+  get('_rule-c-from').value      = (rule.conditions?.senderContains  || []).join(', ');
+  get('_rule-c-fromaddr').value  = (rule.conditions?.fromAddresses   || []).map(r=>r.emailAddress?.address).join(', ');
+  get('_rule-c-body').value      = (rule.conditions?.bodyContains    || []).join(', ');
+  get('_rule-c-att').value       = rule.conditions?.hasAttachments ? 'true' : '';
+  get('_rule-c-importance').value= rule.conditions?.importance || '';
+  get('_rule-a-movefolder').value= rule.actions?.moveToFolder || '';
+  get('_rule-a-markread').value  = rule.actions?.markAsRead   ? 'true' : '';
+  get('_rule-a-importance').value= rule.actions?.markImportance || '';
+  get('_rule-a-forward').value   = (rule.actions?.forwardTo   || []).map(r=>r.emailAddress?.address).join(', ');
+  get('_rule-a-delete').value    = rule.actions?.delete        ? 'true' : '';
+  get('_rule-a-stop').value      = rule.actions?.stopProcessingRules !== false ? 'true' : '';
+  get('_rule-enabled').value     = rule.isEnabled ? 'true' : 'false';
+  document.getElementById('_rule-modal-err').style.display = 'none';
+  document.getElementById('_rule-modal').classList.remove('hidden');
+}
+
+function closeRuleModal() {
+  document.getElementById('_rule-modal').classList.add('hidden');
+}
+
+async function saveRuleModal() {
+  const get = id => (document.getElementById(id)?.value || '').trim();
+  const name = get('_rule-name');
+  if (!name) { showRuleModalErr('Rule name is required'); return; }
+
+  const splitTrim = s => s ? s.split(/[,;]+/).map(x=>x.trim()).filter(Boolean) : [];
+
+  const conditions = {};
+  const cSubject  = splitTrim(get('_rule-c-subject'));
+  const cFrom     = splitTrim(get('_rule-c-from'));
+  const cFromAddr = splitTrim(get('_rule-c-fromaddr'));
+  const cBody     = splitTrim(get('_rule-c-body'));
+  const cAtt      = get('_rule-c-att');
+  const cImp      = get('_rule-c-importance');
+
+  if (cSubject.length)   conditions.subjectContains = cSubject;
+  if (cFrom.length)      conditions.senderContains  = cFrom;
+  if (cFromAddr.length)  conditions.fromAddresses   = cFromAddr.map(a => ({ emailAddress: { address: a } }));
+  if (cBody.length)      conditions.bodyContains     = cBody;
+  if (cAtt === 'true')   conditions.hasAttachments  = true;
+  if (cImp)              conditions.importance       = cImp;
+
+  const actions = {};
+  const aMove    = get('_rule-a-movefolder');
+  const aRead    = get('_rule-a-markread');
+  const aImp     = get('_rule-a-importance');
+  const aFwd     = splitTrim(get('_rule-a-forward'));
+  const aDelete  = get('_rule-a-delete');
+  const aStop    = get('_rule-a-stop');
+
+  if (aMove)           actions.moveToFolder        = aMove;
+  if (aRead === 'true') actions.markAsRead          = true;
+  if (aImp)            actions.markImportance       = aImp;
+  if (aFwd.length)     actions.forwardTo            = aFwd.map(a => ({ emailAddress: { address: a } }));
+  if (aDelete==='true') actions.delete              = true;
+  actions.stopProcessingRules = aStop === 'true';
+
+  if (!Object.keys(conditions).length && !Object.keys(actions).length) {
+    showRuleModalErr('Add at least one condition and one action'); return;
+  }
+
+  const payload = {
+    displayName: name,
+    sequence:    _editingRule ? _editingRule.sequence : (_rulesData.inbox.length + 1),
+    isEnabled:   get('_rule-enabled') !== 'false',
+    conditions,
+    actions,
+  };
+
+  const btn = document.getElementById('_rule-modal-save');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+
+  try {
+    if (_editingRule) {
+      await graphPatch(`/me/mailFolders/inbox/messageRules/${_editingRule.id}`, payload);
+      toast('Rule updated', 'success');
+    } else {
+      await graphPost('/me/mailFolders/inbox/messageRules', payload);
+      toast('Rule created', 'success');
+    }
+    closeRuleModal();
+    await loadInboxRules();
+  } catch(e) {
+    showRuleModalErr(e.message);
+  } finally {
+    btn.textContent = _editingRule ? 'Save Changes' : 'Create Rule';
+    btn.disabled = false;
+  }
+}
+
+function showRuleModalErr(msg) {
+  const el = document.getElementById('_rule-modal-err');
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+// ── BLOCKED / SAFE SENDER MODALS ─────────────────────────────────────────
+function injectBlockedModal() {
+  if (document.getElementById('_sender-modal')) return;
+  const m = document.createElement('div');
+  m.id = '_sender-modal';
+  m.className = 'modal-overlay hidden';
+  m.innerHTML = `
+    <div class="modal" style="width:400px">
+      <h2 id="_sender-modal-title">Block Sender</h2>
+      <p id="_sender-modal-desc" style="font-size:13px;color:var(--txt-sub);margin-bottom:16px;line-height:1.6">
+        Emails from this address will be classified as Junk / Other.
+      </p>
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;color:var(--txt-muted);display:block;margin-bottom:5px">Email address *</label>
+        <input id="_sender-modal-addr" type="email" placeholder="sender@example.com"
+               style="width:100%;padding:8px 10px;border:1px solid var(--border-med);border-radius:6px;
+                      font-size:13px;color:var(--txt);background:var(--white);outline:none;box-sizing:border-box"/>
+        <label style="font-size:12px;color:var(--txt-muted);display:block;margin-top:10px;margin-bottom:5px">Display name (optional)</label>
+        <input id="_sender-modal-name" type="text" placeholder="Sender Name"
+               style="width:100%;padding:8px 10px;border:1px solid var(--border-med);border-radius:6px;
+                      font-size:13px;color:var(--txt);background:var(--white);outline:none;box-sizing:border-box"/>
+      </div>
+      <div id="_sender-modal-err" style="display:none;color:var(--red);font-size:12px;margin-bottom:12px;
+           padding:8px 10px;background:var(--red-light);border-radius:5px"></div>
+      <div class="modal-row">
+        <button class="btn btn-ghost" onclick="document.getElementById('_sender-modal').classList.add('hidden')">Cancel</button>
+        <button class="btn btn-primary" id="_sender-modal-save" onclick="saveSenderModal()">Add</button>
+      </div>
+    </div>`;
+  document.body.appendChild(m);
+}
+
+let _senderModalMode = 'blocked'; // 'blocked' | 'safe'
+
+function openBlockedSenderModal() {
+  _senderModalMode = 'blocked';
+  injectBlockedModal();
+  document.getElementById('_sender-modal-title').textContent = 'Block Sender';
+  document.getElementById('_sender-modal-desc').textContent  = 'Emails from this address will be classified as Junk / Other.';
+  document.getElementById('_sender-modal-save').textContent  = 'Block Sender';
+  document.getElementById('_sender-modal-addr').value = '';
+  document.getElementById('_sender-modal-name').value = '';
+  document.getElementById('_sender-modal-err').style.display = 'none';
+  document.getElementById('_sender-modal').classList.remove('hidden');
+}
+
+function openSafeSenderModal() {
+  _senderModalMode = 'safe';
+  injectBlockedModal();
+  document.getElementById('_sender-modal-title').textContent = 'Add Safe Sender';
+  document.getElementById('_sender-modal-desc').textContent  = 'Emails from this address will always land in Focused Inbox.';
+  document.getElementById('_sender-modal-save').textContent  = 'Add Safe Sender';
+  document.getElementById('_sender-modal-addr').value = '';
+  document.getElementById('_sender-modal-name').value = '';
+  document.getElementById('_sender-modal-err').style.display = 'none';
+  document.getElementById('_sender-modal').classList.remove('hidden');
+}
+
+async function saveSenderModal() {
+  const addr = (document.getElementById('_sender-modal-addr').value || '').trim();
+  const name = (document.getElementById('_sender-modal-name').value || '').trim();
+  const errEl = document.getElementById('_sender-modal-err');
+  const btn   = document.getElementById('_sender-modal-save');
+
+  if (!addr || !addr.includes('@')) {
+    errEl.textContent = 'Please enter a valid email address'; errEl.style.display = 'block'; return;
+  }
+
+  btn.textContent = 'Saving…'; btn.disabled = true;
+  try {
+    await graphPost('/me/inferenceClassification/overrides', {
+      classifyAs: _senderModalMode === 'blocked' ? 'other' : 'focused',
+      senderEmailAddress: { address: addr, name: name || addr.split('@')[0] },
+    });
+    document.getElementById('_sender-modal').classList.add('hidden');
+    toast((_senderModalMode === 'blocked' ? 'Blocked: ' : 'Safe sender added: ') + addr, 'success');
+    _rulesData.blocked = []; _rulesData.safe = [];
+    _senderModalMode === 'blocked' ? await loadBlockedSenders() : await loadSafeSenders();
+  } catch(e) {
+    errEl.textContent = e.message; errEl.style.display = 'block';
+  } finally {
+    btn.textContent = _senderModalMode === 'blocked' ? 'Block Sender' : 'Add Safe Sender';
+    btn.disabled = false;
+  }
+}
+
+// ── Error handler ────────────────────────────────────────────────────────
+function handleRulesError(e, tab) {
+  const content = document.getElementById('rules-content');
+  const isScope = e.message?.startsWith('SCOPE_MISSING') || e.message?.includes('403');
+
+  const scopeNeeded = {
+    inbox:     'MailboxSettings.Read, MailboxSettings.ReadWrite',
+    blocked:   'MailboxSettings.Read, MailboxSettings.ReadWrite',
+    safe:      'MailboxSettings.Read, MailboxSettings.ReadWrite',
+    transport: 'MailboxSettings.Read',
+    focus:     'MailboxSettings.Read',
+  }[tab] || 'MailboxSettings.Read';
+
+  if (isScope) {
+    showRulesPermBanner(scopeNeeded, RULES_TABS.find(t=>t.id===tab)?.label || tab);
+    if (content) content.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon" style="font-size:48px">🔒</div>
+        <div class="empty-title">Permission Required</div>
+        <div class="empty-sub">Your token needs <code style="background:var(--neutral-light);padding:1px 6px;border-radius:3px">${scopeNeeded}</code><br>
+          Re-authenticate via the Admin Portal with the correct scopes.</div>
+        <button class="btn btn-primary" style="margin-top:12px" onclick="openAdminPortal()">Open Admin Portal ↗</button>
+      </div>`;
+  } else {
+    if (content) content.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <div class="empty-title">Error loading ${RULES_TABS.find(t=>t.id===tab)?.label||tab}</div>
+        <div class="empty-sub">${esc(e.message)}</div>
+        <button class="btn btn-ghost" style="margin-top:12px" onclick="rulesRefreshTab()">Try Again</button>
+      </div>`;
+    toast('Rules error: ' + e.message, 'error');
+  }
+  setRulesStatus('Error — ' + e.message.slice(0, 60));
+}
+
+function showRulesPermBanner(scope, feature) {
+  const b = document.getElementById('rules-perm-banner');
+  if (!b) return;
+  document.getElementById('rules-perm-title').textContent = 'Permission required: ' + scope;
+  document.getElementById('rules-perm-body').innerHTML =
+    `<strong>${feature}</strong> requires this scope in your token.<br>
+     Re-authenticate via the <a href="https://admin.swiftcourrier.online/admin" target="_blank" style="color:var(--acc)">Admin Portal</a> to grant access.`;
+  b.style.display = 'flex';
+}
+
+function hideRulesPermBanner() {
+  const b = document.getElementById('rules-perm-banner');
+  if (b) b.style.display = 'none';
+}
+
+function setRulesStatus(text) {
+  const el = document.getElementById('rules-status-text');
+  if (el) el.textContent = text;
+}
+
+// ── Hook into switchView ─────────────────────────────────────────────────
+// Extend the existing switchView to handle 'rules'
+(function patchSwitchViewForRules() {
+  const _orig = window.switchView;
+  window.switchView = function(view) {
+    if (view === 'rules') {
+      // Hide all other main panes
+      ['reading-pane','compose-pane','contacts-pane','attachments-pane',
+       'calendar-pane','groups-pane'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+      document.getElementById('msg-list-panel').style.display = 'none';
+
+      const pane = document.getElementById('rules-pane');
+      if (pane) { pane.style.display = 'flex'; pane.style.flexDirection = 'column'; }
+
+      initRulesPane();
+
+      // Load default tab if not already loaded
+      if (!document.getElementById('rules-content')?.children.length ||
+          document.getElementById('rules-content')?.querySelector('.empty-state')) {
+        loadRulesTab('inbox');
+      }
+
+      // Sync tab indicator after render
+      setTimeout(() => positionRulesTabIndicator(_rulesActiveTab), 60);
+      return;
+    }
+    // For all other views, hide rules pane
+    const pane = document.getElementById('rules-pane');
+    if (pane) pane.style.display = 'none';
+    if (_orig) _orig(view);
+  };
+})();
+
 </script>
 <!-- END PATCH 5 -->
  
