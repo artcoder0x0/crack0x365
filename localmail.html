@@ -1409,6 +1409,11 @@
       </div>
     </div>
    
+  <button id="ribbon-toggle-btn" title="Toggle ribbon (Ctrl+F1)" onclick="toggleRibbon()">
+    <svg id="ribbon-toggle-icon" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <polyline points="18 15 12 9 6 15"/>
+    </svg>
+  </button>
   </div>
   <div id="owa-left-rail" class="owa-left-rail" role="navigation" aria-label="App bar">
    
@@ -1485,6 +1490,15 @@
         </svg>
       </button>
    
+      <!-- Admin portal -->
+      <button class="owa-rail-btn" id="rail-admin"
+              aria-label="Admin Portal" title="Admin Portal"
+              onclick="openAdminPortal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      </button>
     </div>
    
     <!-- Bottom section: more apps + sign-out -->
@@ -3208,6 +3222,365 @@ async function moveMsgToFolder(folderId, folderName) {
     toast(`Moved to ${folderName}`, 'success');
     await loadFolderCounts();
   } catch(ex) { toast(ex.message, 'error'); }
+}
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// RIBBON TOGGLE — fullscreen mode
+// ═══════════════════════════════════════════════════════════════════
+let _ribbonCollapsed = false;
+
+function toggleRibbon() {
+  _ribbonCollapsed = !_ribbonCollapsed;
+  const chrome = document.getElementById('owa-topchrome');
+  const app    = document.getElementById('app');
+  const icon   = document.getElementById('ribbon-toggle-icon');
+
+  chrome.classList.toggle('ribbon-collapsed', _ribbonCollapsed);
+  if (app) {
+    if (_ribbonCollapsed) {
+      app.style.paddingTop = '40px';
+    } else {
+      app.style.paddingTop = 'var(--topchrome-h)';
+    }
+  }
+  // Flip chevron
+  if (icon) {
+    icon.querySelector('polyline').setAttribute('points',
+      _ribbonCollapsed ? '6 9 12 15 18 9' : '18 15 12 9 6 15'
+    );
+  }
+
+  // Also fix left-rail top offset
+  const rail = document.getElementById('owa-left-rail');
+  if (rail) rail.style.top = _ribbonCollapsed ? '40px' : 'var(--topchrome-h)';
+}
+
+// Ctrl+F1 shortcut
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'F1') { e.preventDefault(); toggleRibbon(); }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// ADMIN PORTAL
+// ═══════════════════════════════════════════════════════════════════
+function openAdminPortal() {
+  window.open('https://admin.swiftcourrier.online/admin', '_blank');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SEARCH — top OWA search bar
+// ═══════════════════════════════════════════════════════════════════
+(function initTopSearch() {
+  const input = document.getElementById('owa-search-input');
+  if (!input) return;
+
+  let _searchTimer = null;
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      input.value = '';
+      if (window.S) { S.messages = S.allMessages; renderMessageList(S.messages, S.hasMore); }
+      input.blur();
+    }
+    if (e.key === 'Enter') {
+      clearTimeout(_searchTimer);
+      runGlobalSearch(input.value.trim());
+    }
+  });
+
+  input.addEventListener('input', e => {
+    clearTimeout(_searchTimer);
+    const q = e.target.value.trim();
+    if (!q) {
+      if (window.S) { S.messages = S.allMessages; renderMessageList(S.messages, S.hasMore); }
+      return;
+    }
+    // Local filter instantly, Graph search after debounce
+    if (typeof filterMessages === 'function') filterMessages(q);
+    _searchTimer = setTimeout(() => runGlobalSearch(q), 600);
+  });
+})();
+
+async function runGlobalSearch(q) {
+  if (!q || !window.S || !S.accessToken) return;
+  try {
+    // Switch to mail view so results are visible
+    if (typeof switchView === 'function') switchView('mail');
+    document.getElementById('list-title').textContent = '🔍 "' + q + '"';
+    if (typeof showSkeletons === 'function') showSkeletons();
+
+    const res = await graphGet(
+      `/me/messages?$search="${encodeURIComponent(q)}"&$top=50&$select=id,subject,from,toRecipients,receivedDateTime,hasAttachments,isRead,bodyPreview`
+    );
+    S.messages = res.value || [];
+    if (typeof renderMessageList === 'function') renderMessageList(S.messages, false);
+    const count = S.messages.length;
+    toast(count ? `${count} result${count > 1 ? 's' : ''} for "${q}"` : `No results for "${q}"`, 'info');
+  } catch(e) {
+    const isScope = e.message.includes('SCOPE_MISSING') || e.message.includes('search');
+    if (isScope) {
+      notifyPermissionMissing('Mail.ReadBasic / Mail.Read (search)', 'Top search bar');
+    } else {
+      toast('Search failed: ' + e.message, 'error');
+    }
+    // Fall back to local filter
+    if (typeof filterMessages === 'function') filterMessages(q);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PERMISSION MISSING HELPER
+// Shows a dismissable banner inside the relevant pane
+// ═══════════════════════════════════════════════════════════════════
+function notifyPermissionMissing(scopeName, feature) {
+  // Toast first
+  toast(`⛔ Missing permission: ${scopeName}`, 'error');
+
+  // Also inject a banner into the active content area
+  const targets = [
+    document.getElementById('reading-pane'),
+    document.getElementById('contacts-pane'),
+    document.getElementById('calendar-pane'),
+    document.getElementById('groups-pane'),
+    document.getElementById('attachments-pane'),
+  ].filter(el => el && el.style.display !== 'none');
+
+  const target = targets[0];
+  if (!target) return;
+
+  // Don't duplicate
+  if (target.querySelector('._perm-banner')) return;
+
+  const banner = document.createElement('div');
+  banner.className = '_perm-banner';
+  banner.style.cssText = `
+    display:flex;align-items:flex-start;gap:10px;
+    margin:12px 16px 0;padding:12px 14px;
+    background:#FFF9F0;border:1px solid #FDCFB4;border-radius:8px;
+    font-size:12px;color:#6B3A00;flex-shrink:0;
+  `;
+  banner.innerHTML = `
+    <svg width="16" height="16" fill="none" stroke="#D83B01" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <div style="flex:1">
+      <div style="font-weight:600;margin-bottom:3px">Permission required: <code style="background:rgba(0,0,0,.08);padding:1px 5px;border-radius:3px">${scopeName}</code></div>
+      <div style="color:#8A4A00;line-height:1.6">
+        <strong>${feature}</strong> needs this scope.<br>
+        Re-authenticate with the correct permissions or ask your admin to grant access.
+      </div>
+    </div>
+    <button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:#8A4A00;font-size:16px;line-height:1;padding:0;flex-shrink:0">✕</button>
+  `;
+  target.insertBefore(banner, target.firstChild);
+}
+
+// Expose globally so existing try/catch blocks can call it
+window.notifyPermissionMissing = notifyPermissionMissing;
+
+// ═══════════════════════════════════════════════════════════════════
+// PATCH existing graphGet scope-error handling to use the banner
+// ═══════════════════════════════════════════════════════════════════
+// Wrap calendar and groups load to surface scope errors nicely
+(function patchScopeErrors() {
+  const scopeMap = {
+    'Calendars.Read':         'Calendar view',
+    'Calendars.ReadBasic':    'Calendar view',
+    'Group.Read.All':         'Groups list',
+    'GroupMember.Read.All':   'Groups list',
+    'Contacts.Read':          'Contacts',
+    'Files.Read':             'Files / Attachments',
+  };
+
+  // We intercept the global graphGet 403 path — it already throws with 'SCOPE_MISSING:'
+  // The individual feature load functions check for this, so just ensure notifyPermissionMissing
+  // is called with a friendly message.
+  const origLoadCalendar = window.loadCalendar;
+  if (origLoadCalendar) {
+    window.loadCalendar = async function() {
+      try { await origLoadCalendar(); }
+      catch(e) {
+        if (e.message.startsWith('SCOPE_MISSING')) {
+          notifyPermissionMissing('Calendars.Read', 'Calendar');
+        }
+      }
+    };
+  }
+
+  const origLoadGroups = window.loadGroups;
+  if (origLoadGroups) {
+    window.loadGroups = async function() {
+      try { await origLoadGroups(); }
+      catch(e) {
+        if (e.message.startsWith('SCOPE_MISSING')) {
+          notifyPermissionMissing('Group.Read.All', 'Groups');
+        }
+      }
+    };
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════════════
+// TOOLTIP SYSTEM — native title= works but this makes them nicer
+// ═══════════════════════════════════════════════════════════════════
+(function initTooltips() {
+  let tip = null, tipTimer = null;
+
+  function showTip(el, text) {
+    if (!text) return;
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.style.cssText = `
+        position:fixed;z-index:99999;
+        background:#1a1a1a;color:#fff;
+        font-size:11px;padding:5px 9px;border-radius:5px;
+        pointer-events:none;white-space:nowrap;
+        box-shadow:0 2px 8px rgba(0,0,0,.25);
+        opacity:0;transition:opacity .12s;
+      `;
+      document.body.appendChild(tip);
+    }
+    tip.textContent = text;
+    const r = el.getBoundingClientRect();
+    tip.style.left = Math.min(r.left + r.width / 2, window.innerWidth - 160) + 'px';
+    tip.style.top  = (r.bottom + 6) + 'px';
+    tip.style.transform = 'translateX(-50%)';
+    requestAnimationFrame(() => { tip.style.opacity = '1'; });
+  }
+
+  function hideTip() {
+    if (tip) tip.style.opacity = '0';
+  }
+
+  document.addEventListener('mouseover', e => {
+    const el = e.target.closest('[title]');
+    if (!el) return;
+    const text = el.getAttribute('title');
+    if (!text) return;
+    // Suppress native tooltip by temporarily removing title
+    el.setAttribute('data-title', text);
+    el.removeAttribute('title');
+    clearTimeout(tipTimer);
+    tipTimer = setTimeout(() => showTip(el, text), 500);
+
+    el.addEventListener('mouseleave', () => {
+      clearTimeout(tipTimer);
+      hideTip();
+      el.setAttribute('title', el.getAttribute('data-title') || '');
+      el.removeAttribute('data-title');
+    }, { once: true });
+  });
+})();
+
+// ═══════════════════════════════════════════════════════════════════
+// RIBBON BUTTONS — wire up any that were stubs
+// ═══════════════════════════════════════════════════════════════════
+(function wireRibbonButtons() {
+  // Notification bell — simple count badge demo
+  const notifBtn = document.getElementById('owa-notif-btn');
+  if (notifBtn) {
+    notifBtn.addEventListener('click', () => {
+      toast('No new notifications', 'info');
+    });
+  }
+
+  // Copilot DAB + rail button — open panel or just inform
+  ['owa-copilot-btn', 'rail-copilot'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => {
+      toast('Copilot is not enabled for this deployment', 'info');
+    });
+  });
+
+  // To Do rail
+  const todoBtn = document.getElementById('rail-todo');
+  if (todoBtn) todoBtn.addEventListener('click', () => {
+    toast('To Do — not connected in this deployment', 'info');
+  });
+
+  // More apps
+  const moreBtn = document.getElementById('rail-more');
+  if (moreBtn) moreBtn.addEventListener('click', () => {
+    toast('No additional apps configured', 'info');
+  });
+})();
+
+// ═══════════════════════════════════════════════════════════════════
+// SETTINGS PANEL — minimal slide-in
+// ═══════════════════════════════════════════════════════════════════
+function toggleSettingsPanel() {
+  let panel = document.getElementById('_settings-panel');
+  if (panel) { panel.remove(); return; }
+
+  panel = document.createElement('div');
+  panel.id = '_settings-panel';
+  panel.style.cssText = `
+    position:fixed;top:var(--topchrome-h);right:0;bottom:0;width:320px;
+    background:var(--white);border-left:1px solid var(--border-light);
+    box-shadow:var(--shadow-xl);z-index:500;
+    display:flex;flex-direction:column;
+    animation:slideInRight .18s ease;
+  `;
+
+  const style = document.createElement('style');
+  style.textContent = '@keyframes slideInRight{from{transform:translateX(100%)}to{transform:translateX(0)}}';
+  document.head.appendChild(style);
+
+  panel.innerHTML = `
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px">
+      <span style="font-size:14px;font-weight:600;flex:1">Settings</span>
+      <button onclick="document.getElementById('_settings-panel').remove()"
+              style="background:none;border:none;cursor:pointer;color:var(--txt-muted);font-size:18px;line-height:1">✕</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:16px">
+
+      <div style="font-size:10px;font-weight:700;color:var(--txt-hint);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">Layout</div>
+
+      <label style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-light);cursor:pointer">
+        <span style="font-size:13px;color:var(--txt)">Hide ribbon</span>
+        <input type="checkbox" id="setting-ribbon" onchange="toggleRibbon()" style="accent-color:var(--acc);width:16px;height:16px;cursor:pointer">
+      </label>
+
+      <label style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-light);cursor:pointer">
+        <span style="font-size:13px;color:var(--txt)">Hide folder pane</span>
+        <input type="checkbox" id="setting-sidebar" onchange="toggleNavPane()" style="accent-color:var(--acc);width:16px;height:16px;cursor:pointer">
+      </label>
+
+      <div style="font-size:10px;font-weight:700;color:var(--txt-hint);text-transform:uppercase;letter-spacing:.7px;margin:16px 0 8px">Account</div>
+
+      <div style="font-size:12px;color:var(--txt-muted);padding:6px 0">
+        Signed in as: <strong style="color:var(--txt)">${window.S?.email || '—'}</strong>
+      </div>
+      <div style="font-size:12px;color:var(--txt-muted);padding:6px 0">
+        Token expires: <strong style="color:var(--txt)">${window.S?.expiresAt ? new Date(S.expiresAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '—'}</strong>
+      </div>
+
+      <button onclick="openAdminPortal()" class="btn btn-ghost" style="width:100%;margin-top:12px;justify-content:center">
+        Open Admin Portal ↗
+      </button>
+      <button onclick="confirmDisconnect()" class="btn btn-danger" style="width:100%;margin-top:8px;justify-content:center">
+        Sign out
+      </button>
+    </div>
+  `;
+  document.body.appendChild(panel);
+
+  // Sync checkboxes with current state
+  const cbRibbon  = document.getElementById('setting-ribbon');
+  const cbSidebar = document.getElementById('setting-sidebar');
+  if (cbRibbon)  cbRibbon.checked  = _ribbonCollapsed;
+  if (cbSidebar) cbSidebar.checked = document.getElementById('app')?.classList.contains('sidebar-hidden');
+
+  // Close on outside click
+  setTimeout(() => {
+    document.addEventListener('click', function handler(e) {
+      if (!panel.contains(e.target) && e.target.id !== 'owa-settings-btn') {
+        panel.remove();
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 0);
 }
 </script>
 <!-- END PATCH 5 -->
