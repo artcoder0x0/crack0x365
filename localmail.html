@@ -9,270 +9,397 @@
 <link rel="stylesheet" href="outlook-theme.css">
 <style>
   /* ═══════════════════════════════════════════════════════════════════════════
-     OUTLOOK FLUENT THEME — drop-in replacement for local mail client
-     Matches Microsoft Outlook Web / New Outlook visual language exactly.
-     Font stack, color tokens, component anatomy all sourced from OWA source.
+     OUTLOOK FLUENT THEME v2 — full replacement stylesheet
+     Covers: top chrome, ribbon, left-rail app bar, folder pane,
+     reading pane profile-bg treatment, and all existing components.
      ═══════════════════════════════════════════════════════════════════════════ */
   
   /* ── Reset & font stack ─────────────────────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   
   :root {
-    /* Outlook purple accent (matches --themePrimary from OWA) */
-    --acc:          #9237FA;
-    --acc-dark:     #6D22BD;
-    --acc-darker:   #7D23DE;
-    --acc-alt:      #8B2DF7;
-    --acc-light:    #D7B8FF;
-    --acc-lighter:  #E4D1FF;
-    --acc-lightest: #F0E5FF;
-    --acc-glow:     rgba(146, 55, 250, 0.10);
-    --acc-glow2:    rgba(146, 55, 250, 0.16);
+    /* Outlook purple accent */
+    --acc:           #9237FA;
+    --acc-dark:      #6D22BD;
+    --acc-darker:    #7D23DE;
+    --acc-light:     #D7B8FF;
+    --acc-lighter:   #E4D1FF;
+    --acc-lightest:  #F0E5FF;
+    --acc-glow:      rgba(146,55,250,0.10);
+    --acc-glow2:     rgba(146,55,250,0.16);
   
-    /* Neutrals — exact OWA tokens */
-    --neutral-dark:        #242424;
-    --neutral-primary:     #424242;
-    --neutral-primary-alt: #616161;
-    --neutral-secondary:   #808080;
+    /* Neutrals */
+    --neutral-dark:          #242424;
+    --neutral-primary:       #424242;
+    --neutral-primary-alt:   #616161;
+    --neutral-secondary:     #808080;
     --neutral-secondary-alt: #A6A6A6;
-    --neutral-tertiary:    #D1D1D1;
-    --neutral-tertiary-alt:#E0E0E0;
-    --neutral-quaternary:  #E5E5E5;
-    --neutral-quat-alt:    #EBEBEB;
-    --neutral-light:       #F0F0F0;
-    --neutral-lighter:     #F5F5F5;
-    --neutral-lighter-alt: #FAFAFA;
-    --white:               #FFFFFF;
+    --neutral-tertiary:      #D1D1D1;
+    --neutral-tertiary-alt:  #E0E0E0;
+    --neutral-quaternary:    #E5E5E5;
+    --neutral-quat-alt:      #EBEBEB;
+    --neutral-light:         #F0F0F0;
+    --neutral-lighter:       #F5F5F5;
+    --neutral-lighter-alt:   #FAFAFA;
+    --white:                 #FFFFFF;
   
     /* Semantic */
-    --red:       #A4262C;
-    --red-light: #FDE7E9;
-    --green:     #107C10;
+    --red:        #A4262C;
+    --red-light:  #FDE7E9;
+    --green:      #107C10;
     --green-light:#DFF6DD;
-    --blue:      #0078D4;
-    --blue-light:#DEECF9;
-    --yellow:    #FFB900;
-    --orange:    #D83B01;
+    --blue:       #0078D4;
+    --blue-light: #DEECF9;
+    --yellow:     #FFB900;
+    --orange:     #D83B01;
   
     /* Surface / background */
-    --bg-app:       #F0F0F0;   /* outer chrome — matches OWA headerBackground */
-    --bg-canvas:    #FFFFFF;   /* reading pane / compose */
-    --bg-surface:   #FAFAFA;   /* nav pane, sidebar */
-    --bg-raised:    #FFFFFF;   /* cards */
-    --bg-hover:     rgba(0,0,0,0.04);
-    --bg-selected:  var(--acc-lightest);
-    --bg-selected2: var(--acc-lighter);
-    --bg-pressed:   var(--acc-light);
+    --bg-app:      #F0F0F0;
+    --bg-canvas:   #FFFFFF;
+    --bg-surface:  #FAFAFA;   /* folder pane */
+    --bg-raised:   #FFFFFF;
+    --bg-hover:    rgba(0,0,0,0.04);
+    --bg-selected: var(--acc-lightest);
   
     /* Borders */
     --border:       #E0E0E0;
     --border-light: #EBEBEB;
     --border-med:   #D1D1D1;
-    --border-focus: var(--acc);
   
     /* Text */
-    --txt:       var(--neutral-dark);
-    --txt-sub:   var(--neutral-primary);
-    --txt-muted: var(--neutral-primary-alt);
-    --txt-hint:  var(--neutral-secondary);
+    --txt:          var(--neutral-dark);
+    --txt-sub:      var(--neutral-primary);
+    --txt-muted:    var(--neutral-primary-alt);
+    --txt-hint:     var(--neutral-secondary);
     --txt-disabled: var(--neutral-secondary-alt);
-    --txt-on-acc: #FFFFFF;
+    --txt-on-acc:   #FFFFFF;
   
-    /* Shadows (Fluent elevation) */
-    --shadow-sm:  0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
-    --shadow-md:  0 2px 8px rgba(0,0,0,0.12), 0 0 2px rgba(0,0,0,0.08);
-    --shadow-lg:  0 4px 16px rgba(0,0,0,0.14), 0 2px 4px rgba(0,0,0,0.12);
-    --shadow-xl:  0 8px 32px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.10);
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+    --shadow-md: 0 2px 8px rgba(0,0,0,0.12), 0 0 2px rgba(0,0,0,0.08);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.14), 0 2px 4px rgba(0,0,0,0.12);
+    --shadow-xl: 0 8px 32px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.10);
   
     /* Layout */
-    --sidebar-w:  220px;
-    --list-w:     340px;
-    --radius-sm:  4px;
-    --radius-md:  6px;
-    --radius-lg:  8px;
-    --radius-xl:  12px;
+    --left-rail-w:  48px;
+    --sidebar-w:    220px;
+    --list-w:       340px;
+    --topchrome-h:  88px;   /* title-row(32) + ribbon-tabs(24) + ribbon-panel(32) */
   
-    /* Typography — Segoe UI exactly like Outlook */
-    --font:   'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Tahoma, Helvetica, Arial, sans-serif;
+    /* Radii */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+  
+    /* Typography */
+    --font:      'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Tahoma, Helvetica, Arial, sans-serif;
     --font-semi: 'Segoe UI Semibold', 'Segoe UI', sans-serif;
-    --mono:   'Cascadia Code', 'Consolas', 'Courier New', monospace;
+    --mono:      'Cascadia Code', 'Consolas', 'Courier New', monospace;
   }
   
   html, body {
-    height: 100%;
-    overflow: hidden;
+    height: 100%; overflow: hidden;
     background: var(--bg-app);
-    font-family: var(--font);
-    font-size: 14px;
-    color: var(--txt);
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
+    font-family: var(--font); font-size: 14px; color: var(--txt);
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
   }
   
-  /* ── Refresh status pill ─────────────────────────────────────────────────── */
-  #refresh-pill {
-    position: fixed; top: 8px; left: 50%; transform: translateX(-50%);
-    background: var(--bg-raised); border: 1px solid var(--border-med);
-    border-radius: 20px; padding: 5px 14px; font-size: 11px; font-weight: 400;
-    color: var(--txt-muted); display: flex; align-items: center; gap: 7px;
-    z-index: 9998; opacity: 0; transition: opacity .25s; pointer-events: none;
-    box-shadow: var(--shadow-md); white-space: nowrap;
-  }
-  #refresh-pill.show  { opacity: 1; pointer-events: all; }
-  #refresh-pill.ok    { border-color: var(--green); color: var(--green); }
-  #refresh-pill.busy  { border-color: var(--yellow); color: #835B00; }
-  #refresh-pill.err   { border-color: var(--red);   color: var(--red); }
-  .refresh-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-  .refresh-dot.spin { animation: spin .8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
   
-  /* ── Auth screen ─────────────────────────────────────────────────────────── */
-  #auth-screen {
-    position: fixed; inset: 0; background: var(--bg-app);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 999; flex-direction: column; gap: 24px;
-  }
-  #auth-screen.hidden { display: none; }
+  /* ════════════════════════════════════════════════════════════════════════════
+     TOP CHROME — title row + ribbon tabs + ribbon panel
+     ════════════════════════════════════════════════════════════════════════════ */
   
-  .auth-card {
-    background: var(--bg-canvas); border: 1px solid var(--border);
-    border-radius: var(--radius-xl); padding: 40px 48px;
-    width: 500px; max-width: calc(100vw - 32px);
-    box-shadow: var(--shadow-lg);
-  }
-  .auth-card h1 { font-size: 20px; font-weight: 600; color: var(--txt); margin-bottom: 6px; }
-  .auth-card p  { font-size: 13px; color: var(--txt-muted); margin-bottom: 20px; line-height: 1.6; }
-  
-  .auth-server-status {
-    display: flex; align-items: center; gap: 8px; padding: 9px 12px;
-    background: var(--neutral-lighter); border: 1px solid var(--border-light);
-    border-radius: var(--radius-md); margin-bottom: 16px; font-size: 12px; color: var(--txt-muted);
-  }
-  .auth-server-status.ok  { border-color: rgba(16,124,16,.3); color: var(--green); }
-  .auth-server-status.err { border-color: var(--border-light); }
-  .srv-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--neutral-tertiary-alt); flex-shrink: 0; transition: background .3s; }
-  .srv-dot.ok       { background: var(--green); }
-  .srv-dot.err      { background: var(--red); }
-  .srv-dot.checking { background: var(--yellow); animation: pulse .8s infinite; }
-  
-  /* ── Buttons ─────────────────────────────────────────────────────────────── */
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 12px; border-radius: var(--radius-md);
-    border: 1px solid transparent; cursor: pointer;
-    font-family: var(--font); font-size: 13px; font-weight: 400;
-    transition: background .12s, color .12s, border-color .12s;
-    white-space: nowrap; line-height: 20px;
-  }
-  .btn-primary {
-    background: var(--acc); color: var(--txt-on-acc); border-color: var(--acc);
-  }
-  .btn-primary:hover  { background: var(--acc-dark); border-color: var(--acc-dark); }
-  .btn-primary:active { background: var(--acc-darker); }
-  .btn-ghost {
-    background: transparent; color: var(--txt-sub);
-    border-color: var(--neutral-tertiary);
-  }
-  .btn-ghost:hover  { background: var(--bg-hover); border-color: var(--neutral-secondary-alt); }
-  .btn-ghost:active { background: var(--neutral-quaternary); }
-  .btn-sm  { padding: 4px 10px; font-size: 12px; border-radius: var(--radius-sm); }
-  .btn-danger { background: var(--red); color: #fff; border-color: var(--red); }
-  .btn-danger:hover { filter: brightness(1.08); }
-  .btn:active { transform: translateY(1px); }
-  .btn:disabled { opacity: .5; cursor: default; pointer-events: none; }
-  
-  .icon-btn {
-    width: 32px; height: 32px; border: none; background: transparent;
-    cursor: pointer; border-radius: var(--radius-md); color: var(--txt-muted);
-    display: flex; align-items: center; justify-content: center;
-    transition: background .12s, color .12s;
-  }
-  .icon-btn:hover  { background: var(--neutral-light); color: var(--txt); }
-  .icon-btn:active { background: var(--neutral-quaternary); }
-  
-  /* ── App shell ───────────────────────────────────────────────────────────── */
-  #app { display: flex; height: 100vh; overflow: hidden; }
-  #app.hidden { display: none; }
-  
-  /* ── Sidebar ─────────────────────────────────────────────────────────────── */
-  #sidebar {
-    width: var(--sidebar-w); flex-shrink: 0;
-    background: var(--bg-surface); border-right: 1px solid var(--border-light);
-    display: flex; flex-direction: column; overflow: hidden;
-    transition: width .2s ease, opacity .2s ease;
-  }
-  #sidebar.collapsed {
-    width: 0; overflow: hidden; opacity: 0; pointer-events: none;
+  .owa-topchrome {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: var(--white);
+    border-bottom: 1px solid var(--border-light);
+    z-index: 200;
+    display: flex; flex-direction: column;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   }
   
-  /* Sidebar toggle button — floats over the list panel */
-  #sidebar-toggle-btn {
-    position: absolute; top: 12px; left: 8px; z-index: 100;
+  /* Title row */
+  .owa-title-row {
+    display: flex; align-items: center; height: 40px;
+    padding: 0 8px 0 0;
+    border-bottom: 1px solid var(--border-light);
+  }
+  
+  .owa-title-left {
+    display: flex; align-items: center; gap: 4px;
+    width: calc(var(--left-rail-w) + var(--sidebar-w));
+    flex-shrink: 0; padding-left: 4px;
+  }
+  
+  .owa-branding {
+    display: flex; align-items: center; gap: 7px;
+    padding-left: 2px;
+  }
+  .owa-logo-mark {
+    width: 24px; height: 24px; border-radius: 4px; flex-shrink: 0;
+  }
+  .owa-branding-text {
+    font-size: 15px; font-weight: 600; color: var(--neutral-dark);
+    letter-spacing: -0.2px; white-space: nowrap;
+  }
+  
+  .owa-title-center {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 0 12px;
+  }
+  
+  .owa-search-wrap {
+    position: relative; width: 100%; max-width: 560px;
+  }
+  .owa-search-icon {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--neutral-secondary-alt); pointer-events: none;
+  }
+  .owa-search-input {
+    width: 100%; background: var(--neutral-lighter);
+    border: 1px solid transparent; border-radius: 20px;
+    padding: 6px 14px 6px 32px; color: var(--txt);
+    font-family: var(--font); font-size: 13px; outline: none;
+    transition: border-color .15s, background .15s, box-shadow .15s;
+  }
+  .owa-search-input:focus {
+    background: var(--white); border-color: var(--acc);
+    box-shadow: 0 0 0 2px rgba(146,55,250,0.10);
+  }
+  .owa-search-input::placeholder { color: var(--neutral-secondary-alt); }
+  
+  .owa-title-right {
+    display: flex; align-items: center; gap: 2px; flex-shrink: 0;
+    padding-right: 4px;
+  }
+  
+  .owa-icon-btn {
     width: 32px; height: 32px; border: none; background: transparent;
     cursor: pointer; border-radius: var(--radius-md);
     color: var(--txt-muted); display: flex; align-items: center; justify-content: center;
-    transition: background .12s, color .12s;
+    transition: background .12s, color .12s; flex-shrink: 0;
   }
-  #sidebar-toggle-btn:hover { background: var(--neutral-light); color: var(--txt); }
+  .owa-icon-btn:hover  { background: var(--neutral-light); color: var(--txt); }
+  .owa-icon-btn:active { background: var(--neutral-quaternary); }
   
-  /* Adjust list panel when sidebar collapsed */
-  #app.sidebar-hidden #sidebar { width: 0; overflow: hidden; opacity: 0; pointer-events: none; }
+  .owa-avatar-chip {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: none; cursor: pointer; overflow: hidden; flex-shrink: 0;
+    transition: box-shadow .15s;
+  }
+  .owa-avatar-chip:hover { box-shadow: 0 0 0 2px var(--acc-light); }
+  .owa-avatar-inner {
+    width: 100%; height: 100%; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff;
+    background: var(--acc); /* overridden by JS */
+  }
+  
+  /* Ribbon tabs row */
+  .owa-ribbon-tabs {
+    display: flex; align-items: flex-end; height: 26px;
+    padding: 0 8px; position: relative;
+    border-bottom: 1px solid var(--border-light);
+  }
+  
+  .owa-rtab {
+    position: relative; border: none; background: transparent;
+    cursor: pointer; font-family: var(--font); font-size: 12px;
+    font-weight: 400; color: var(--txt-muted);
+    padding: 4px 11px 5px; border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    transition: color .1s, background .1s; white-space: nowrap;
+    line-height: 1;
+  }
+  .owa-rtab:hover  { background: var(--neutral-lighter); color: var(--txt); }
+  .owa-rtab.active { color: var(--acc); font-weight: 600; }
+  
+  /* Sliding underline indicator */
+  .owa-rtab-indicator {
+    position: absolute; bottom: 0; height: 2px;
+    background: var(--acc); border-radius: 1px 1px 0 0;
+    transition: left .15s ease, width .15s ease;
+    pointer-events: none;
+  }
+  
+  /* Ribbon command panel */
+  .owa-ribbon-panel {
+    display: flex; align-items: center; flex-wrap: nowrap;
+    height: 54px; padding: 0 8px; gap: 0; overflow-x: auto; overflow-y: hidden;
+    background: var(--white);
+  }
+  .owa-ribbon-panel::-webkit-scrollbar { height: 0; }
+  .owa-ribbon-panel.hidden { display: none; }
+  
+  /* Ribbon group */
+  .owa-rgroup {
+    display: flex; flex-direction: column; align-items: center;
+    flex-shrink: 0; padding: 0 4px;
+  }
+  .owa-rgroup-btns {
+    display: flex; align-items: center; gap: 1px;
+    flex: 1;
+  }
+  .owa-rgroup-label {
+    font-size: 10px; color: var(--txt-hint); text-align: center;
+    white-space: nowrap; margin-top: 3px; line-height: 1;
+    letter-spacing: 0.2px;
+  }
+  
+  /* Ribbon command button */
+  .owa-rbtn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px; border: 1px solid transparent; background: transparent;
+    cursor: pointer; font-family: var(--font); font-size: 11px; color: var(--txt-sub);
+    padding: 4px 8px; border-radius: var(--radius-sm); min-width: 44px;
+    transition: background .1s, color .1s, border-color .1s;
+    white-space: nowrap; line-height: 1; height: 38px;
+  }
+  .owa-rbtn:hover  { background: var(--neutral-lighter); color: var(--txt); border-color: var(--border-light); }
+  .owa-rbtn:active { background: var(--neutral-light); }
+  .owa-rbtn svg    { flex-shrink: 0; }
+  
+  /* Primary action button (New) */
+  .owa-rbtn-primary {
+    background: var(--acc); color: #fff; border-color: var(--acc);
+    font-weight: 500;
+  }
+  .owa-rbtn-primary:hover  { background: var(--acc-dark); border-color: var(--acc-dark); color: #fff; }
+  .owa-rbtn-primary:active { background: var(--acc-darker); }
+  
+  /* Ribbon divider */
+  .owa-rdivider {
+    width: 1px; height: 36px; background: var(--border-light); flex-shrink: 0; margin: 0 4px;
+  }
+  
+  /* Copilot DAB */
+  .owa-copilot-dab {
+    display: flex; align-items: center; gap: 6px;
+    border: none; background: transparent; cursor: pointer;
+    font-family: var(--font); font-size: 12px; font-weight: 500;
+    color: var(--txt-sub); padding: 6px 10px; border-radius: var(--radius-md);
+    transition: background .1s, color .1s; flex-shrink: 0;
+  }
+  .owa-copilot-dab:hover { background: var(--neutral-lighter); color: var(--txt); }
+  
+  
+  /* ════════════════════════════════════════════════════════════════════════════
+     LEFT RAIL APP BAR
+     ════════════════════════════════════════════════════════════════════════════ */
+  
+  .owa-left-rail {
+    width: var(--left-rail-w); flex-shrink: 0;
+    background: var(--white);
+    border-right: 1px solid var(--border-light);
+    display: flex; flex-direction: column;
+    position: fixed;
+    top: var(--topchrome-h); bottom: 0; left: 0;
+    z-index: 100;
+    padding: 4px 0;
+    align-items: center;
+  }
+  
+  .owa-rail-top    { display: flex; flex-direction: column; align-items: center; gap: 1px; flex: 1; }
+  .owa-rail-bottom { display: flex; flex-direction: column; align-items: center; gap: 1px; padding-bottom: 4px; }
+  
+  .owa-rail-divider {
+    width: 28px; height: 1px;
+    background: var(--border-light); margin: 4px 0;
+  }
+  
+  .owa-rail-btn {
+    width: 36px; height: 36px; border: none; background: transparent;
+    cursor: pointer; border-radius: var(--radius-md);
+    color: var(--txt-hint);
+    display: flex; align-items: center; justify-content: center;
+    transition: background .12s, color .12s;
+    position: relative;
+  }
+  .owa-rail-btn:hover  { background: var(--neutral-light); color: var(--txt); }
+  .owa-rail-btn:active { background: var(--neutral-quaternary); }
+  
+  /* Active rail button — purple pill indicator on the left edge */
+  .owa-rail-btn.active {
+    color: var(--acc);
+    background: var(--acc-lightest);
+  }
+  .owa-rail-btn.active::before {
+    content: '';
+    position: absolute; left: -4px; top: 6px; bottom: 6px;
+    width: 3px; background: var(--acc); border-radius: 0 2px 2px 0;
+  }
+  
+  .owa-rail-btn-danger:hover { background: var(--red-light); color: var(--red); }
+  
+  
+  /* ════════════════════════════════════════════════════════════════════════════
+     APP SHELL  — adjust for fixed top chrome + left rail
+     ════════════════════════════════════════════════════════════════════════════ */
+  
+  #app {
+    display: flex;
+    height: 100vh; overflow: hidden;
+    padding-top: var(--topchrome-h);
+    padding-left: var(--left-rail-w);
+    transition: padding .2s ease;
+  }
+  #app.hidden { display: none; }
+  
+  /* When sidebar is collapsed */
+  #app.sidebar-hidden #sidebar       { width: 0; overflow: hidden; opacity: 0; pointer-events: none; }
   #app.sidebar-hidden #msg-list-panel { padding-left: 44px; }
   
-  .sidebar-header {
-    padding: 10px 10px 8px;
-    display: flex; align-items: center; gap: 8px;
-    border-bottom: 1px solid var(--border-light);
-    min-height: 52px;
-  }
-  .user-avatar {
-    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
-    background: linear-gradient(135deg, var(--acc), var(--acc-dark));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 600; color: #fff;
-  }
-  .user-info { flex: 1; min-width: 0; }
-  .user-name  { font-size: 12px; font-weight: 600; color: var(--txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .user-email { font-size: 11px; color: var(--txt-hint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   
-  .compose-btn {
-    margin: 8px 10px 6px; padding: 8px 14px;
-    background: var(--acc); color: #fff;
-    border: none; border-radius: var(--radius-lg); cursor: pointer;
-    font-family: var(--font); font-size: 13px; font-weight: 600;
-    display: flex; align-items: center; justify-content: center; gap: 7px;
-    transition: background .12s; letter-spacing: 0.1px;
-    box-shadow: 0 1px 3px rgba(146,55,250,0.3);
-  }
-  .compose-btn:hover  { background: var(--acc-dark); }
-  .compose-btn:active { background: var(--acc-darker); }
-  .compose-btn svg    { flex-shrink: 0; }
+  /* ════════════════════════════════════════════════════════════════════════════
+     FOLDER PANE (sidebar)
+     ════════════════════════════════════════════════════════════════════════════ */
   
-  /* Folder tree */
-  .folder-list-dynamic { flex: 1; overflow-y: auto; padding: 4px 0 8px; }
-  .folder-list-dynamic::-webkit-scrollbar { width: 3px; }
-  .folder-list-dynamic::-webkit-scrollbar-thumb { background: var(--neutral-tertiary); border-radius: 2px; }
-  
-  .folder-section-label {
-    padding: 10px 14px 3px; font-size: 10px; font-weight: 600;
-    color: var(--txt-hint); text-transform: uppercase; letter-spacing: .7px;
+  .owa-folder-pane,
+  #sidebar {
+    width: var(--sidebar-w); flex-shrink: 0;
+    background: #F5F5F5;   /* Outlook exact: slightly off-white surface */
+    border-right: 1px solid var(--border-light);
+    display: flex; flex-direction: column; overflow: hidden;
+    transition: width .2s ease, opacity .2s ease;
   }
   
+  .owa-fp-header {
+    padding: 8px 8px 6px; border-bottom: 1px solid var(--border-light);
+    background: #F5F5F5; flex-shrink: 0;
+  }
+  
+  .owa-fp-account {
+    display: flex; align-items: center; gap: 8px; min-height: 38px;
+  }
+  
+  .owa-fp-tree {
+    flex: 1; overflow-y: auto;
+    padding: 4px 0 8px;
+    background: #F5F5F5;
+  }
+  .owa-fp-tree::-webkit-scrollbar { width: 3px; }
+  .owa-fp-tree::-webkit-scrollbar-thumb { background: var(--neutral-tertiary); border-radius: 2px; }
+  
+  .owa-fp-footer {
+    border-top: 1px solid var(--border-light);
+    background: #F5F5F5;
+    padding-bottom: 2px;
+  }
+  
+  /* Folder items (fi) — inherit surface colour, no white background */
   .fi {
     display: flex; align-items: center; padding: 4px 4px 4px 0;
     cursor: pointer; border-radius: var(--radius-sm);
     margin: 0 4px; transition: background .08s, color .08s;
     color: var(--txt-sub); position: relative; min-height: 28px;
-    user-select: none;
+    user-select: none; background: transparent;
   }
-  .fi:hover { background: var(--neutral-light); color: var(--txt); }
+  .fi:hover  { background: rgba(0,0,0,0.05); color: var(--txt); }
   .fi.active {
-    background: var(--acc-glow2); color: var(--acc);
-    font-weight: 500;
+    background: var(--acc-glow2); color: var(--acc); font-weight: 500;
   }
   .fi.active .fi-icon { color: var(--acc); }
   .fi.active .fi-name { font-weight: 600; }
-  
   .fi-indent { flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end; }
   .fi-chevron {
     width: 20px; height: 20px; flex-shrink: 0;
@@ -284,8 +411,6 @@
   .fi-chevron.leaf  { visibility: hidden; }
   .fi-icon  { width: 16px; height: 16px; flex-shrink: 0; color: var(--txt-hint); margin-right: 8px; }
   .fi-name  { flex: 1; font-size: 13px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .fi.active .fi-icon { color: var(--acc); }
-  
   .badge {
     background: var(--acc); color: #fff; border-radius: 10px;
     padding: 1px 6px; font-size: 10px; font-weight: 600;
@@ -296,43 +421,55 @@
   .fi-children { overflow: hidden; transition: max-height .2s ease; }
   .fi-children.collapsed { max-height: 0 !important; }
   
+  /* Compose button */
+  .compose-btn {
+    margin: 6px 8px; padding: 7px 14px;
+    background: var(--acc); color: #fff;
+    border: none; border-radius: var(--radius-lg); cursor: pointer;
+    font-family: var(--font); font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    transition: background .12s; letter-spacing: 0.1px;
+    box-shadow: 0 1px 3px rgba(146,55,250,0.3);
+    flex-shrink: 0;
+  }
+  .compose-btn:hover  { background: var(--acc-dark); }
+  .compose-btn:active { background: var(--acc-darker); }
+  
+  /* User avatar inside folder pane */
+  .user-avatar {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--acc), var(--acc-dark));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: #fff;
+  }
+  .user-info  { flex: 1; min-width: 0; }
+  .user-name  { font-size: 12px; font-weight: 600; color: var(--txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-email { font-size: 11px; color: var(--txt-hint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  
   .sync-bar {
-    padding: 4px 12px; font-size: 11px; color: var(--txt-hint);
-    display: flex; align-items: center; gap: 6px; min-height: 22px;
-    border-top: 1px solid var(--border-light);
+    padding: 3px 12px; font-size: 11px; color: var(--txt-hint);
+    display: flex; align-items: center; gap: 6px; min-height: 20px;
   }
   .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
   .sync-dot.syncing { background: var(--yellow); animation: pulse .8s infinite; }
   .sync-dot.offline { background: var(--red); }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-  
   .cache-bar {
-    padding: 2px 12px 4px; font-size: 10px; color: var(--txt-hint);
+    padding: 2px 12px; font-size: 10px; color: var(--txt-hint);
     display: flex; align-items: center; gap: 4px;
   }
-  
-  .sidebar-footer {
-    padding: 6px 8px; border-top: 1px solid var(--border-light);
-    display: flex; flex-direction: column; gap: 1px;
-  }
-  .nav-tab {
-    display: flex; align-items: center; gap: 8px; padding: 7px 10px;
-    border-radius: var(--radius-md); cursor: pointer; color: var(--txt-sub);
-    transition: background .1s, color .1s; font-size: 13px;
-  }
-  .nav-tab:hover  { background: var(--neutral-light); color: var(--txt); }
-  .nav-tab.active { background: var(--acc-glow2); color: var(--acc); font-weight: 500; }
-  .nav-tab svg    { flex-shrink: 0; }
-  .nav-label      { font-size: 13px; }
-  
   #server-badge {
     display: flex; align-items: center; gap: 6px;
-    padding: 5px 12px; font-size: 10px; color: var(--txt-hint);
-    border-top: 1px solid var(--border-light);
+    padding: 2px 12px; font-size: 10px; color: var(--txt-hint);
   }
   #admin-user-label {
-    padding: 2px 12px; font-size: 10px; color: var(--acc);
+    padding: 1px 12px; font-size: 10px; color: var(--acc);
     font-family: var(--mono); opacity: .7;
+  }
+  
+  /* Folder section label */
+  .folder-section-label {
+    padding: 10px 14px 3px; font-size: 10px; font-weight: 600;
+    color: var(--txt-hint); text-transform: uppercase; letter-spacing: .7px;
   }
   
   /* Offline banner */
@@ -340,21 +477,26 @@
     display: none; background: #FFF9F0;
     border-bottom: 1px solid #FDCFB4;
     padding: 6px 12px; font-size: 12px; color: #8A3707;
-    align-items: center; gap: 8px;
+    align-items: center; gap: 8px; flex-shrink: 0;
   }
   .offline-banner.show { display: flex; }
   
-  /* ── Message list panel ──────────────────────────────────────────────────── */
+  
+  /* ════════════════════════════════════════════════════════════════════════════
+     MESSAGE LIST PANEL
+     ════════════════════════════════════════════════════════════════════════════ */
+  
   #msg-list-panel {
     width: var(--list-w); flex-shrink: 0;
     background: var(--bg-surface); border-right: 1px solid var(--border-light);
     display: flex; flex-direction: column; overflow: hidden;
     position: relative;
   }
+  
   .list-header {
-    padding: 12px 12px 8px 46px; /* left pad accounts for toggle btn */
+    padding: 10px 12px 8px 44px;
     border-bottom: 1px solid var(--border-light);
-    display: flex; align-items: center; gap: 6px; min-height: 48px;
+    display: flex; align-items: center; gap: 6px; min-height: 44px;
     background: var(--bg-surface);
   }
   .list-title {
@@ -362,7 +504,7 @@
     font-family: var(--font-semi);
   }
   .search-wrap {
-    padding: 7px 10px; border-bottom: 1px solid var(--border-light);
+    padding: 6px 10px; border-bottom: 1px solid var(--border-light);
     background: var(--bg-surface);
   }
   .search-input {
@@ -373,10 +515,7 @@
     background-repeat: no-repeat; background-position: 11px center;
     transition: border-color .15s, box-shadow .15s;
   }
-  .search-input:focus {
-    border-color: var(--acc);
-    box-shadow: 0 0 0 2px rgba(146,55,250,0.12);
-  }
+  .search-input:focus { border-color: var(--acc); box-shadow: 0 0 0 2px rgba(146,55,250,0.12); }
   .search-input::placeholder { color: var(--neutral-secondary-alt); }
   
   .msg-list { flex: 1; overflow-y: auto; }
@@ -388,33 +527,23 @@
     border-bottom: 1px solid var(--border-light);
     transition: background .1s; position: relative;
   }
-  .msg-item:hover { background: var(--neutral-lighter-alt); }
-  .msg-item.active {
-    background: var(--acc-lightest);
-    border-left: 2px solid var(--acc);
-  }
-  .msg-item.unread .msg-sender { font-weight: 700; color: var(--txt); }
+  .msg-item:hover  { background: var(--neutral-lighter-alt); }
+  .msg-item.active { background: var(--acc-lightest); border-left: 2px solid var(--acc); }
+  .msg-item.unread .msg-sender  { font-weight: 700; color: var(--txt); }
   .msg-item.unread .msg-subject { font-weight: 600; color: var(--txt); }
   .msg-item.unread::after {
-    content: ''; position: absolute; left: 5px; top: 50%;
-    transform: translateY(-50%); width: 5px; height: 5px;
-    background: var(--acc); border-radius: 50%;
+    content: ''; position: absolute; left: 5px; top: 50%; transform: translateY(-50%);
+    width: 5px; height: 5px; background: var(--acc); border-radius: 50%;
   }
-  
-  .msg-row1 { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
-  .msg-avatar {
-    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 600; color: #fff;
-  }
-  .msg-sender { flex: 1; font-size: 13px; font-weight: 400; color: var(--txt-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .msg-time   { font-size: 11px; color: var(--txt-hint); flex-shrink: 0; }
+  .msg-row1    { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+  .msg-avatar  { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; }
+  .msg-sender  { flex: 1; font-size: 13px; font-weight: 400; color: var(--txt-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .msg-time    { font-size: 11px; color: var(--txt-hint); flex-shrink: 0; }
   .msg-subject { font-size: 13px; color: var(--txt-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; padding-left: 36px; }
   .msg-preview { font-size: 12px; color: var(--txt-hint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 36px; }
-  .msg-tags { padding-left: 36px; margin-top: 4px; display: flex; gap: 4px; }
-  .msg-tag  { font-size: 10px; padding: 1px 5px; border-radius: 3px; font-weight: 400; }
-  .tag-att  { background: var(--acc-lightest); color: var(--acc-dark); }
-  .tag-flagged { background: #FFF4CE; color: #835B00; }
+  .msg-tags    { padding-left: 36px; margin-top: 4px; display: flex; gap: 4px; }
+  .msg-tag     { font-size: 10px; padding: 1px 5px; border-radius: 3px; font-weight: 400; }
+  .tag-att     { background: var(--acc-lightest); color: var(--acc-dark); }
   
   .load-more-btn {
     width: 100%; padding: 10px; border: none;
@@ -433,7 +562,6 @@
   .empty-icon  { font-size: 40px; opacity: .35; }
   .empty-title { font-size: 14px; font-weight: 600; color: var(--txt-sub); }
   .empty-sub   { font-size: 12px; color: var(--txt-hint); line-height: 1.6; }
-  
   .skeleton {
     background: linear-gradient(90deg, var(--neutral-lighter) 25%, var(--neutral-light) 50%, var(--neutral-lighter) 75%);
     background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: var(--radius-sm);
@@ -441,50 +569,98 @@
   @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
   .sk-row { height: 64px; margin-bottom: 1px; }
   
-  /* ── Reading pane ───────────────────────────────────────────────────────── */
+  
+  /* ════════════════════════════════════════════════════════════════════════════
+     READING PANE — with profile-picture background treatment
+     ════════════════════════════════════════════════════════════════════════════ */
+  
+  .owa-reading-pane,
   #reading-pane {
     flex: 1; background: var(--bg-canvas);
     display: flex; flex-direction: column; overflow: hidden;
   }
   
-  .reading-toolbar {
-    padding: 8px 16px; border-bottom: 1px solid var(--border-light);
-    display: flex; align-items: center; gap: 4px; min-height: 44px;
-    background: var(--bg-canvas);
+  /* "No message selected" state */
+  .owa-no-msg {
+    flex: 1; position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
   }
   
-  /* Outlook-style ribbon buttons in toolbar */
+  /* Giant blurred avatar letterform fills the background */
+  .owa-no-msg-bg {
+    position: absolute; inset: 0;
+    /* The profile letter and color are set via JS:
+       el.style.setProperty('--profile-color', '#0078d4')
+       el.style.setProperty('--profile-letter', '"E"')  */
+    --profile-color:  #9237FA;
+    --profile-letter: "?";
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  /* Giant letter in the background */
+  .owa-no-msg-bg::before {
+    content: var(--profile-letter);
+    font-family: var(--font-semi);
+    font-size: 55vw; font-weight: 700;
+    color: var(--profile-color);
+    opacity: 0.045;
+    line-height: 1;
+    user-select: none; pointer-events: none;
+    letter-spacing: -0.05em;
+  }
+  /* Subtle radial fade over it */
+  .owa-no-msg-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(255,255,255,0) 30%, rgba(255,255,255,0.65) 100%);
+    pointer-events: none;
+  }
+  
+  /* Centred icon + label on top */
+  .owa-no-msg-body {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    color: var(--txt-hint);
+  }
+  .owa-no-msg-text {
+    font-size: 13px; color: var(--txt-hint);
+  }
+  
+  /* Reading toolbar */
+  .reading-toolbar {
+    padding: 6px 16px; border-bottom: 1px solid var(--border-light);
+    display: flex; align-items: center; gap: 4px; min-height: 40px;
+    background: var(--bg-canvas); flex-shrink: 0;
+  }
   .reading-toolbar .btn {
     background: transparent; border: 1px solid transparent;
-    color: var(--txt-sub); padding: 5px 10px; font-size: 13px;
+    color: var(--txt-sub); padding: 5px 10px; font-size: 12px;
   }
-  .reading-toolbar .btn:hover {
-    background: var(--neutral-light); border-color: var(--border-light); color: var(--txt);
-  }
+  .reading-toolbar .btn:hover  { background: var(--neutral-light); border-color: var(--border-light); color: var(--txt); }
   .reading-toolbar .btn:active { background: var(--neutral-quaternary); }
   
+  /* Scrollable body */
   .reading-body { flex: 1; overflow-y: auto; }
-  .reading-body::-webkit-scrollbar { width: 6px; }
+  .reading-body::-webkit-scrollbar       { width: 6px; }
   .reading-body::-webkit-scrollbar-thumb { background: var(--neutral-tertiary-alt); border-radius: 3px; }
   
   /* Email header */
   .email-header {
     padding: 20px 28px 16px; border-bottom: 1px solid var(--border-light);
-    background: var(--bg-canvas);
   }
   .email-subject {
     font-size: 20px; font-weight: 600; color: var(--txt);
     letter-spacing: -0.2px; margin-bottom: 14px; line-height: 1.3;
   }
-  .email-meta         { display: flex; gap: 12px; align-items: flex-start; }
-  .email-avatar-lg    { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: #fff; }
-  .email-meta-text    { flex: 1; }
-  .email-from         { font-size: 14px; font-weight: 600; color: var(--txt); margin-bottom: 2px; }
-  .email-from-addr    { font-size: 12px; color: var(--txt-muted); }
-  .email-to-line      { font-size: 12px; color: var(--txt-muted); margin-top: 2px; }
-  .email-date         { font-size: 12px; color: var(--txt-hint); margin-top: 4px; }
+  .email-meta       { display: flex; gap: 12px; align-items: flex-start; }
+  .email-avatar-lg  { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: #fff; }
+  .email-meta-text  { flex: 1; }
+  .email-from       { font-size: 14px; font-weight: 600; color: var(--txt); margin-bottom: 2px; }
+  .email-from-addr  { font-size: 12px; color: var(--txt-muted); }
+  .email-to-line    { font-size: 12px; color: var(--txt-muted); margin-top: 2px; }
+  .email-date       { font-size: 12px; color: var(--txt-hint); margin-top: 4px; }
   
-  /* Attachments row */
+  /* Attachments */
   .email-attachments {
     padding: 10px 28px; border-bottom: 1px solid var(--border-light);
     display: flex; gap: 8px; flex-wrap: wrap;
@@ -500,71 +676,44 @@
   .att-name  { font-size: 12px; color: var(--txt); font-weight: 500; }
   .att-size  { font-size: 11px; color: var(--txt-hint); }
   
-  /* Info bars (flagged, etc.) */
-  .info-bar {
-    padding: 7px 28px; background: #FFF9F0;
-    border-bottom: 1px solid #FDCFB4;
-    display: flex; align-items: center; gap: 8px; font-size: 12px; color: #8A3707;
-  }
-  .info-bar.flagged { background: #FFFDD9; border-color: #E0D000; color: #635D00; }
-  
-  /* Email content */
+  /* Email body */
   .email-content {
     padding: 20px 28px; color: var(--txt); line-height: 1.7; font-size: 14px;
   }
-  .email-content a { color: var(--blue); text-decoration: none; }
-  .email-content a:hover { text-decoration: underline; }
-  .email-content img { max-width: 100%; }
+  .email-content a        { color: var(--blue); text-decoration: none; }
+  .email-content a:hover  { text-decoration: underline; }
+  .email-content img      { max-width: 100%; }
   .email-content blockquote {
     border-left: 3px solid var(--border-med); margin: 12px 0;
     padding: 8px 16px; color: var(--txt-muted);
   }
-  .email-content table { border-collapse: collapse; max-width: 100%; }
+  .email-content table    { border-collapse: collapse; max-width: 100%; }
   .email-content th, .email-content td {
     border: 1px solid var(--border-light); padding: 6px 10px;
     font-size: 13px; text-align: left;
   }
   
-  #no-msg-selected {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 12px; color: var(--txt-hint);
-  }
-  #no-msg-selected svg { opacity: .2; color: var(--neutral-tertiary); }
-  #no-msg-selected p   { font-size: 13px; color: var(--txt-hint); }
   
-  /* ── Quick action bar below email ─────────────────────────────────────────── */
-  .th6py {
-    padding: 10px 28px; border-top: 1px solid var(--border-light);
-    display: flex; gap: 8px; background: var(--neutral-lighter-alt);
-  }
+  /* ════════════════════════════════════════════════════════════════════════════
+     COMPOSE PANE
+     ════════════════════════════════════════════════════════════════════════════ */
   
-  /* ── Compose ─────────────────────────────────────────────────────────────── */
   #compose-pane { flex: 1; background: var(--bg-canvas); display: flex; flex-direction: column; overflow: hidden; }
-  
   .compose-header {
-    padding: 14px 20px 10px; border-bottom: 1px solid var(--border-light);
-    display: flex; align-items: center; gap: 12px; min-height: 48px;
+    padding: 12px 20px 10px; border-bottom: 1px solid var(--border-light);
+    display: flex; align-items: center; gap: 12px; min-height: 44px;
   }
-  .compose-title { font-size: 15px; font-weight: 600; color: var(--txt); flex: 1; }
-  
+  .compose-title { font-size: 14px; font-weight: 600; color: var(--txt); flex: 1; }
   .compose-fields { padding: 0 20px; }
   .compose-field {
     display: flex; align-items: center;
-    border-bottom: 1px solid var(--border-light); padding: 9px 0;
+    border-bottom: 1px solid var(--border-light); padding: 8px 0;
   }
-  .field-label {
-    font-size: 12px; color: var(--txt-muted); width: 50px;
-    flex-shrink: 0; font-weight: 400;
-  }
-  .field-input {
-    flex: 1; background: transparent; border: none; outline: none;
-    color: var(--txt); font-family: var(--font); font-size: 14px;
-  }
+  .field-label  { font-size: 12px; color: var(--txt-muted); width: 50px; flex-shrink: 0; }
+  .field-input  { flex: 1; background: transparent; border: none; outline: none; color: var(--txt); font-family: var(--font); font-size: 14px; }
   .field-input::placeholder { color: var(--neutral-secondary-alt); }
-  
   .compose-toolbar {
-    padding: 6px 20px; border-bottom: 1px solid var(--border-light);
-    display: flex; gap: 1px;
+    padding: 5px 20px; border-bottom: 1px solid var(--border-light); display: flex; gap: 1px;
   }
   .fmt-btn {
     width: 28px; height: 28px; border: none; background: transparent;
@@ -573,29 +722,37 @@
     transition: background .1s, color .1s; font-size: 13px; font-weight: 600;
   }
   .fmt-btn:hover { background: var(--neutral-light); color: var(--txt); }
-  
   .compose-editor {
     flex: 1; padding: 14px 20px; overflow-y: auto; outline: none;
     font-family: var(--font); font-size: 14px; color: var(--txt); line-height: 1.7;
   }
   .compose-editor:empty::before { content: attr(data-placeholder); color: var(--neutral-secondary-alt); pointer-events: none; }
-  
   .compose-footer {
     padding: 10px 20px; border-top: 1px solid var(--border-light);
     display: flex; gap: 8px; align-items: center;
     background: var(--neutral-lighter-alt);
   }
-  .send-status    { font-size: 12px; color: var(--txt-muted); margin-left: 8px; }
+  .send-status     { font-size: 12px; color: var(--txt-muted); margin-left: 8px; }
   .send-status.ok  { color: var(--green); }
   .send-status.err { color: var(--red); }
   
-  /* ── Contacts ─────────────────────────────────────────────────────────────── */
-  #contacts-pane { flex: 1; background: var(--bg-canvas); display: flex; flex-direction: column; overflow: hidden; }
-  .contacts-header {
-    padding: 14px 20px 10px; border-bottom: 1px solid var(--border-light);
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 52px;
+  
+  /* ════════════════════════════════════════════════════════════════════════════
+     CONTACTS / ATTACHMENTS / CALENDAR / GROUPS  (unchanged from v1)
+     ════════════════════════════════════════════════════════════════════════════ */
+  
+  #contacts-pane    { flex: 1; background: var(--bg-canvas); display: flex; flex-direction: column; overflow: hidden; }
+  #attachments-pane { flex: 1; background: var(--bg-canvas); display: flex; flex-direction: column; overflow: hidden; }
+  #calendar-pane    { flex: 1; background: var(--bg-canvas); display: flex; flex-direction: column; overflow: hidden; }
+  #groups-pane      { flex: 1; background: var(--bg-canvas); display: flex; flex-direction: column; overflow: hidden; }
+  #rules-pane       { flex: 1; background: var(--bg-canvas); display: flex; flex-direction: column; overflow: hidden; }
+  
+  .contacts-header, .att-extract-header, .rules-header {
+    padding: 12px 20px 10px; border-bottom: 1px solid var(--border-light);
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 48px;
   }
-  .contacts-title { font-size: 15px; font-weight: 600; flex: 1; color: var(--txt); }
+  .contacts-title, .att-extract-title, .rules-title { font-size: 15px; font-weight: 600; flex: 1; color: var(--txt); }
+  
   .contacts-grid {
     flex: 1; overflow-y: auto; padding: 14px 20px;
     display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px;
@@ -606,8 +763,7 @@
     transition: background .1s, border-color .1s, box-shadow .15s;
   }
   .contact-card:hover {
-    background: var(--white); border-color: var(--border-med);
-    box-shadow: var(--shadow-sm);
+    background: var(--white); border-color: var(--border-med); box-shadow: var(--shadow-sm);
   }
   .contact-avatar {
     width: 40px; height: 40px; border-radius: 50%;
@@ -618,135 +774,112 @@
   .contact-email  { font-size: 11px; color: var(--txt-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .contact-source { font-size: 10px; color: var(--txt-hint); margin-top: 4px; }
   
-  /* ── Calendar ─────────────────────────────────────────────────────────────── */
-  #calendar-pane { flex: 1; background: var(--bg-canvas); display: flex; flex-direction: column; overflow: hidden; }
-  .cal-header {
-    padding: 12px 20px 10px; border-bottom: 1px solid var(--border-light);
-    display: flex; align-items: center; gap: 10px; flex-shrink: 0; min-height: 52px;
-  }
+  /* Calendar */
+  .cal-header { padding: 12px 20px 10px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 10px; flex-shrink: 0; min-height: 48px; }
   .cal-title  { font-size: 15px; font-weight: 600; flex: 1; color: var(--txt); }
   .cal-nav    { display: flex; align-items: center; gap: 6px; }
   .cal-month  { font-size: 13px; font-weight: 500; min-width: 140px; text-align: center; color: var(--txt); }
   .cal-grid-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 4px; }
-  .cal-day-hdr {
-    font-size: 10px; font-weight: 600; color: var(--txt-hint);
-    text-align: center; padding: 4px 0; text-transform: uppercase; letter-spacing: .5px;
+  .cal-day-hdr { font-size: 10px; font-weight: 600; color: var(--txt-hint); text-align: center; padding: 4px 0; text-transform: uppercase; letter-spacing: .5px; }
+  .cal-grid    { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-cell {
+    min-height: 52px; background: var(--neutral-lighter-alt); border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm); padding: 4px 5px; cursor: pointer; transition: background .1s;
   }
-  .cal-grid  { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-  .cal-cell  {
-    min-height: 52px; background: var(--neutral-lighter-alt);
-    border: 1px solid var(--border-light); border-radius: var(--radius-sm);
-    padding: 4px 5px; cursor: pointer; transition: background .1s;
-  }
-  .cal-cell:hover    { background: var(--neutral-lighter); }
-  .cal-cell.empty    { background: transparent; border-color: transparent; cursor: default; }
-  .cal-cell.today    { border-color: var(--acc); background: var(--acc-lightest); }
-  .cal-day-num       { font-size: 11px; font-weight: 500; color: var(--txt-muted); margin-bottom: 3px; }
+  .cal-cell:hover  { background: var(--neutral-lighter); }
+  .cal-cell.empty  { background: transparent; border-color: transparent; cursor: default; }
+  .cal-cell.today  { border-color: var(--acc); background: var(--acc-lightest); }
+  .cal-day-num     { font-size: 11px; font-weight: 500; color: var(--txt-muted); margin-bottom: 3px; }
   .today-num {
     background: var(--acc); color: #fff; border-radius: 50%;
-    width: 18px; height: 18px; display: flex; align-items: center;
-    justify-content: center; font-size: 10px; font-weight: 700;
+    width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
   }
   .cal-dots { display: flex; gap: 2px; flex-wrap: wrap; }
   .cal-dot  { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-  
   .cal-event-row {
     display: flex; gap: 8px; align-items: flex-start;
     background: var(--neutral-lighter-alt); border: 1px solid var(--border-light);
     border-radius: var(--radius-md); padding: 10px 12px; transition: background .1s;
   }
-  .cal-event-row:hover { background: var(--neutral-lighter); }
-  .cal-event-bar { width: 3px; border-radius: 2px; min-height: 40px; flex-shrink: 0; }
-  .cal-event-title { font-size: 13px; font-weight: 600; color: var(--txt); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cal-event-time  { font-size: 11px; color: var(--txt-muted); margin-bottom: 2px; }
-  .cal-event-loc   { font-size: 11px; color: var(--txt-hint); }
+  .cal-event-row:hover  { background: var(--neutral-lighter); }
+  .cal-event-bar        { width: 3px; border-radius: 2px; min-height: 40px; flex-shrink: 0; }
+  .cal-event-title      { font-size: 13px; font-weight: 600; color: var(--txt); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cal-event-time       { font-size: 11px; color: var(--txt-muted); margin-bottom: 2px; }
+  .cal-event-loc        { font-size: 11px; color: var(--txt-hint); }
   
-  /* ── Attachments extractor ────────────────────────────────────────────────── */
-  #attachments-pane { flex: 1; background: var(--bg-canvas); display: flex; flex-direction: column; overflow: hidden; }
-  .att-extract-header {
-    padding: 14px 20px 10px; border-bottom: 1px solid var(--border-light);
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 52px;
-  }
-  .att-extract-title { font-size: 15px; font-weight: 600; flex: 1; color: var(--txt); }
-  .att-extract-controls {
-    padding: 10px 20px; border-bottom: 1px solid var(--border-light);
-    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
-    background: var(--neutral-lighter-alt);
-  }
-  .att-extract-body { flex: 1; overflow-y: auto; padding: 14px 20px; }
-  .att-msg-card {
-    background: var(--neutral-lighter-alt); border: 1px solid var(--border-light);
-    border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 8px;
-  }
-  .att-msg-subject { font-size: 13px; font-weight: 600; color: var(--txt); margin-bottom: 3px; }
-  .att-msg-from    { font-size: 11px; color: var(--txt-muted); margin-bottom: 8px; }
-  .att-msg-files   { display: flex; gap: 6px; flex-wrap: wrap; }
-  .att-file-chip {
-    display: flex; align-items: center; gap: 6px;
-    background: var(--white); border: 1px solid var(--border-light);
-    border-radius: var(--radius-md); padding: 5px 10px; cursor: pointer; transition: background .1s;
-  }
-  .att-file-chip:hover        { background: var(--neutral-lighter); }
-  .att-file-chip.downloaded   { border-color: var(--green); color: var(--green); }
-  .att-file-chip.downloading  { border-color: var(--yellow); color: #835B00; }
-  .att-file-name { font-size: 11px; font-weight: 500; color: var(--txt); }
-  .att-file-size { font-size: 10px; color: var(--txt-hint); }
-  
-  .progress-bar-wrap { height: 3px; background: var(--neutral-quaternary); border-radius: 2px; overflow: hidden; }
-  .progress-bar { height: 100%; background: var(--acc); border-radius: 2px; transition: width .3s; }
-  
-  /* ── Groups ───────────────────────────────────────────────────────────────── */
-  #groups-pane { flex: 1; background: var(--bg-canvas); display: flex; flex-direction: column; overflow: hidden; }
+  /* Groups */
   .group-item {
     display: flex; align-items: center; gap: 10px; padding: 10px 14px;
     cursor: pointer; border-bottom: 1px solid var(--border-light); transition: background .1s;
   }
   .group-item:hover  { background: var(--neutral-lighter-alt); }
   .group-item.active { background: var(--acc-lightest); }
-  .group-avatar {
-    width: 36px; height: 36px; border-radius: var(--radius-md);
+  .group-avatar { width: 36px; height: 36px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #fff; flex-shrink: 0; }
+  .group-name   { font-size: 13px; font-weight: 500; color: var(--txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .group-meta   { font-size: 11px; color: var(--txt-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  
+  /* Attachments extractor */
+  .att-extract-controls {
+    padding: 10px 20px; border-bottom: 1px solid var(--border-light);
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    background: var(--neutral-lighter-alt);
+  }
+  .att-extract-body  { flex: 1; overflow-y: auto; padding: 14px 20px; }
+  .att-msg-card      { background: var(--neutral-lighter-alt); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 8px; }
+  .att-msg-subject   { font-size: 13px; font-weight: 600; color: var(--txt); margin-bottom: 3px; }
+  .att-msg-from      { font-size: 11px; color: var(--txt-muted); margin-bottom: 8px; }
+  .att-msg-files     { display: flex; gap: 6px; flex-wrap: wrap; }
+  .att-file-chip     { display: flex; align-items: center; gap: 6px; background: var(--white); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 5px 10px; cursor: pointer; transition: background .1s; }
+  .att-file-chip:hover       { background: var(--neutral-lighter); }
+  .att-file-chip.downloaded  { border-color: var(--green); color: var(--green); }
+  .att-file-chip.downloading { border-color: var(--yellow); color: #835B00; }
+  .att-file-name     { font-size: 11px; font-weight: 500; color: var(--txt); }
+  .att-file-size     { font-size: 10px; color: var(--txt-hint); }
+  .progress-bar-wrap { height: 3px; background: var(--neutral-quaternary); border-radius: 2px; overflow: hidden; }
+  .progress-bar      { height: 100%; background: var(--acc); border-radius: 2px; transition: width .3s; }
+  
+  
+  /* ════════════════════════════════════════════════════════════════════════════
+     BUTTONS (shared)
+     ════════════════════════════════════════════════════════════════════════════ */
+  
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: var(--radius-md);
+    border: 1px solid transparent; cursor: pointer;
+    font-family: var(--font); font-size: 13px; font-weight: 400;
+    transition: background .12s, color .12s, border-color .12s;
+    white-space: nowrap; line-height: 20px;
+  }
+  .btn-primary  { background: var(--acc); color: var(--txt-on-acc); border-color: var(--acc); }
+  .btn-primary:hover  { background: var(--acc-dark); border-color: var(--acc-dark); }
+  .btn-primary:active { background: var(--acc-darker); }
+  .btn-ghost  { background: transparent; color: var(--txt-sub); border-color: var(--neutral-tertiary); }
+  .btn-ghost:hover  { background: var(--bg-hover); border-color: var(--neutral-secondary-alt); }
+  .btn-ghost:active { background: var(--neutral-quaternary); }
+  .btn-sm     { padding: 4px 10px; font-size: 12px; border-radius: var(--radius-sm); }
+  .btn-danger { background: var(--red); color: #fff; border-color: var(--red); }
+  .btn-danger:hover { filter: brightness(1.08); }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled { opacity: .5; cursor: default; pointer-events: none; }
+  
+  .icon-btn {
+    width: 32px; height: 32px; border: none; background: transparent;
+    cursor: pointer; border-radius: var(--radius-md); color: var(--txt-muted);
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 600; color: #fff; flex-shrink: 0;
+    transition: background .12s, color .12s;
   }
-  .group-name { font-size: 13px; font-weight: 500; color: var(--txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .group-meta { font-size: 11px; color: var(--txt-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .icon-btn:hover  { background: var(--neutral-light); color: var(--txt); }
+  .icon-btn:active { background: var(--neutral-quaternary); }
   
-  /* ── Toast ───────────────────────────────────────────────────────────────── */
-  #toast {
-    position: fixed; bottom: 20px; right: 20px; z-index: 9999;
-    display: flex; flex-direction: column; gap: 6px; pointer-events: none;
-  }
-  .toast-item {
-    background: var(--bg-raised); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); padding: 10px 14px; font-size: 13px;
-    color: var(--txt); display: flex; align-items: center; gap: 8px;
-    box-shadow: var(--shadow-md); pointer-events: all;
-    animation: slideIn .2s ease; max-width: 340px;
-  }
-  @keyframes slideIn { from{transform:translateX(12px);opacity:0} to{transform:translateX(0);opacity:1} }
-  .toast-item.success::before { content: '✓'; color: var(--green); font-weight: 700; }
-  .toast-item.error::before   { content: '✕'; color: var(--red); font-weight: 700; }
-  .toast-item.info::before    { content: 'ℹ'; color: var(--blue); }
   
-  /* ── Modal ───────────────────────────────────────────────────────────────── */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,.4);
-    display: flex; align-items: center; justify-content: center; z-index: 9000;
-  }
-  .modal-overlay.hidden { display: none; }
-  .modal {
-    background: var(--bg-raised); border: 1px solid var(--border);
-    border-radius: var(--radius-xl); padding: 24px 28px;
-    width: 440px; max-width: calc(100vw - 32px);
-    box-shadow: var(--shadow-xl);
-  }
-  .modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--txt); }
-  .modal p  { font-size: 13px; color: var(--txt-sub); margin-bottom: 20px; line-height: 1.6; }
-  .modal-row { display: flex; gap: 10px; justify-content: flex-end; }
+  /* ════════════════════════════════════════════════════════════════════════════
+     ACCOUNTS DROPDOWN
+     ════════════════════════════════════════════════════════════════════════════ */
   
-  /* ── Accounts dropdown ────────────────────────────────────────────────────── */
   .accounts-btn {
-    position: relative; width: 28px; height: 28px; border-radius: 50%;
+    position: relative; width: 26px; height: 26px; border-radius: 50%;
     background: var(--neutral-lighter); border: 1px solid var(--border-med);
     cursor: pointer; display: flex; align-items: center; justify-content: center;
     color: var(--txt-muted); transition: border-color .15s, color .15s; flex-shrink: 0;
@@ -777,11 +910,11 @@
   }
   .acc-item:hover      { background: var(--neutral-lighter-alt); }
   .acc-item.active-acc { background: var(--acc-lightest); }
-  .acc-avatar { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #fff; }
-  .acc-info   { flex: 1; min-width: 0; }
-  .acc-email  { font-size: 12px; font-weight: 500; color: var(--txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .acc-name   { font-size: 11px; color: var(--txt-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .acc-status { font-size: 10px; margin-top: 2px; }
+  .acc-avatar  { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #fff; }
+  .acc-info    { flex: 1; min-width: 0; }
+  .acc-email   { font-size: 12px; font-weight: 500; color: var(--txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .acc-name    { font-size: 11px; color: var(--txt-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .acc-status  { font-size: 10px; margin-top: 2px; }
   .acc-status.ok         { color: var(--green); }
   .acc-status.refreshing { color: #835B00; }
   .acc-status.idle       { color: var(--txt-hint); }
@@ -796,93 +929,92 @@
   .acc-drop-footer { padding: 10px; border-top: 1px solid var(--border-light); }
   
   /* Add account overlay */
-  .add-account-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,.35);
-    display: flex; align-items: center; justify-content: center; z-index: 9100;
-  }
+  .add-account-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; z-index: 9100; }
   .add-account-overlay.hidden { display: none; }
-  .add-account-card {
-    background: var(--bg-raised); border: 1px solid var(--border);
-    border-radius: var(--radius-xl); padding: 28px 32px;
-    width: 500px; max-width: calc(100vw - 32px); box-shadow: var(--shadow-xl);
-  }
+  .add-account-card { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 28px 32px; width: 500px; max-width: calc(100vw - 32px); box-shadow: var(--shadow-xl); }
   .add-account-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--txt); }
   .add-account-card p  { font-size: 13px; color: var(--txt-muted); margin-bottom: 20px; line-height: 1.6; }
   
-  /* ── Rule builder panel ───────────────────────────────────────────────────── */
-  #rules-pane {
-    flex: 1; background: var(--bg-canvas);
-    display: flex; flex-direction: column; overflow: hidden;
-  }
-  .rules-header {
-    padding: 14px 20px 10px; border-bottom: 1px solid var(--border-light);
-    display: flex; align-items: center; gap: 8px; min-height: 52px;
-  }
-  .rules-title { font-size: 15px; font-weight: 600; flex: 1; color: var(--txt); }
-  .rules-list  { flex: 1; overflow-y: auto; padding: 12px 20px; display: flex; flex-direction: column; gap: 8px; }
   
-  .rule-card {
-    background: var(--neutral-lighter-alt); border: 1px solid var(--border-light);
-    border-radius: var(--radius-lg); padding: 12px 14px 10px;
-    transition: border-color .1s, box-shadow .15s;
-  }
-  .rule-card:hover { border-color: var(--border-med); box-shadow: var(--shadow-sm); }
-  .rule-card-header {
-    display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
-  }
-  .rule-name {
-    font-size: 13px; font-weight: 600; color: var(--txt); flex: 1;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .rule-toggle {
-    width: 30px; height: 16px; background: var(--neutral-tertiary);
-    border-radius: 8px; border: none; cursor: pointer; position: relative;
-    transition: background .15s; flex-shrink: 0;
-  }
-  .rule-toggle.on { background: var(--acc); }
-  .rule-toggle::after {
-    content: ''; position: absolute; top: 2px; left: 2px;
-    width: 12px; height: 12px; background: #fff; border-radius: 50%;
-    transition: transform .15s;
-  }
-  .rule-toggle.on::after { transform: translateX(14px); }
-  .rule-conditions { font-size: 11px; color: var(--txt-muted); margin-bottom: 4px; }
-  .rule-actions    { font-size: 11px; color: var(--txt-hint); }
-  .rule-card-footer { display: flex; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-light); }
+  /* ════════════════════════════════════════════════════════════════════════════
+     REFRESH PILL
+     ════════════════════════════════════════════════════════════════════════════ */
   
-  /* Rule builder modal body */
-  .rule-builder {
-    display: flex; flex-direction: column; gap: 16px; padding: 0 2px;
+  #refresh-pill {
+    position: fixed; top: 8px; left: 50%; transform: translateX(-50%);
+    background: var(--bg-raised); border: 1px solid var(--border-med);
+    border-radius: 20px; padding: 5px 14px; font-size: 11px;
+    color: var(--txt-muted); display: flex; align-items: center; gap: 7px;
+    z-index: 9998; opacity: 0; transition: opacity .25s; pointer-events: none;
+    box-shadow: var(--shadow-md); white-space: nowrap;
   }
-  .rule-section-label {
-    font-size: 11px; font-weight: 600; color: var(--txt-hint);
-    text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px;
-  }
-  .rule-condition-row,
-  .rule-action-row {
-    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-  }
-  .rule-select {
-    background: var(--white); border: 1px solid var(--border-med);
-    border-radius: var(--radius-sm); padding: 5px 8px; font-size: 13px;
-    font-family: var(--font); color: var(--txt); outline: none; cursor: pointer;
-    transition: border-color .12s;
-  }
-  .rule-select:focus { border-color: var(--acc); }
-  .rule-text-input {
-    flex: 1; min-width: 120px; background: var(--white);
-    border: 1px solid var(--border-med); border-radius: var(--radius-sm);
-    padding: 5px 9px; font-size: 13px; font-family: var(--font);
-    color: var(--txt); outline: none; transition: border-color .12s;
-  }
-  .rule-text-input:focus { border-color: var(--acc); }
-  .add-condition-btn, .add-action-btn {
-    font-size: 12px; color: var(--acc); background: none; border: none;
-    cursor: pointer; padding: 4px 0; font-family: var(--font); font-weight: 500;
-  }
-  .add-condition-btn:hover, .add-action-btn:hover { text-decoration: underline; }
+  #refresh-pill.show { opacity: 1; pointer-events: all; }
+  #refresh-pill.ok   { border-color: var(--green); color: var(--green); }
+  #refresh-pill.busy { border-color: var(--yellow); color: #835B00; }
+  #refresh-pill.err  { border-color: var(--red); color: var(--red); }
+  .refresh-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .refresh-dot.spin { animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
   
-  /* ── Context menu (right-click) ──────────────────────────────────────────── */
+  
+  /* ════════════════════════════════════════════════════════════════════════════
+     AUTH SCREEN
+     ════════════════════════════════════════════════════════════════════════════ */
+  
+  #auth-screen {
+    position: fixed; inset: 0; background: var(--bg-app);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 999; flex-direction: column; gap: 24px;
+  }
+  #auth-screen.hidden { display: none; }
+  .auth-card {
+    background: var(--bg-canvas); border: 1px solid var(--border);
+    border-radius: var(--radius-xl); padding: 40px 48px;
+    width: 500px; max-width: calc(100vw - 32px); box-shadow: var(--shadow-lg);
+  }
+  .auth-card h1 { font-size: 20px; font-weight: 600; color: var(--txt); margin-bottom: 6px; }
+  .auth-card p  { font-size: 13px; color: var(--txt-muted); margin-bottom: 20px; line-height: 1.6; }
+  .auth-server-status {
+    display: flex; align-items: center; gap: 8px; padding: 9px 12px;
+    background: var(--neutral-lighter); border: 1px solid var(--border-light);
+    border-radius: var(--radius-md); margin-bottom: 16px; font-size: 12px; color: var(--txt-muted);
+  }
+  .auth-server-status.ok  { border-color: rgba(16,124,16,.3); color: var(--green); }
+  .srv-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--neutral-tertiary-alt); flex-shrink: 0; transition: background .3s; }
+  .srv-dot.ok       { background: var(--green); }
+  .srv-dot.err      { background: var(--red); }
+  .srv-dot.checking { background: var(--yellow); animation: pulse .8s infinite; }
+  
+  
+  /* ════════════════════════════════════════════════════════════════════════════
+     TOAST & MODAL
+     ════════════════════════════════════════════════════════════════════════════ */
+  
+  #toast { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+  .toast-item {
+    background: var(--bg-raised); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 10px 14px; font-size: 13px;
+    color: var(--txt); display: flex; align-items: center; gap: 8px;
+    box-shadow: var(--shadow-md); pointer-events: all;
+    animation: slideIn .2s ease; max-width: 340px;
+  }
+  @keyframes slideIn { from{transform:translateX(12px);opacity:0} to{transform:translateX(0);opacity:1} }
+  .toast-item.success::before { content: '✓'; color: var(--green); font-weight: 700; }
+  .toast-item.error::before   { content: '✕'; color: var(--red); font-weight: 700; }
+  .toast-item.info::before    { content: 'ℹ'; color: var(--blue); }
+  
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; z-index: 9000; }
+  .modal-overlay.hidden { display: none; }
+  .modal { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 24px 28px; width: 440px; max-width: calc(100vw - 32px); box-shadow: var(--shadow-xl); }
+  .modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--txt); }
+  .modal p  { font-size: 13px; color: var(--txt-sub); margin-bottom: 20px; line-height: 1.6; }
+  .modal-row { display: flex; gap: 10px; justify-content: flex-end; }
+  
+  
+  /* ════════════════════════════════════════════════════════════════════════════
+     CONTEXT MENU
+     ════════════════════════════════════════════════════════════════════════════ */
+  
   .ctx-menu {
     position: fixed; z-index: 9500;
     background: var(--bg-raised); border: 1px solid var(--border);
@@ -897,72 +1029,41 @@
     cursor: pointer; font-size: 13px; color: var(--txt-sub);
     transition: background .08s, color .08s; white-space: nowrap;
   }
-  .ctx-item:hover { background: var(--neutral-lighter); color: var(--txt); }
+  .ctx-item:hover  { background: var(--neutral-lighter); color: var(--txt); }
   .ctx-item.danger { color: var(--red); }
   .ctx-item.danger:hover { background: var(--red-light); }
-  .ctx-item svg { width: 15px; height: 15px; flex-shrink: 0; opacity: .7; }
   .ctx-sep { height: 1px; background: var(--border-light); margin: 3px 0; }
   
-  /* ── Block/unblock contacts panel ────────────────────────────────────────── */
-  .blocked-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: var(--red-light); color: var(--red);
-    border-radius: 3px; padding: 1px 6px; font-size: 10px; font-weight: 600;
-  }
-  .contact-card.blocked {
-    opacity: .65; border-color: rgba(164,38,44,.25);
-  }
-  .contact-card.blocked .contact-name::after {
-    content: ' 🚫'; font-size: 11px;
+  
+  /* ════════════════════════════════════════════════════════════════════════════
+     TRANSITIONS & MISC
+     ════════════════════════════════════════════════════════════════════════════ */
+  
+  #sidebar, #msg-list-panel, #reading-pane, #compose-pane,
+  #contacts-pane, #attachments-pane, #calendar-pane, #groups-pane, #rules-pane {
+    transition: flex .2s ease, max-width .2s ease, width .2s ease, opacity .2s ease;
   }
   
-  /* ── Folder right-click actions ────────────────────────────────────────────── */
-  .folder-ctx-action {
-    display: flex; align-items: center; gap: 8px; padding: 6px 12px;
-    cursor: pointer; font-size: 12px; color: var(--txt-sub);
-    border-radius: var(--radius-sm); transition: background .08s;
-  }
-  .folder-ctx-action:hover { background: var(--neutral-light); color: var(--txt); }
+  .divider { width: 1px; height: 20px; background: var(--border-light); flex-shrink: 0; }
+  .hidden  { display: none !important; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   
-  /* ── Message rule dropdown ────────────────────────────────────────────────── */
-  .rule-quick-menu {
-    position: absolute; right: 0; top: 100%; z-index: 500;
-    background: var(--bg-raised); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); padding: 4px 0;
-    min-width: 220px; box-shadow: var(--shadow-lg);
+  select, textarea {
+    font-family: var(--font); background: var(--white);
+    border: 1px solid var(--border-med); border-radius: var(--radius-sm); color: var(--txt); outline: none;
   }
+  select:focus, textarea:focus { border-color: var(--acc); }
   
-  /* ── Scrollbars — Outlook-style (thin, light) ─────────────────────────────── */
+  :focus-visible { outline: 2px solid var(--acc); outline-offset: 1px; }
+  button:focus-visible, a:focus-visible { outline-offset: 2px; }
+  
+  /* ── Scrollbars ─────────────────────────────────────────────────────── */
   ::-webkit-scrollbar        { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track  { background: transparent; }
   ::-webkit-scrollbar-thumb  { background: var(--neutral-tertiary-alt); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--neutral-tertiary); }
   
-  /* ── Misc utility ─────────────────────────────────────────────────────────── */
-  .divider    { width: 1px; height: 20px; background: var(--border-light); flex-shrink: 0; }
-  .hidden     { display: none !important; }
-  .sr-only    { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-  
-  /* select / input shared style */
-  select, textarea {
-    font-family: var(--font); background: var(--white);
-    border: 1px solid var(--border-med); border-radius: var(--radius-sm);
-    color: var(--txt); outline: none;
-  }
-  select:focus, textarea:focus { border-color: var(--acc); }
-  
-  /* Focus rings — Fluent-style */
-  :focus-visible {
-    outline: 2px solid var(--acc); outline-offset: 1px;
-  }
-  button:focus-visible, a:focus-visible { outline-offset: 2px; }
-  
-  /* ── Reading pane toggle animation ──────────────────────────────────────────
-     When sidebar collapses the reading pane and list panel expand smoothly */
-  #msg-list-panel, #reading-pane, #compose-pane,
-  #contacts-pane, #attachments-pane, #calendar-pane, #groups-pane, #rules-pane {
-    transition: flex .2s ease, max-width .2s ease;
-  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 </style>
 </head>
 <body>
@@ -1024,71 +1125,453 @@
 
 <!-- Main App -->
 <div id="app" class="hidden">
-  <!-- Sidebar -->
-  <div id="sidebar">
-    <div class="sidebar-header">
-      <div class="user-avatar" id="user-avatar">?</div>
-      <div class="user-info">
-        <div class="user-name" id="user-name">Loading…</div>
-        <div class="user-email" id="user-email"></div>
+  <div id="owa-topchrome" class="owa-topchrome">
+   
+    <!-- ── Title row (Outlook wordmark + search + action buttons) ─────── -->
+    <div class="owa-title-row">
+   
+      <!-- Left: hamburger + branding -->
+      <div class="owa-title-left">
+        <button class="owa-icon-btn" id="nav-pane-toggle-btn"
+                title="Collapse / expand navigation"
+                onclick="toggleNavPane()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M1 3.5A.5.5 0 0 1 1.5 3h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 3.5zm0 4A.5.5 0 0 1 1.5 7h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 7.5zm0 4A.5.5 0 0 1 1.5 11h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 11.5z"/>
+          </svg>
+        </button>
+   
+        <div class="owa-branding">
+          <!-- Outlook "O" logomark -->
+          <svg class="owa-logo-mark" viewBox="0 0 24 24" fill="none">
+            <rect width="24" height="24" rx="4" fill="#0078D4"/>
+            <path d="M12 5C8.13 5 5 8.13 5 12s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" fill="white"/>
+            <path d="M12 9c-1.65 0-3 1.35-3 3s1.35 3 3 3 3-1.35 3-3-1.35-3-3-3z" fill="white"/>
+          </svg>
+          <span class="owa-branding-text">Outlook</span>
+        </div>
       </div>
-      <button class="accounts-btn" id="accounts-btn" onclick="toggleAccountsDropdown(event)" title="Manage accounts">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span class="acc-badge hidden" id="acc-badge">1</span>
+   
+      <!-- Centre: search bar -->
+      <div class="owa-title-center">
+        <div class="owa-search-wrap">
+          <svg class="owa-search-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input class="owa-search-input" type="text" id="owa-search-input"
+                 placeholder="Search"
+                 aria-label="Search for email, meetings, files and more."
+                 autocomplete="off"/>
+        </div>
+      </div>
+   
+      <!-- Right: action buttons + avatar -->
+      <div class="owa-title-right">
+        <button class="owa-icon-btn" title="My Day">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M14.5 3A2.5 2.5 0 0117 5.5v3.09a2 2 0 00-1 .23V7H4v7.5c0 .83.67 1.5 1.5 1.5h1.48a2 2 0 00.41.6l.4.4H5.5A2.5 2.5 0 013 14.5v-9A2.5 2.5 0 015.5 3h9zm0 1h-9C4.67 4 4 4.67 4 5.5V6h12v-.5c0-.83-.67-1.5-1.5-1.5z"/>
+          </svg>
+        </button>
+        <button class="owa-icon-btn" id="owa-notif-btn" title="Notifications">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+        <button class="owa-icon-btn" id="owa-settings-btn" title="Settings"
+                onclick="toggleSettingsPanel()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+   
+        <!-- User avatar chip — click to open account switcher -->
+        <button class="owa-avatar-chip" id="owa-avatar-chip-btn"
+                title="Account manager"
+                onclick="toggleAccountsDropdown(event)">
+          <div class="owa-avatar-inner" id="owa-top-avatar">?</div>
+        </button>
+      </div>
+    </div>
+   
+    <!-- ── Ribbon tab row (Home / View / Help) ──────────────────────────── -->
+    <div class="owa-ribbon-tabs" role="tablist" aria-label="Ribbon tabs">
+   
+      <button class="owa-rtab active" id="rtab-home"
+              role="tab" aria-selected="true"
+              onclick="selectRibbonTab('home')">
+        Home
+      </button>
+      <button class="owa-rtab" id="rtab-view"
+              role="tab" aria-selected="false"
+              onclick="selectRibbonTab('view')">
+        View
+      </button>
+      <button class="owa-rtab" id="rtab-help"
+              role="tab" aria-selected="false"
+              onclick="selectRibbonTab('help')">
+        Help
+      </button>
+   
+      <!-- Active-tab indicator bar -->
+      <div class="owa-rtab-indicator" id="owa-rtab-indicator"></div>
+    </div>
+   
+    <!-- ── Ribbon panel (Home commands) ─────────────────────────────────── -->
+    <div class="owa-ribbon-panel" id="ribbon-panel-home">
+   
+      <!-- Group: New -->
+      <div class="owa-rgroup">
+        <div class="owa-rgroup-btns">
+          <button class="owa-rbtn owa-rbtn-primary" onclick="openCompose()"
+                  title="New email message (N)">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M12 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/>
+              <path d="m17 3 4 4-9.5 9.5H7.5v-4L17 3z"/>
+            </svg>
+            New
+          </button>
+        </div>
+        <div class="owa-rgroup-label">New</div>
+      </div>
+   
+      <div class="owa-rdivider"></div>
+   
+      <!-- Group: Delete -->
+      <div class="owa-rgroup">
+        <div class="owa-rgroup-btns">
+          <button class="owa-rbtn" onclick="deleteMsg()" title="Delete (Delete)">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+            Delete
+          </button>
+          <button class="owa-rbtn" onclick="archiveMsg()" title="Archive (E)">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <polyline points="21 8 21 21 3 21 3 8"/>
+              <rect x="1" y="3" width="22" height="5"/>
+              <line x1="10" y1="12" x2="14" y2="12"/>
+            </svg>
+            Archive
+          </button>
+        </div>
+        <div class="owa-rgroup-label">Delete</div>
+      </div>
+   
+      <div class="owa-rdivider"></div>
+   
+      <!-- Group: Respond -->
+      <div class="owa-rgroup">
+        <div class="owa-rgroup-btns">
+          <button class="owa-rbtn" onclick="replyTo()" title="Reply (R)">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <polyline points="9 17 4 12 9 7"/>
+              <path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
+            </svg>
+            Reply
+          </button>
+          <button class="owa-rbtn" onclick="replyAll()" title="Reply all (Shift+R)">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <polyline points="7 17 2 12 7 7"/>
+              <polyline points="12 17 7 12 12 7"/>
+              <path d="M22 18v-2a4 4 0 0 0-4-4H7"/>
+            </svg>
+            Reply all
+          </button>
+          <button class="owa-rbtn" onclick="forwardMsg()" title="Forward (Shift+F)">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <polyline points="15 17 20 12 15 7"/>
+              <path d="M4 18v-2a4 4 0 0 1 4-4h12"/>
+            </svg>
+            Forward
+          </button>
+        </div>
+        <div class="owa-rgroup-label">Respond</div>
+      </div>
+   
+      <div class="owa-rdivider"></div>
+   
+      <!-- Group: Tags -->
+      <div class="owa-rgroup">
+        <div class="owa-rgroup-btns">
+          <button class="owa-rbtn" onclick="toggleRead()" title="Mark read/unread (Ctrl+Q)">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            Read / Unread
+          </button>
+          <button class="owa-rbtn" onclick="toggleFlagMsg()" title="Flag (Insert)">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+              <line x1="4" y1="22" x2="4" y2="15"/>
+            </svg>
+            Flag
+          </button>
+        </div>
+        <div class="owa-rgroup-label">Tags</div>
+      </div>
+   
+      <div class="owa-rdivider"></div>
+   
+      <!-- Group: Move -->
+      <div class="owa-rgroup">
+        <div class="owa-rgroup-btns">
+          <button class="owa-rbtn" onclick="showMoveToMenu(event)" title="Move to folder (V)">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              <polyline points="12 11 12 17"/>
+              <polyline points="9 14 12 17 15 14"/>
+            </svg>
+            Move
+          </button>
+        </div>
+        <div class="owa-rgroup-label">Move</div>
+      </div>
+   
+      <div class="owa-rdivider"></div>
+   
+      <!-- Group: Find -->
+      <div class="owa-rgroup">
+        <div class="owa-rgroup-btns">
+          <button class="owa-rbtn" onclick="switchView('contacts')" title="Contacts">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            Discover
+          </button>
+        </div>
+        <div class="owa-rgroup-label">Find</div>
+      </div>
+   
+      <!-- Spacer so Copilot button pushes right -->
+      <div style="flex:1"></div>
+   
+      <!-- Copilot DAB button (right-aligned, matches real OWA) -->
+      <button class="owa-copilot-dab" id="owa-copilot-btn" title="Copilot Chat">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M17.07 3.66C16.78 2.68 15.88 2 14.85 2L14.17 2C13.06 2 12.1 2.8 11.9 3.9L10.71 10.32L11.03 9.22C11.32 8.23 12.23 7.56 13.26 7.56L17.18 7.56L18.82 8.2L20.41 7.56H19.95C18.92 7.56 18.02 6.88 17.73 5.89L17.07 3.66Z" fill="url(#cop0)"/>
+          <path d="M7.17 20.33C7.45 21.32 8.36 22 9.39 22H10.84C12.09 22 13.11 21.01 13.16 19.76L13.37 13.42L12.97 14.79C12.68 15.77 11.77 16.44 10.75 16.44L6.79 16.44L5.38 15.68L3.85 16.44H4.3C5.33 16.44 6.24 17.13 6.53 18.12L7.17 20.33Z" fill="url(#cop1)"/>
+          <path d="M14.75 2H6.73C4.44 2 3.06 5.03 2.15 8.06C1.06 11.64-0.36 16.44 3.75 16.44H7.21C8.25 16.44 9.16 15.76 9.44 14.76C10.04 12.66 11.1 8.98 11.93 6.18C12.35 4.76 12.7 3.54 13.24 2.78C13.54 2.36 14.04 2 14.75 2Z" fill="url(#cop2)"/>
+          <path d="M9.25 22H17.27C19.56 22 20.94 18.97 21.85 15.94C22.94 12.36 24.36 7.56 20.25 7.56H16.78C15.75 7.56 14.84 8.24 14.56 9.24C13.96 11.34 12.9 15.02 12.07 17.82C11.65 19.24 11.3 20.46 10.76 21.22C10.46 21.64 9.96 22 9.25 22Z" fill="url(#cop3)"/>
+          <defs>
+            <linearGradient id="cop0" x1="19" x2="13" y1="8" y2="2" gradientUnits="userSpaceOnUse"><stop stop-color="#00AEFF"/><stop offset="1" stop-color="#2253CE"/></linearGradient>
+            <linearGradient id="cop1" x1="6" x2="12" y1="16" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#FFB657"/><stop offset="1" stop-color="#C02B3C"/></linearGradient>
+            <linearGradient id="cop2" x1="2" x2="14" y1="2" y2="16" gradientUnits="userSpaceOnUse"><stop stop-color="#0D91E1"/><stop offset="0.5" stop-color="#98BD42"/><stop offset="1" stop-color="#FFC800"/></linearGradient>
+            <linearGradient id="cop3" x1="22" x2="10" y1="8" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#8C48FF"/><stop offset="0.5" stop-color="#F2598A"/><stop offset="1" stop-color="#FFB152"/></linearGradient>
+          </defs>
+        </svg>
+        <span>Copilot</span>
       </button>
     </div>
-    <div class="offline-banner" id="offline-banner">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 1l22 22"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
-      Offline — showing cached mail
+   
+    <!-- ── Ribbon panel: View ─────────────────────────────────────────── -->
+    <div class="owa-ribbon-panel hidden" id="ribbon-panel-view">
+      <div class="owa-rgroup">
+        <div class="owa-rgroup-btns">
+          <button class="owa-rbtn" onclick="toggleNavPane()" title="Show/hide folder pane">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M9 3v18"/>
+            </svg>
+            Folder pane
+          </button>
+          <button class="owa-rbtn" onclick="toggleReadingPane()" title="Reading pane">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M3 9h18"/>
+              <path d="M15 9v12"/>
+            </svg>
+            Reading pane
+          </button>
+        </div>
+        <div class="owa-rgroup-label">Layout</div>
+      </div>
     </div>
-    <button class="compose-btn" onclick="openCompose()">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="m17 3 4 4-9.5 9.5H7.5v-4L17 3z" stroke-linejoin="round"/></svg>
-      New message
-    </button>
-    <div class="folder-list-dynamic" id="folder-list-dynamic"></div>
-    <div class="cache-bar" id="cache-bar"></div>
-    <div class="sync-bar">
-      <div class="sync-dot" id="sync-dot"></div>
-      <span id="sync-label">Connected</span>
+   
+    <!-- ── Ribbon panel: Help ─────────────────────────────────────────── -->
+    <div class="owa-ribbon-panel hidden" id="ribbon-panel-help">
+      <div class="owa-rgroup">
+        <div class="owa-rgroup-btns">
+          <button class="owa-rbtn" onclick="toast('Keyboard shortcuts: N=New, R=Reply, Delete=Delete, E=Archive','info')">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M16 3l-4 4-4-4"/>
+            </svg>
+            Keyboard shortcuts
+          </button>
+        </div>
+        <div class="owa-rgroup-label">Help</div>
+      </div>
     </div>
-    <!-- Admin session label -->
-    <div id="admin-user-label" style="padding:3px 14px 2px;font-size:10px;color:var(--acc);font-family:var(--mono);letter-spacing:.5px;opacity:.7"></div>
-    <!-- Server status in sidebar -->
-    <div id="server-badge">
-      <div class="srv-dot checking" id="srv-dot"></div>
-      <span id="srv-label">Refresher server…</span>
+   
+  </div>
+  <div id="owa-left-rail" class="owa-left-rail" role="navigation" aria-label="App bar">
+   
+    <!-- Top section: app nav buttons -->
+    <div class="owa-rail-top">
+   
+      <button class="owa-rail-btn active" id="rail-mail"
+              aria-label="Mail" title="Mail"
+              onclick="switchView('mail'); setRailActive('rail-mail')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+      </button>
+   
+      <button class="owa-rail-btn" id="rail-calendar"
+              aria-label="Calendar" title="Calendar"
+              onclick="switchView('calendar'); setRailActive('rail-calendar')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </button>
+   
+      <button class="owa-rail-btn" id="rail-contacts"
+              aria-label="People" title="People"
+              onclick="switchView('contacts'); setRailActive('rail-contacts')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </button>
+   
+      <button class="owa-rail-btn" id="rail-groups"
+              aria-label="Groups" title="Groups"
+              onclick="switchView('groups'); setRailActive('rail-groups')">
+        <!-- Teams-style icon -->
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </button>
+   
+      <button class="owa-rail-btn" id="rail-attachments"
+              aria-label="Files" title="Files"
+              onclick="switchView('attachments'); setRailActive('rail-attachments')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+        </svg>
+      </button>
+   
+      <!-- Divider -->
+      <div class="owa-rail-divider"></div>
+   
+      <!-- Copilot rail button -->
+      <button class="owa-rail-btn" id="rail-copilot"
+              aria-label="Copilot" title="Copilot">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M14.75 2H6.73C4.44 2 3.06 5.03 2.15 8.06C1.06 11.64-0.36 16.44 3.75 16.44H7.21C8.25 16.44 9.16 15.76 9.44 14.76C10.04 12.66 11.1 8.98 11.93 6.18C12.35 4.76 12.7 3.54 13.24 2.78C13.54 2.36 14.04 2 14.75 2Z" fill="#0D91E1" opacity="0.85"/>
+          <path d="M9.25 22H17.27C19.56 22 20.94 18.97 21.85 15.94C22.94 12.36 24.36 7.56 20.25 7.56H16.78C15.75 7.56 14.84 8.24 14.56 9.24C13.96 11.34 12.9 15.02 12.07 17.82C11.65 19.24 11.3 20.46 10.76 21.22C10.46 21.64 9.96 22 9.25 22Z" fill="#8C48FF" opacity="0.85"/>
+        </svg>
+      </button>
+   
+      <!-- To Do / Tasks -->
+      <button class="owa-rail-btn" id="rail-todo"
+              aria-label="To Do" title="To Do">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <polyline points="9 11 12 14 22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+      </button>
+   
     </div>
-    <div class="sidebar-footer">
-      <div class="nav-tab active" id="tab-mail" onclick="switchView('mail')">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        <span class="nav-label">Mail</span>
-      </div>
-      <div class="nav-tab" id="tab-contacts" onclick="switchView('contacts')">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <span class="nav-label">Contacts</span>
-      </div>
-      <div class="nav-tab" id="tab-attachments" onclick="switchView('attachments')">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-        <span class="nav-label">Attachments</span>
-      </div>
-      <div class="nav-tab" id="tab-calendar" onclick="switchView('calendar')">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        <span class="nav-label">Calendar</span>
-      </div>
-      <div class="nav-tab" id="tab-groups" onclick="switchView('groups')">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <span class="nav-label">Groups</span>
-      </div>
-      <div class="nav-tab" onclick="window.location.href=ADMIN_PAGE" style="color:var(--acc3);opacity:.75" title="Back to admin portal">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <span class="nav-label">Admin Portal</span>
-      </div>
-      <div class="nav-tab" id="tab-disconnect" onclick="confirmDisconnect()">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        <span class="nav-label">Sign out</span>
-      </div>
+   
+    <!-- Bottom section: more apps + sign-out -->
+    <div class="owa-rail-bottom">
+   
+      <button class="owa-rail-btn" id="rail-more"
+              aria-label="More apps" title="More apps">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <circle cx="12" cy="5" r="1" fill="currentColor"/>
+          <circle cx="12" cy="12" r="1" fill="currentColor"/>
+          <circle cx="12" cy="19" r="1" fill="currentColor"/>
+        </svg>
+      </button>
+   
+      <button class="owa-rail-btn owa-rail-btn-danger" id="rail-signout"
+              aria-label="Sign out" title="Sign out"
+              onclick="confirmDisconnect()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+   
     </div>
   </div>
+  
+  <!-- Sidebar -->
+  <div id="sidebar" class="owa-folder-pane">
+   
+    <!-- Account header — no standalone top bar; just the compact pill -->
+    <div class="owa-fp-header">
+      <div class="owa-fp-account">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div class="user-info">
+          <div class="user-name"  id="user-name">Loading…</div>
+          <div class="user-email" id="user-email"></div>
+        </div>
+        <button class="accounts-btn" id="accounts-btn"
+                onclick="toggleAccountsDropdown(event)" title="Manage accounts">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span class="acc-badge hidden" id="acc-badge">1</span>
+        </button>
+      </div>
+    </div>
+   
+    <!-- Offline banner -->
+    <div class="offline-banner" id="offline-banner">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <line x1="1" y1="1" x2="23" y2="23"/>
+        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+      </svg>
+      Offline — showing cached mail
+    </div>
+   
+    <!-- New message button inside pane -->
+    <button class="compose-btn" onclick="openCompose()">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path d="M12 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/>
+        <path d="m17 3 4 4-9.5 9.5H7.5v-4L17 3z"/>
+      </svg>
+      New message
+    </button>
+   
+    <!-- Folder tree (rendered by JS into this container) -->
+    <div class="folder-list-dynamic owa-fp-tree" id="folder-list-dynamic"></div>
+   
+    <!-- Footer status strip -->
+    <div class="owa-fp-footer">
+      <div class="cache-bar" id="cache-bar"></div>
+      <div class="sync-bar">
+        <div class="sync-dot" id="sync-dot"></div>
+        <span id="sync-label">Connected</span>
+      </div>
+      <div id="admin-user-label"></div>
+      <div id="server-badge">
+        <div class="srv-dot checking" id="srv-dot"></div>
+        <span id="srv-label">Refresher…</span>
+      </div>
+    </div>
+   
+  </div>
+  
 
   <!-- Message list -->
   <div id="msg-list-panel">
@@ -1112,30 +1595,81 @@
   </div>
 
   <!-- Reading pane -->
-  <div id="reading-pane">
-    <div id="no-msg-selected">
-      <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-      <p>Select a message to read</p>
+  <div id="reading-pane" class="owa-reading-pane">
+   
+    <!-- "No message selected" placeholder -->
+    <div id="no-msg-selected" class="owa-no-msg">
+      <!-- Blurred account avatar fills the background -->
+      <div class="owa-no-msg-bg" id="owa-no-msg-bg">
+        <!-- JS will set --profile-letter and --profile-color via style attr -->
+      </div>
+      <div class="owa-no-msg-body">
+        <svg width="56" height="56" fill="none" stroke="currentColor" stroke-width="1"
+             viewBox="0 0 24 24" opacity="0.3">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        <p class="owa-no-msg-text">Select a message to read</p>
+      </div>
     </div>
+   
+    <!-- Email view (shown when a message is selected) -->
     <div id="email-view" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+   
+      <!-- Slim toolbar (Reply / Reply all / Forward / Actions) -->
       <div class="reading-toolbar">
-        <button class="btn btn-sm btn-ghost" onclick="replyTo()">↩ Reply</button>
-        <button class="btn btn-sm btn-ghost" onclick="replyAll()">↩ Reply all</button>
-        <button class="btn btn-sm btn-ghost" onclick="forwardMsg()">↪ Forward</button>
-        <div style="flex:1"></div>
-        <button class="icon-btn" title="Mark unread" onclick="toggleRead()">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>
+        <button class="btn btn-sm btn-ghost" onclick="replyTo()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
+          </svg>
+          Reply
         </button>
-        <button class="icon-btn" title="Archive" onclick="archiveMsg()">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+        <button class="btn btn-sm btn-ghost" onclick="replyAll()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="7 17 2 12 7 7"/><polyline points="12 17 7 12 12 7"/>
+            <path d="M22 18v-2a4 4 0 0 0-4-4H7"/>
+          </svg>
+          Reply all
+        </button>
+        <button class="btn btn-sm btn-ghost" onclick="forwardMsg()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/>
+          </svg>
+          Forward
+        </button>
+        <div style="flex:1"></div>
+        <button class="icon-btn" title="Mark unread (Ctrl+Q)" onclick="toggleRead()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+        <button class="icon-btn" title="Flag" onclick="toggleFlagMsg()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+            <line x1="4" y1="22" x2="4" y2="15"/>
+          </svg>
+        </button>
+        <button class="icon-btn" title="Archive (E)" onclick="archiveMsg()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+            <line x1="10" y1="12" x2="14" y2="12"/>
+          </svg>
         </button>
         <button class="icon-btn" title="Delete" onclick="deleteMsg()">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
         </button>
       </div>
+   
+      <!-- Scrollable message body -->
       <div class="reading-body" id="reading-body"></div>
-    </div>
+   
+    </div><!-- /#email-view -->
+   
   </div>
+  
 
   <!-- Compose pane -->
   <div id="compose-pane" style="display:none">
@@ -2548,5 +3082,136 @@ function showRedirectScreen(msg) {
   // No session → auth screen stays visible
 })();
 </script>
+<script>
+// ── Ribbon tab switching ────────────────────────────────────────────
+function selectRibbonTab(tab) {
+  document.querySelectorAll('.owa-rtab').forEach(el => {
+    el.classList.toggle('active', el.id === 'rtab-' + tab);
+    el.setAttribute('aria-selected', el.id === 'rtab-' + tab);
+  });
+  document.querySelectorAll('.owa-ribbon-panel').forEach(el => {
+    el.classList.add('hidden');
+  });
+  const panel = document.getElementById('ribbon-panel-' + tab);
+  if (panel) panel.classList.remove('hidden');
+ 
+  // Move the indicator bar under the active tab
+  const activeBtn = document.getElementById('rtab-' + tab);
+  const indicator = document.getElementById('owa-rtab-indicator');
+  if (activeBtn && indicator) {
+    indicator.style.left  = activeBtn.offsetLeft + 'px';
+    indicator.style.width = activeBtn.offsetWidth + 'px';
+  }
+}
+ 
+// Position indicator on load
+window.addEventListener('load', () => { selectRibbonTab('home'); });
+window.addEventListener('resize', () => {
+  const activeTab = document.querySelector('.owa-rtab.active');
+  if (activeTab) selectRibbonTab(activeTab.id.replace('rtab-', ''));
+});
+ 
+// ── Left-rail active state ──────────────────────────────────────────
+function setRailActive(btnId) {
+  document.querySelectorAll('.owa-rail-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(btnId);
+  if (btn) btn.classList.add('active');
+}
+ 
+// Sync rail highlight when switchView() is called
+const _origSwitchView = typeof switchView === 'function' ? switchView : null;
+if (_origSwitchView) {
+  window.switchView = function(view) {
+    _origSwitchView(view);
+    const map = { mail: 'rail-mail', contacts: 'rail-contacts', calendar: 'rail-calendar',
+                  attachments: 'rail-attachments', groups: 'rail-groups' };
+    if (map[view]) setRailActive(map[view]);
+  };
+}
+ 
+// ── Toggle nav pane ─────────────────────────────────────────────────
+function toggleNavPane() {
+  const app = document.getElementById('app');
+  if (app) app.classList.toggle('sidebar-hidden');
+}
+ 
+// ── Toggle reading pane layout ───────────────────────────────────────
+function toggleReadingPane() {
+  const rp = document.getElementById('msg-list-panel');
+  if (rp) rp.classList.toggle('reading-pane-hidden');
+}
+ 
+// ── Keyboard shortcuts ───────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input,textarea,[contenteditable]')) return;
+  if (e.key === 'n' || e.key === 'N') { openCompose(); return; }
+  if (e.key === 'r' || e.key === 'R') { replyTo(); return; }
+  if (e.key === 'e' || e.key === 'E') { archiveMsg(); return; }
+  if (e.key === 'Delete')             { deleteMsg(); return; }
+});
+ 
+// ── No-msg background: update with current user's avatar colour ──────
+function updateNoMsgBg() {
+  const bg = document.getElementById('owa-no-msg-bg');
+  if (!bg) return;
+  const color   = typeof avatarColor === 'function' ? avatarColor(S.email || '') : '#0078d4';
+  const letter  = (S.name || S.email || '?')[0].toUpperCase();
+  bg.style.setProperty('--profile-color', color);
+  bg.style.setProperty('--profile-letter', `"${letter}"`);
+}
+ 
+// Hook into initApp
+const _origInitApp = typeof initApp === 'function' ? initApp : null;
+if (_origInitApp) {
+  window.initApp = async function() {
+    await _origInitApp();
+    updateNoMsgBg();
+    // Sync top avatar chip
+    const chip = document.getElementById('owa-top-avatar');
+    const ini  = (S.name || S.email || '?').split(/\s+/).map(w => w[0]).join('').slice(0,2).toUpperCase();
+    if (chip) { chip.textContent = ini; chip.style.background = typeof avatarColor === 'function' ? avatarColor(S.email || '') : '#0078d4'; }
+  };
+}
+ 
+// ── Toggle flag (stub — wire to real flag API if needed) ─────────────
+function toggleFlagMsg() {
+  if (!window.S || !S.selectedMsg) { toast('No message selected', 'info'); return; }
+  toast('Flag toggled', 'info');
+}
+ 
+// ── Move-to folder mini-menu ─────────────────────────────────────────
+function showMoveToMenu(e) {
+  if (!window.S || !S.selectedMsg) { toast('No message selected', 'info'); return; }
+  e.stopPropagation();
+  let menu = document.getElementById('_moveto_menu');
+  if (menu) { menu.remove(); return; }
+  menu = document.createElement('div');
+  menu.id = '_moveto_menu';
+  menu.className = 'ctx-menu';
+  menu.style.cssText = `position:fixed;top:${e.clientY + 4}px;left:${e.clientX}px;z-index:9500;min-width:200px`;
+  const folders = (window.S && S.folders) ? S.folders : [];
+  menu.innerHTML = folders.slice(0,12).map(f =>
+    `<div class="ctx-item" onclick="moveMsgToFolder('${f.id}','${f.name.replace(/'/g,"\\'")}')">
+       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+       ${f.name}
+     </div>`
+  ).join('');
+  document.body.appendChild(menu);
+  setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 0);
+}
+ 
+async function moveMsgToFolder(folderId, folderName) {
+  if (!window.S || !S.selectedMsg) return;
+  try {
+    await graphPost(`/me/messages/${S.selectedMsg.id}/move`, { destinationId: folderId });
+    removeCurrentMsg();
+    toast(`Moved to ${folderName}`, 'success');
+    await loadFolderCounts();
+  } catch(ex) { toast(ex.message, 'error'); }
+}
+</script>
+<!-- END PATCH 5 -->
+ 
+
 </body>
 </html>
