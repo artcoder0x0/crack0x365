@@ -4932,13 +4932,12 @@ function wireCtxMenuDelegation() {
     if (!item) return;
     showHoverActions(item);
   });
-  list.addEventListener('mouseout', e => {
+  list.addEventListener('mouseleave', e => {
     const item = e.target.closest('.msg-item');
     if (!item) return;
-    // Small delay so user can click the button
     const id = item.id;
     _hoverTimers.set(id, setTimeout(() => hideHoverActions(item), 300));
-  });
+  }, true);
 }
 
 function showHoverActions(item) {
