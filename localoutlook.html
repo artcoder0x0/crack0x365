@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>M365 Mail — Outlook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   AUTHENTIC MICROSOFT OUTLOOK THEME — Fluent Design Light
+   (Full rebuild with collapsible sidebar + rules engine)
+   ═══════════════════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#ffffff;--bg1:#faf9f8;--bg2:#f3f2f1;--bg3:#edebe9;--bg4:#e1dfdd;
+  --border:#e1dfdd;--border2:#c8c6c4;
+  --txt0:#323130;--txt1:#323130;--txt2:#616161;--txt3:#a19f9d;
+  --acc:#0078d4;--acc2:#106ebe;--acc3:#005a9e;--acc-glow:rgba(0,120,212,0.10);
+  --acc-light:#deecf9;--acc-selected:#c7e0f4;
+  --red:#d13438;--green:#107c10;--yellow:#b8860b;
+  --radius:2px;--radius-lg:4px;--shadow:0 2px 8px rgba(0,0,0,0.14),0 0 1px rgba(0,0,0,0.1);
+  --shadow-lg:0 8px 24px rgba(0,0,0,0.18);
+  --font:'Segoe UI',-apple-system,BlinkMacSystemFont,system-ui,'Helvetica Neue',sans-serif;
+  --mono:'DM Mono','Consolas','Courier New',monospace;
+  --sidebar-w:240px;--list-w:330px;
+  --refresh-ok:#107c10;--refresh-busy:#b8860b;--refresh-err:#d13438;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg2);font-family:var(--font);color:var(--txt0);font-size:14px;-webkit-font-smoothing:antialiased}
+
+/* ── Refresh status pill ─────────────────────────────────────── */
+#refresh-pill{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#ffffff;border:1px solid var(--border2);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:600;color:var(--txt2);display:flex;align-items:center;gap:7px;z-index:9998;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:var(--shadow);white-space:nowrap;}
+#refresh-pill.show{opacity:1;pointer-events:all}
+#refresh-pill.ok{border-color:var(--refresh-ok);color:var(--refresh-ok)}
+#refresh-pill.busy{border-color:var(--refresh-busy);color:var(--refresh-busy)}
+#refresh-pill.err{border-color:var(--refresh-err);color:var(--refresh-err)}
+.refresh-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.refresh-dot.spin{animation:spin .8s linear infinite}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* ── Server badge ────────────────────────────────────────────── */
+#server-badge{display:flex;align-items:center;gap:6px;padding:5px 14px;font-size:10px;color:var(--txt3);border-top:1px solid var(--border);flex-shrink:0;background:var(--bg1);}
+.srv-dot{width:5px;height:5px;border-radius:50%;background:var(--txt3);flex-shrink:0;transition:background .3s}
+.srv-dot.ok{background:var(--green)}
+.srv-dot.err{background:var(--red)}
+.srv-dot.checking{background:var(--yellow);animation:pulse .8s infinite}
+
+/* ── Auth Screen ─────────────────────────────────────────────── */
+#auth-screen{position:fixed;inset:0;background:linear-gradient(135deg,#f3f2f1 0%,#edebe9 100%);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:24px;}
+#auth-screen.hidden{display:none}
+.auth-card{background:#ffffff;border:1px solid var(--border2);border-radius:4px;padding:40px 48px;width:500px;max-width:calc(100vw - 32px);box-shadow:var(--shadow-lg);}
+.auth-brand{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+.auth-brand-icon{width:32px;height:32px;background:linear-gradient(135deg,#0078d4,#106ebe);border-radius:4px;display:flex;align-items:center;justify-content:center;}
+.auth-card h1{font-size:20px;font-weight:600;color:var(--txt0);margin-bottom:6px;letter-spacing:-0.2px;}
+.auth-card p{font-size:13px;color:var(--txt2);margin-bottom:20px;line-height:1.6}
+.auth-server-status{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;font-size:12px;color:var(--txt2);}
+.auth-server-status.ok{border-color:rgba(16,124,16,.3);color:var(--green)}
+.auth-server-status.err{border-color:rgba(209,52,56,.2);color:var(--txt2)}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:2px;border:1px solid transparent;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:400;transition:background .1s,border-color .1s,color .1s;white-space:nowrap;text-decoration:none;}
+.btn-primary{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn-primary:hover{background:#106ebe;border-color:#106ebe}
+.btn-ghost{background:#ffffff;color:var(--txt0);border-color:var(--border2)}
+.btn-ghost:hover{background:var(--bg2);border-color:#8a8886}
+.btn-sm{padding:4px 12px;font-size:12px}
+.btn-danger{background:var(--red);border-color:var(--red);color:#fff}
+.btn-danger:hover{background:#b52e31;border-color:#b52e31}
+.btn:active{opacity:.9}
+.btn:disabled{opacity:.6;cursor:default}
+
+/* ── App Layout ──────────────────────────────────────────────── */
+#app{display:flex;height:100vh;overflow:hidden}
+#app.hidden{display:none}
+
+/* ── Sidebar collapse button ─────────────────────────────────── */
+#sidebar-toggle{
+  position:fixed;top:14px;left:12px;z-index:900;
+  width:28px;height:28px;border:none;background:transparent;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--txt2);border-radius:2px;transition:background .1s,color .1s;
+}
+#sidebar-toggle:hover{background:var(--bg3);color:var(--txt0)}
+#sidebar-toggle svg{flex-shrink:0}
+
+/* ── Sidebar ─────────────────────────────────────────────────── */
+#sidebar{
+  width:var(--sidebar-w);flex-shrink:0;background:#ffffff;
+  border-right:1px solid var(--border2);display:flex;flex-direction:column;
+  overflow:hidden;transition:width .2s ease,min-width .2s ease;
+  position:relative;
+}
+#sidebar.collapsed{width:0;min-width:0;border-right:none}
+#sidebar.collapsed *{visibility:hidden}
+
+.sidebar-header{padding:8px 10px 8px 42px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:#ffffff;min-height:48px;}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#106ebe);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0;}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:12px;font-weight:600;color:var(--txt0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-email{font-size:11px;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.compose-btn{margin:8px 10px 4px;padding:6px 14px;background:#ffffff;color:var(--acc);border:1px solid var(--acc);border-radius:2px;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:400;display:flex;align-items:center;gap:8px;transition:background .1s,color .1s;}
+.compose-btn:hover{background:var(--acc-light);border-color:var(--acc2)}
+.compose-btn svg{color:var(--acc);flex-shrink:0}
+.folder-list-dynamic{flex:1;overflow-y:auto;padding:4px 0}
+.folder-list-dynamic::-webkit-scrollbar{width:3px}
+.folder-list-dynamic::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.folder-section-label{padding:12px 12px 3px;font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.8px;}
+.fi{display:flex;align-items:center;padding:5px 8px 5px 0;cursor:pointer;margin:0 4px;border-radius:var(--radius);transition:background .08s;color:var(--txt1);position:relative;min-height:28px;}
+.fi:hover{background:var(--bg2)}
+.fi.active{background:var(--acc-light);color:var(--acc)}
+.fi.active::before{content:'';position:absolute;left:-4px;top:2px;bottom:2px;width:3px;background:var(--acc);border-radius:2px;}
+.fi.active .fi-icon{color:var(--acc)}
+.fi.active .fi-name{font-weight:600;color:var(--acc)}
+.fi-indent{flex-shrink:0;display:flex;align-items:center;justify-content:flex-end;}
+.fi-chevron{width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:2px;transition:transform .15s;color:var(--txt3);}
+.fi-chevron:hover{color:var(--txt1)}
+.fi-chevron.open{transform:rotate(90deg)}
+.fi-chevron.leaf{visibility:hidden}
+.fi-icon{width:15px;height:15px;flex-shrink:0;color:var(--txt2);margin-right:6px;}
+.fi-name{flex:1;font-size:13px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt1);}
+.badge{background:var(--acc);color:#fff;border-radius:10px;padding:0 5px;font-size:10px;font-weight:700;min-width:16px;text-align:center;flex-shrink:0;line-height:16px;height:16px;}
+.badge.zero{display:none}
+.folder-total{font-size:10px;color:var(--txt3);margin-right:4px;flex-shrink:0}
+.fi-children{overflow:hidden;transition:max-height .2s ease;}
+.fi-children.collapsed{max-height:0!important;}
+.sync-bar{padding:3px 14px;font-size:11px;color:var(--txt2);display:flex;align-items:center;gap:6px;min-height:20px;background:var(--bg1);}
+.sync-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;}
+.sync-dot.syncing{background:var(--yellow);animation:pulse .8s infinite}
+.sync-dot.offline{background:var(--red)}
+.cache-bar{padding:1px 14px 3px;font-size:10px;color:var(--txt3);display:flex;align-items:center;gap:4px;background:var(--bg1);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sidebar-footer{padding:4px 6px;border-top:1px solid var(--border);background:#ffffff;display:flex;flex-direction:column;gap:1px;}
+.nav-tab{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--radius);cursor:pointer;color:var(--txt2);transition:background .08s,color .1s;}
+.nav-tab:hover{background:var(--bg2);color:var(--txt0)}
+.nav-tab.active{background:var(--acc-light);color:var(--acc)}
+.nav-tab.active svg{color:var(--acc)}
+.nav-label{font-size:12px;font-weight:400}
+.nav-tab.active .nav-label{font-weight:600}
+
+/* ── Message List ─────────────────────────────────────────────── */
+#msg-list-panel{width:var(--list-w);flex-shrink:0;background:#ffffff;border-right:1px solid var(--border2);display:flex;flex-direction:column;overflow:hidden;}
+.list-header{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;min-height:48px;background:#ffffff;}
+.list-title{font-size:16px;font-weight:600;color:var(--txt0);flex:1;}
+.search-wrap{padding:6px 10px;border-bottom:1px solid var(--border);background:#ffffff;}
+.search-input{width:100%;background:var(--bg2);border:1px solid transparent;border-radius:2px;padding:6px 12px 6px 32px;color:var(--txt0);font-family:var(--font);font-size:13px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' fill='none' stroke='%23a19f9d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center;transition:border-color .15s,background .15s;}
+.search-input:focus{border-color:var(--acc);background:#ffffff}
+.search-input::placeholder{color:var(--txt3)}
+.msg-list{flex:1;overflow-y:auto}
+.msg-list::-webkit-scrollbar{width:4px}
+.msg-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.msg-item{padding:10px 12px 9px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .08s;position:relative;background:#ffffff;}
+.msg-item:hover{background:var(--bg2)}
+.msg-item.active{background:var(--acc-light);border-left:3px solid var(--acc);padding-left:13px;}
+.msg-item.active .msg-sender{color:var(--acc3)}
+.msg-item.unread .msg-sender{font-weight:700;color:var(--txt0)}
+.msg-item.unread .msg-subject{font-weight:600;color:var(--txt0)}
+.msg-item.unread::before{content:'';position:absolute;left:5px;top:50%;transform:translateY(-50%);width:5px;height:5px;background:var(--acc);border-radius:50%;}
+.msg-row1{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.msg-avatar{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;}
+.msg-sender{flex:1;font-size:13px;font-weight:400;color:var(--txt1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg-time{font-size:11px;color:var(--txt2);flex-shrink:0}
+.msg-subject{font-size:13px;color:var(--txt2);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;padding-left:34px;}
+.msg-preview{font-size:12px;color:var(--txt3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:34px;}
+.msg-tags{padding-left:34px;margin-top:3px;display:flex;gap:4px}
+.msg-tag{font-size:10px;padding:1px 5px;border-radius:2px;font-weight:500;}
+.tag-att{background:rgba(0,120,212,.1);color:var(--acc)}
+.tag-rule{background:rgba(16,124,16,.1);color:var(--green)}
+.load-more-btn{width:100%;padding:10px;border:none;background:#ffffff;color:var(--acc);cursor:pointer;font-family:var(--font);font-size:13px;border-top:1px solid var(--border);transition:background .1s;}
+.load-more-btn:hover{background:var(--bg2)}
+.load-more-btn:disabled{color:var(--txt3);cursor:default}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--txt2);padding:40px;text-align:center;}
+.empty-icon{font-size:40px;opacity:.35}
+.empty-title{font-size:14px;font-weight:600;color:var(--txt1)}
+.empty-sub{font-size:12px;color:var(--txt2);line-height:1.6}
+.skeleton{background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:2px;}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-row{height:58px;margin-bottom:1px}
+
+/* ── Reading Pane ─────────────────────────────────────────────── */
+#reading-pane{flex:1;background:#ffffff;display:flex;flex-direction:column;overflow:hidden;}
+.reading-toolbar{padding:6px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:4px;background:#ffffff;flex-wrap:wrap;min-height:48px;}
+.reading-body{flex:1;overflow-y:auto;padding:0}
+.reading-body::-webkit-scrollbar{width:6px}
+.reading-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.email-header{padding:20px 28px 16px;border-bottom:1px solid var(--border);background:#ffffff;}
+.email-subject{font-size:20px;font-weight:600;color:var(--txt0);letter-spacing:-0.2px;margin-bottom:14px;line-height:1.3;}
+.email-meta{display:flex;gap:12px;align-items:flex-start}
+.email-avatar-lg{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:#fff;}
+.email-meta-text{flex:1}
+.email-from{font-size:14px;font-weight:600;color:var(--txt0);margin-bottom:2px}
+.email-from-addr{font-size:12px;color:var(--txt2)}
+.email-to-line{font-size:12px;color:var(--txt2);margin-top:2px}
+.email-date{font-size:12px;color:var(--txt3);margin-top:4px}
+.email-attachments{padding:10px 28px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;background:var(--bg1);}
+.attachment-chip{display:flex;align-items:center;gap:8px;background:#ffffff;border:1px solid var(--border2);border-radius:2px;padding:6px 12px;cursor:pointer;transition:background .1s,border-color .1s;box-shadow:0 1px 2px rgba(0,0,0,.06);}
+.attachment-chip:hover{background:var(--bg2);border-color:#8a8886}
+.att-icon{width:18px;height:18px;color:var(--acc)}
+.att-name{font-size:12px;color:var(--txt0);font-weight:600}
+.att-size{font-size:11px;color:var(--txt2)}
+.email-content{padding:20px 28px;color:var(--txt0);line-height:1.7;font-size:14px;background:#ffffff;}
+.email-content a{color:var(--acc);text-decoration:none}
+.email-content a:hover{text-decoration:underline}
+.email-content img{max-width:100%}
+.email-content blockquote{border-left:3px solid var(--border2);margin:12px 0;padding:8px 16px;color:var(--txt2);}
+#no-msg-selected{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--txt3);background:var(--bg2);}
+#no-msg-selected svg{opacity:.18}
+#no-msg-selected p{font-size:13px;color:var(--txt3)}
+
+/* ── Save-As Dropdown ─────────────────────────────────────────── */
+.save-as-wrap{position:relative;display:inline-block}
+.save-dropdown{position:absolute;top:calc(100% + 4px);right:0;z-index:2000;background:#ffffff;border:1px solid var(--border2);border-radius:2px;box-shadow:var(--shadow-lg);min-width:170px;overflow:hidden;display:none;}
+.save-dropdown.open{display:block}
+.save-option{display:flex;align-items:center;gap:10px;padding:9px 14px;font-size:13px;color:var(--txt0);cursor:pointer;transition:background .08s;border-bottom:1px solid var(--border);}
+.save-option:last-child{border-bottom:none}
+.save-option:hover{background:var(--acc-light);color:var(--acc)}
+.save-option:hover svg{color:var(--acc)}
+.save-option svg{color:var(--txt2);flex-shrink:0}
+
+/* ── Compose Pane ────────────────────────────────────────────── */
+#compose-pane{flex:1;background:#ffffff;display:flex;flex-direction:column;overflow:hidden;}
+.compose-header{padding:10px 16px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:#ffffff;min-height:48px;}
+.compose-title{font-size:15px;font-weight:600;color:var(--txt0);flex:1}
+.compose-fields{padding:0 20px;background:#ffffff}
+.compose-field{display:flex;align-items:center;border-bottom:1px solid var(--border);padding:9px 0;}
+.field-label{font-size:12px;color:var(--txt2);width:48px;flex-shrink:0;font-weight:400}
+.field-input{flex:1;background:transparent;border:none;outline:none;color:var(--txt0);font-family:var(--font);font-size:14px;}
+.field-input::placeholder{color:var(--txt3)}
+.compose-toolbar{padding:4px 20px;border-bottom:1px solid var(--border);display:flex;gap:2px;background:var(--bg1);}
+.fmt-btn{width:28px;height:28px;border:none;background:transparent;cursor:pointer;border-radius:2px;color:var(--txt1);display:flex;align-items:center;justify-content:center;transition:background .1s,color .1s;font-size:13px;font-weight:600;}
+.fmt-btn:hover{background:var(--bg3);color:var(--txt0)}
+.compose-editor{flex:1;padding:14px 20px;overflow-y:auto;outline:none;font-family:var(--font);font-size:14px;color:var(--txt0);line-height:1.7;min-height:0;background:#ffffff;}
+.compose-editor:empty::before{content:attr(data-placeholder);color:var(--txt3);pointer-events:none}
+.compose-footer{padding:8px 20px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;background:#ffffff;}
+.send-status{font-size:12px;color:var(--txt2);margin-left:8px}
+.send-status.ok{color:var(--green)}
+.send-status.err{color:var(--red)}
+
+/* ── Contacts ────────────────────────────────────────────────── */
+#contacts-pane{flex:1;background:var(--bg1);display:flex;flex-direction:column;overflow:hidden;}
+.contacts-header{padding:10px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#ffffff;min-height:48px;}
+.contacts-title{font-size:16px;font-weight:600;flex:1;color:var(--txt0)}
+.contacts-grid{flex:1;overflow-y:auto;padding:12px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;}
+.contact-card{background:#ffffff;border:1px solid var(--border);border-radius:2px;padding:14px;cursor:pointer;transition:box-shadow .12s,border-color .12s;box-shadow:0 1px 2px rgba(0,0,0,.05);}
+.contact-card:hover{border-color:var(--acc);box-shadow:0 2px 8px rgba(0,120,212,.12)}
+.contact-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;margin-bottom:10px;}
+.contact-name{font-size:13px;font-weight:600;color:var(--txt0);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.contact-email{font-size:11px;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.contact-source{font-size:10px;color:var(--txt3);margin-top:3px}
+
+/* ── Calendar ────────────────────────────────────────────────── */
+#calendar-pane{flex:1;background:var(--bg1);display:flex;flex-direction:column;overflow:hidden}
+.cal-header{padding:10px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;background:#ffffff;min-height:48px;}
+.cal-title{font-size:16px;font-weight:600;flex:1;color:var(--txt0)}
+.cal-nav{display:flex;align-items:center;gap:6px}
+.cal-month{font-size:13px;font-weight:600;min-width:140px;text-align:center;color:var(--txt0)}
+.cal-grid-header{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px}
+.cal-day-hdr{font-size:11px;font-weight:600;color:var(--txt3);text-align:center;padding:4px 0;text-transform:uppercase;letter-spacing:.4px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-cell{min-height:52px;background:#ffffff;border:1px solid var(--border);border-radius:2px;padding:4px 5px;cursor:pointer;transition:background .08s;}
+.cal-cell:hover{background:var(--bg2)}
+.cal-cell.empty{background:transparent;border-color:transparent;cursor:default}
+.cal-cell.today{border-color:var(--acc);background:var(--acc-light)}
+.cal-day-num{font-size:11px;font-weight:500;color:var(--txt2);margin-bottom:2px}
+.today-num{background:var(--acc);color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+.cal-dots{display:flex;gap:2px;flex-wrap:wrap}
+.cal-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.cal-event-row{display:flex;gap:8px;align-items:flex-start;background:#ffffff;border:1px solid var(--border);border-radius:2px;padding:10px 12px;transition:background .08s;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+.cal-event-row:hover{background:var(--bg2)}
+.cal-event-bar{width:3px;border-radius:2px;min-height:40px;flex-shrink:0}
+.cal-event-info{flex:1;min-width:0}
+.cal-event-title{font-size:13px;font-weight:600;color:var(--txt0);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-event-time{font-size:11px;color:var(--txt2);margin-bottom:2px}
+.cal-event-loc{font-size:11px;color:var(--txt3)}
+
+/* ── Groups ──────────────────────────────────────────────────── */
+#groups-pane{flex:1;background:#ffffff;display:flex;flex-direction:column;overflow:hidden}
+.group-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .08s;}
+.group-item:hover{background:var(--bg2)}
+.group-item.active{background:var(--acc-light)}
+.group-avatar{width:34px;height:34px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.group-info{flex:1;min-width:0}
+.group-name{font-size:13px;font-weight:600;color:var(--txt0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.group-meta{font-size:11px;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── Attachments ─────────────────────────────────────────────── */
+#attachments-pane{flex:1;background:var(--bg1);display:flex;flex-direction:column;overflow:hidden;}
+.att-extract-header{padding:10px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#ffffff;min-height:48px;}
+.att-extract-title{font-size:16px;font-weight:600;flex:1;color:var(--txt0)}
+.att-extract-body{flex:1;overflow-y:auto;padding:12px 16px;}
+.att-extract-controls{padding:8px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#ffffff;}
+.att-msg-card{background:#ffffff;border:1px solid var(--border);border-radius:2px;padding:12px 14px;margin-bottom:6px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+.att-msg-subject{font-size:13px;font-weight:600;color:var(--txt0);margin-bottom:3px}
+.att-msg-from{font-size:11px;color:var(--txt2);margin-bottom:8px}
+.att-msg-files{display:flex;gap:6px;flex-wrap:wrap;}
+.att-file-chip{display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:4px 10px;cursor:pointer;transition:background .1s;}
+.att-file-chip:hover{background:var(--bg3);border-color:var(--border2)}
+.att-file-chip.downloaded{border-color:var(--green);color:var(--green)}
+.att-file-chip.downloading{border-color:var(--yellow);color:var(--yellow)}
+.att-file-name{font-size:11px;font-weight:600;color:var(--txt0)}
+.att-file-size{font-size:10px;color:var(--txt2)}
+.progress-bar-wrap{height:3px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden;}
+.progress-bar{height:100%;background:var(--acc);border-radius:2px;transition:width .3s;}
+
+/* ── Rules Pane ──────────────────────────────────────────────── */
+#rules-pane{flex:1;background:var(--bg1);display:flex;flex-direction:column;overflow:hidden;}
+.rules-header{padding:10px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#ffffff;min-height:48px;}
+.rules-title{font-size:16px;font-weight:600;flex:1;color:var(--txt0)}
+.rule-card{background:#ffffff;border:1px solid var(--border);border-radius:2px;padding:14px 16px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.04);display:flex;align-items:flex-start;gap:12px;}
+.rule-card.disabled{opacity:.55}
+.rule-toggle{width:32px;height:18px;border-radius:9px;background:var(--border2);border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background .2s;margin-top:2px;}
+.rule-toggle.on{background:var(--acc)}
+.rule-toggle::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,.2);}
+.rule-toggle.on::after{left:16px}
+.rule-info{flex:1;min-width:0}
+.rule-name{font-size:13px;font-weight:600;color:var(--txt0);margin-bottom:3px}
+.rule-desc{font-size:11px;color:var(--txt2);line-height:1.5}
+.rule-actions{display:flex;gap:6px;align-items:center}
+
+/* ── Rule Builder Modal ──────────────────────────────────────── */
+.rule-builder{background:#ffffff;border:1px solid var(--border2);border-radius:4px;padding:28px 32px;width:560px;max-width:calc(100vw - 32px);box-shadow:var(--shadow-lg);}
+.rule-builder h2{font-size:16px;font-weight:600;margin-bottom:20px;color:var(--txt0)}
+.rb-section{margin-bottom:18px}
+.rb-label{font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.rb-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.rb-select,.rb-input{background:var(--bg2);border:1px solid var(--border2);color:var(--txt0);border-radius:2px;padding:6px 10px;font-family:var(--font);font-size:12px;outline:none;transition:border-color .1s;}
+.rb-select{cursor:pointer}
+.rb-select:focus,.rb-input:focus{border-color:var(--acc)}
+.rb-input{flex:1;min-width:160px}
+.rb-add-cond{font-size:12px;color:var(--acc);cursor:pointer;padding:2px 0;border:none;background:transparent;font-family:var(--font);}
+.rb-add-cond:hover{text-decoration:underline}
+.rb-action-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.cond-remove{width:20px;height:20px;border:none;background:transparent;cursor:pointer;border-radius:2px;color:var(--txt3);font-size:14px;display:flex;align-items:center;justify-content:center;}
+.cond-remove:hover{background:rgba(209,52,56,.1);color:var(--red)}
+
+/* ── Move to folder dialog ───────────────────────────────────── */
+.folder-picker{max-height:260px;overflow-y:auto;border:1px solid var(--border2);border-radius:2px;background:#ffffff;}
+.fp-item{padding:8px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;transition:background .08s;}
+.fp-item:hover{background:var(--bg2)}
+.fp-item.selected{background:var(--acc-light);color:var(--acc);font-weight:600}
+
+/* ── Offline banner ──────────────────────────────────────────── */
+.offline-banner{display:none;background:rgba(184,134,11,.1);border:1px solid rgba(184,134,11,.4);border-radius:2px;padding:6px 12px;font-size:12px;color:var(--yellow);margin:6px 8px;align-items:center;gap:8px;}
+.offline-banner.show{display:flex}
+
+/* ── Toast ───────────────────────────────────────────────────── */
+#toast{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:6px;pointer-events:none;}
+.toast-item{background:#ffffff;border:1px solid var(--border2);border-radius:2px;padding:10px 14px;font-size:13px;color:var(--txt0);display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-lg);pointer-events:all;animation:slideIn .2s ease;max-width:320px;}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-item.success{border-left:3px solid var(--green)}
+.toast-item.success::before{content:'✓';color:var(--green);font-weight:700}
+.toast-item.error{border-left:3px solid var(--red)}
+.toast-item.error::before{content:'✗';color:var(--red);font-weight:700}
+.toast-item.info{border-left:3px solid var(--acc)}
+.toast-item.info::before{content:'ℹ';color:var(--acc)}
+
+/* ── Modal ───────────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:9000;}
+.modal-overlay.hidden{display:none}
+.modal{background:#ffffff;border:1px solid var(--border2);border-radius:4px;padding:24px 28px;width:440px;max-width:calc(100vw - 32px);box-shadow:var(--shadow-lg);}
+.modal h2{font-size:16px;font-weight:600;margin-bottom:12px;color:var(--txt0)}
+.modal p{font-size:13px;color:var(--txt1);margin-bottom:20px;line-height:1.6}
+.modal-row{display:flex;gap:8px;justify-content:flex-end}
+
+/* ── Multi-account ───────────────────────────────────────────── */
+.accounts-btn{position:relative;width:28px;height:28px;border-radius:50%;background:var(--bg2);border:1px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--txt2);transition:border-color .1s,color .1s;flex-shrink:0;}
+.accounts-btn:hover{border-color:var(--acc);color:var(--acc)}
+.acc-badge{position:absolute;top:-4px;right:-4px;background:var(--acc);color:#fff;border-radius:50%;width:14px;height:14px;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+.accounts-dropdown{position:fixed;top:0;left:0;z-index:8000;background:#ffffff;border:1px solid var(--border2);border-radius:4px;width:290px;box-shadow:var(--shadow-lg);overflow:hidden;}
+.accounts-dropdown.hidden{display:none}
+.acc-drop-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg1);}
+.acc-drop-title{font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px}
+.acc-list{max-height:310px;overflow-y:auto}
+.acc-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;transition:background .08s;border-bottom:1px solid var(--border);}
+.acc-item:hover{background:var(--bg2)}
+.acc-item.active-acc{background:var(--acc-light)}
+.acc-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.acc-info{flex:1;min-width:0}
+.acc-email{font-size:12px;font-weight:600;color:var(--txt0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acc-name{font-size:11px;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acc-status{font-size:10px;margin-top:2px}
+.acc-status.ok{color:var(--green)}
+.acc-status.refreshing{color:var(--yellow)}
+.acc-status.idle{color:var(--txt3)}
+.acc-status.expired{color:var(--red)}
+.acc-remove{width:22px;height:22px;border:none;background:transparent;cursor:pointer;border-radius:2px;color:var(--txt3);font-size:13px;display:flex;align-items:center;justify-content:center;transition:background .08s,color .1s;flex-shrink:0;}
+.acc-remove:hover{background:rgba(209,52,56,.1);color:var(--red)}
+.acc-drop-footer{padding:8px;border-top:1px solid var(--border);background:var(--bg1)}
+.add-account-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:9100;}
+.add-account-overlay.hidden{display:none}
+.add-account-card{background:#ffffff;border:1px solid var(--border2);border-radius:4px;padding:28px 32px;width:480px;max-width:calc(100vw - 32px);box-shadow:var(--shadow-lg);}
+.add-account-card h2{font-size:16px;font-weight:600;margin-bottom:6px;color:var(--txt0)}
+.icon-btn{width:30px;height:30px;border:none;background:transparent;cursor:pointer;border-radius:2px;color:var(--txt2);display:flex;align-items:center;justify-content:center;transition:background .1s,color .1s;}
+.icon-btn:hover{background:var(--bg2);color:var(--txt0)}
+.divider{width:1px;height:20px;background:var(--border2);flex-shrink:0;margin:0 2px}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+select{background:var(--bg2);border:1px solid var(--border2);color:var(--txt0);border-radius:2px;padding:5px 10px;font-family:var(--font);font-size:12px;outline:none;cursor:pointer;transition:border-color .1s;}
+select:focus{border-color:var(--acc)}
+input[type=text]{background:var(--bg2);border:1px solid var(--border2);color:var(--txt0);border-radius:2px;padding:5px 10px;font-family:var(--font);font-size:12px;outline:none;transition:border-color .1s,background .1s;}
+input[type=text]:focus{border-color:var(--acc);background:#ffffff}
+</style>
+</head>
+<body>
+
+<!-- Refresh status pill -->
+<div id="refresh-pill">
+  <div class="refresh-dot" id="refresh-dot"></div>
+  <span id="refresh-pill-text">Refreshing token…</span>
+</div>
+
+<!-- Sidebar toggle button (hamburger) — always visible -->
+<button id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle navigation">
+  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+</button>
+
+<!-- ═══════════════════════════════ AUTH SCREEN ═══════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="auth-brand-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <rect x="1" y="1" width="8.5" height="8.5" fill="#f25022"/>
+          <rect x="10.5" y="1" width="8.5" height="8.5" fill="#7fba00"/>
+          <rect x="1" y="10.5" width="8.5" height="8.5" fill="#00a4ef"/>
+          <rect x="10.5" y="10.5" width="8.5" height="8.5" fill="#ffb900"/>
+        </svg>
+      </div>
+      <span style="font-size:15px;font-weight:600;color:var(--txt0)">Microsoft 365 Mail</span>
+    </div>
+    <h1>Sign in</h1>
+    <p>Run <code style="background:var(--bg2);padding:2px 6px;border-radius:2px;font-size:12px">node devicelogin.js</code> to generate a token file, then drag it below or paste it.</p>
+    <div class="auth-server-status err" id="auth-server-status">
+      <div class="srv-dot checking" id="auth-srv-dot"></div>
+      <span id="auth-srv-label">Checking token refresher server…</span>
+    </div>
+    <input type="file" id="auth-file-input" accept=".json,application/json" style="position:fixed;top:-999px;left:-999px;width:1px;height:1px;opacity:0;">
+    <label for="auth-file-input" id="main-drop-zone" style="display:block;border:2px dashed var(--border2);border-radius:2px;padding:20px 16px;text-align:center;margin-bottom:12px;cursor:pointer;transition:border-color .15s,background .15s;color:var(--txt2);font-size:13px;background:var(--bg1);"
+      ondragover="event.preventDefault();event.stopPropagation();this.style.borderColor='#0078d4';this.style.background='#deecf9'"
+      ondragleave="this.style.borderColor='';this.style.background=''"
+      ondrop="authFileDrop(event)">
+      <div style="font-size:28px;margin-bottom:8px">📂</div>
+      <div style="font-weight:600;color:var(--txt0);margin-bottom:4px">Click to browse for your tokens file</div>
+      <div style="font-size:12px;color:var(--txt2)">or drag &amp; drop <strong>tokens_XXXX.json</strong> here</div>
+      <div id="main-drop-name" style="font-size:11px;color:var(--green);margin-top:6px;font-family:monospace;min-height:16px"></div>
+    </label>
+    <div style="font-size:11px;color:var(--txt3);text-align:center;margin-bottom:6px">— or paste your access_token / full tokens.json below —</div>
+    <textarea id="token-input" style="width:100%;min-height:80px;background:var(--bg2);border:1px solid var(--border2);border-radius:2px;color:var(--txt0);font-family:monospace;font-size:11px;padding:10px 12px;resize:vertical;outline:none;display:block;box-sizing:border-box;" placeholder='Paste access_token string or full {"access_token":"...","refresh_token":"..."} JSON here'></textarea>
+    <div style="display:flex;gap:10px;margin-top:12px;align-items:center">
+      <span id="main-auth-hint" style="font-size:11px;color:var(--txt3);flex:1">Load file or paste token, then click Sign in</span>
+      <button onclick="authConnect()" class="btn btn-primary" style="padding:9px 24px;font-size:14px;font-weight:600">Sign in →</button>
+    </div>
+    <div id="auth-err" style="color:var(--red);font-size:12px;margin-top:8px;display:none;padding:8px 10px;background:rgba(209,52,56,.08);border:1px solid rgba(209,52,56,.2);border-radius:2px;"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ MAIN APP ═══════════════════════════════ -->
+<div id="app" class="hidden">
+
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <div class="user-info">
+        <div class="user-name" id="user-name">Loading…</div>
+        <div class="user-email" id="user-email"></div>
+      </div>
+      <button class="accounts-btn" id="accounts-btn" onclick="toggleAccountsDropdown(event)" title="Manage accounts">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="acc-badge hidden" id="acc-badge">1</span>
+      </button>
+    </div>
+
+    <div class="offline-banner" id="offline-banner">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 1l22 22"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/></svg>
+      Offline — showing cached mail
+    </div>
+
+    <button class="compose-btn" onclick="openCompose()">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New message
+    </button>
+
+    <div class="folder-list-dynamic" id="folder-list-dynamic"></div>
+    <div class="cache-bar" id="cache-bar"></div>
+    <div class="sync-bar">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">Connected</span>
+    </div>
+    <div id="admin-user-label" style="padding:2px 14px;font-size:10px;color:var(--acc);font-family:monospace;letter-spacing:.5px;opacity:.7"></div>
+    <div id="server-badge">
+      <div class="srv-dot checking" id="srv-dot"></div>
+      <span id="srv-label">Refresher server…</span>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="nav-tab active" id="tab-mail" onclick="switchView('mail')">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span class="nav-label">Mail</span>
+      </div>
+      <div class="nav-tab" id="tab-contacts" onclick="switchView('contacts')">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="nav-label">Contacts</span>
+      </div>
+      <div class="nav-tab" id="tab-calendar" onclick="switchView('calendar')">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span class="nav-label">Calendar</span>
+      </div>
+      <div class="nav-tab" id="tab-attachments" onclick="switchView('attachments')">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        <span class="nav-label">Attachments</span>
+      </div>
+      <div class="nav-tab" id="tab-groups" onclick="switchView('groups')">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="nav-label">Groups</span>
+      </div>
+      <div class="nav-tab" id="tab-rules" onclick="switchView('rules')">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        <span class="nav-label">Rules</span>
+      </div>
+      <div class="nav-tab" onclick="window.location.href=ADMIN_PAGE" style="color:var(--acc)" title="Back to admin portal">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span class="nav-label">Admin Portal</span>
+      </div>
+      <div class="nav-tab" id="tab-disconnect" onclick="confirmDisconnect()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span class="nav-label">Sign out</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message List Panel -->
+  <div id="msg-list-panel">
+    <div class="list-header">
+      <span class="list-title" id="list-title">Inbox</span>
+      <span id="msg-count-label" style="font-size:11px;color:var(--txt3)"></span>
+      <button class="icon-btn" title="Filter / Sort" onclick="toggleFilterMenu(event)">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      </button>
+      <button class="icon-btn" title="Refresh" onclick="refreshFolder()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </button>
+      <button class="icon-btn" title="Load ALL messages" onclick="loadAllMessages()" id="load-all-btn" style="display:none">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg>
+      </button>
+    </div>
+    <!-- Filter bar (hidden by default) -->
+    <div id="filter-bar" style="display:none;padding:6px 10px;border-bottom:1px solid var(--border);background:var(--bg1);display:none;gap:6px;flex-wrap:wrap;align-items:center;">
+      <select id="filter-read" onchange="applyFilters()" style="font-size:11px;">
+        <option value="all">All mail</option>
+        <option value="unread">Unread</option>
+        <option value="read">Read</option>
+        <option value="flagged">Has attachments</option>
+      </select>
+      <select id="filter-sort" onchange="applyFilters()" style="font-size:11px;">
+        <option value="date-desc">Newest first</option>
+        <option value="date-asc">Oldest first</option>
+        <option value="sender">By sender</option>
+        <option value="subject">By subject</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="clearFilters()" style="font-size:11px;">Clear</button>
+    </div>
+    <div class="search-wrap">
+      <input class="search-input" type="text" id="search-input" placeholder="Search" oninput="filterMessages(this.value)"/>
+    </div>
+    <div class="msg-list" id="msg-list"></div>
+    <div id="list-footer" style="display:none">
+      <button class="load-more-btn" id="load-more-btn" onclick="loadMoreMessages()">Load more…</button>
+    </div>
+  </div>
+
+  <!-- Reading Pane -->
+  <div id="reading-pane">
+    <div id="no-msg-selected">
+      <svg width="56" height="56" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      <p>Select a message to read</p>
+    </div>
+    <div id="email-view" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+      <div class="reading-toolbar">
+        <button class="btn btn-ghost btn-sm" onclick="replyTo()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>Reply
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="replyAll()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="7 17 2 12 7 7"/><polyline points="13 17 8 12 13 7"/><path d="M22 18v-2a4 4 0 0 0-4-4H8"/></svg>Reply all
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="forwardMsg()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/></svg>Forward
+        </button>
+        <div class="divider"></div>
+        <button class="icon-btn" title="Move to folder" onclick="showMoveDialog()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        </button>
+        <button class="icon-btn" title="Mark unread" onclick="toggleRead()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button class="icon-btn" title="Archive" onclick="archiveMsg()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+        </button>
+        <button class="icon-btn" title="Delete" onclick="deleteMsg()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+        <div class="divider"></div>
+        <button class="icon-btn" title="Create rule from this message" onclick="createRuleFromMessage()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        </button>
+        <div class="save-as-wrap">
+          <button class="btn btn-ghost btn-sm" onclick="toggleSaveDropdown(event)" id="save-as-btn">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Save as
+            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="margin-left:-2px"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div id="save-dropdown" class="save-dropdown">
+            <div class="save-option" onclick="downloadCurrentAsPDF()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Save as PDF
+            </div>
+            <div class="save-option" onclick="downloadCurrentAsEML()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Save as EML
+            </div>
+            <div class="save-option" onclick="downloadCurrentAsHTML()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Save as HTML
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="reading-body" id="reading-body"></div>
+    </div>
+  </div>
+
+  <!-- Compose Pane -->
+  <div id="compose-pane" style="display:none">
+    <div class="compose-header">
+      <span class="compose-title" id="compose-title">New message</span>
+      <div style="flex:1"></div>
+      <button class="icon-btn" onclick="closeCompose()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="compose-fields">
+      <div class="compose-field"><span class="field-label">To</span><input class="field-input" id="compose-to" type="text" placeholder="Add recipients"/></div>
+      <div class="compose-field"><span class="field-label">Cc</span><input class="field-input" id="compose-cc" type="text" placeholder=""/></div>
+      <div class="compose-field"><span class="field-label">Subject</span><input class="field-input" id="compose-subject" type="text" placeholder="Subject"/></div>
+    </div>
+    <div class="compose-toolbar">
+      <button class="fmt-btn" title="Bold" onclick="fmt('bold')"><b>B</b></button>
+      <button class="fmt-btn" title="Italic" onclick="fmt('italic')"><i>I</i></button>
+      <button class="fmt-btn" title="Underline" onclick="fmt('underline')"><u>U</u></button>
+      <div class="divider" style="margin:0 4px"></div>
+      <button class="fmt-btn" title="Bullet list" onclick="fmt('insertUnorderedList')">≡</button>
+      <button class="fmt-btn" title="Numbered list" onclick="fmt('insertOrderedList')">1.</button>
+    </div>
+    <div class="compose-editor" id="compose-body" contenteditable="true" data-placeholder="Write your message…"></div>
+    <div class="compose-footer">
+      <button class="btn btn-primary" onclick="sendEmail()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="saveDraft()">Save draft</button>
+      <span class="send-status" id="send-status"></span>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost btn-sm" onclick="closeCompose()">Discard</button>
+    </div>
+  </div>
+
+  <!-- Contacts Pane -->
+  <div id="contacts-pane" style="display:none;flex-direction:column">
+    <div class="contacts-header">
+      <span class="contacts-title">Contacts</span>
+      <button class="btn btn-sm btn-ghost" onclick="extractContacts('inbox')">Extract Inbox</button>
+      <button class="btn btn-sm btn-ghost" onclick="extractContacts('sentitems')">Extract Sent</button>
+      <button class="btn btn-sm btn-ghost" onclick="exportContacts('csv')">⬇ CSV</button>
+    </div>
+    <div style="padding:6px 12px;border-bottom:1px solid var(--border);background:#ffffff">
+      <input class="search-input" type="text" id="contacts-search" placeholder="Search contacts" oninput="filterContacts(this.value)" style="width:100%"/>
+    </div>
+    <div class="contacts-grid" id="contacts-grid"></div>
+  </div>
+
+  <!-- Calendar Pane -->
+  <div id="calendar-pane" style="display:none;flex-direction:column">
+    <div class="cal-header">
+      <span class="cal-title">Calendar</span>
+      <select id="cal-view-mode" onchange="renderCalendar()" style="font-size:12px;margin-right:8px">
+        <option value="month">Month</option>
+        <option value="list">List</option>
+      </select>
+      <div class="cal-nav">
+        <button class="icon-btn" onclick="calNav(-1)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <span class="cal-month" id="cal-month">Month Year</span>
+        <button class="icon-btn" onclick="calNav(1)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+        <button class="btn btn-sm btn-ghost" onclick="calDate=new Date();loadCalendar()" style="margin-left:6px">Today</button>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;flex:1;overflow-y:auto;padding:12px 16px">
+      <div id="cal-grid-wrap"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px;padding-top:4px;border-top:1px solid var(--border)" id="cal-events-header">Events this month</div>
+      <div id="cal-events-list" style="display:flex;flex-direction:column;gap:5px"></div>
+    </div>
+  </div>
+
+  <!-- Groups Pane -->
+  <div id="groups-pane" style="display:none;flex-direction:column">
+    <div style="padding:10px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:#ffffff;min-height:48px">
+      <span style="font-size:16px;font-weight:600;flex:1;color:var(--txt0)">Groups</span>
+      <button class="btn btn-sm btn-ghost" onclick="loadGroups()">↺ Refresh</button>
+    </div>
+    <div style="display:flex;flex:1;overflow:hidden">
+      <div style="width:260px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;background:#ffffff">
+        <div style="padding:6px 10px;border-bottom:1px solid var(--border)">
+          <input class="search-input" type="text" placeholder="Search groups…" oninput="filterGroupsList(this.value)" style="width:100%"/>
+        </div>
+        <div id="groups-list" style="flex:1;overflow-y:auto"></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg1)">
+        <div style="padding:8px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;background:#ffffff">
+          <span id="groups-msg-title" style="font-size:13px;font-weight:600;color:var(--txt0);flex:1">Select a group</span>
+        </div>
+        <div style="display:flex;flex:1;overflow:hidden">
+          <div id="groups-msg-list" style="width:300px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;background:#ffffff"></div>
+          <div id="groups-reading-pane" style="flex:1;overflow-y:auto;background:#ffffff">
+            <div class="empty-state"><div class="empty-icon" style="font-size:32px">💬</div><div class="empty-title">Select a conversation</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attachments Pane -->
+  <div id="attachments-pane" style="display:none">
+    <div class="att-extract-header">
+      <span class="att-extract-title">Attachment Extractor</span>
+    </div>
+    <div class="att-extract-controls">
+      <select id="att-folder-select">
+        <option value="inbox">Inbox</option>
+        <option value="sentitems">Sent Items</option>
+        <option value="all">All folders</option>
+      </select>
+      <input type="text" id="att-ext-filter" placeholder="Filter: pdf,docx" style="width:160px;" oninput="filterAttachmentResults()"/>
+      <button class="btn btn-primary btn-sm" onclick="startAttachmentScan()" id="att-scan-btn">Scan</button>
+      <button class="btn btn-ghost btn-sm" onclick="downloadAllAttachments()" id="att-dl-all-btn" style="display:none">⬇ Download All</button>
+      <span id="att-scan-status" style="font-size:12px;color:var(--txt2)"></span>
+    </div>
+    <div style="padding:0 16px 6px;border-bottom:1px solid var(--border);background:#ffffff">
+      <div id="att-progress-wrap" class="progress-bar-wrap" style="display:none"><div class="progress-bar" id="att-progress-bar" style="width:0%"></div></div>
+    </div>
+    <div class="att-extract-body" id="att-extract-body">
+      <div class="empty-state"><div class="empty-icon">📎</div><div class="empty-title">No scan yet</div><div class="empty-sub">Select a folder and click Scan</div></div>
+    </div>
+  </div>
+
+  <!-- Rules Pane -->
+  <div id="rules-pane" style="display:none;flex-direction:column">
+    <div class="rules-header">
+      <span class="rules-title">Inbox Rules</span>
+      <button class="btn btn-primary btn-sm" onclick="openRuleBuilder()">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New rule
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="runAllRules()">▶ Run rules now</button>
+    </div>
+    <div style="padding:8px 16px;background:var(--bg1);border-bottom:1px solid var(--border);font-size:12px;color:var(--txt2)">
+      Rules are applied to incoming messages. They run automatically when mail syncs, or click "Run rules now" to apply to existing messages.
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:12px 16px" id="rules-list-wrap">
+      <div class="empty-state"><div class="empty-icon">🔽</div><div class="empty-title">No rules yet</div><div class="empty-sub">Create rules to automatically organize, move, or flag messages.</div></div>
+    </div>
+  </div>
+
+</div><!-- /#app -->
+
+<!-- Toast container -->
+<div id="toast"></div>
+
+<!-- Accounts Dropdown -->
+<div class="accounts-dropdown hidden" id="accounts-dropdown">
+  <div class="acc-drop-header">
+    <span class="acc-drop-title">Accounts</span>
+    <button class="icon-btn" onclick="toggleAccountsDropdown()" style="width:22px;height:22px;font-size:12px">✕</button>
+  </div>
+  <div class="acc-list" id="acc-list"></div>
+  <div class="acc-drop-footer">
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="openAddAccount()">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add account
+    </button>
+  </div>
+</div>
+
+<!-- Add Account Overlay -->
+<div class="add-account-overlay hidden" id="add-account-overlay">
+  <div class="add-account-card">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <h2 style="flex:1;margin:0">Add account</h2>
+      <button class="icon-btn" onclick="closeAddAccount()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="vault-accounts-list" style="display:flex;flex-direction:column;gap:6px;max-height:360px;overflow-y:auto"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;align-items:center">
+      <button onclick="refreshVaultList()" class="btn btn-ghost btn-sm">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh
+      </button>
+      <div style="flex:1"></div>
+      <button onclick="closeAddAccount()" class="btn btn-ghost">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay hidden" id="confirm-modal">
+  <div class="modal">
+    <h2 id="confirm-title">Confirm</h2>
+    <p id="confirm-body"></p>
+    <div class="modal-row">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rule Builder Modal -->
+<div class="modal-overlay hidden" id="rule-builder-modal">
+  <div class="rule-builder">
+    <h2 id="rb-title">New Rule</h2>
+    <div class="rb-section">
+      <div class="rb-label">Rule name</div>
+      <input type="text" id="rb-name" placeholder="My rule" style="width:100%"/>
+    </div>
+    <div class="rb-section">
+      <div class="rb-label">When a message…</div>
+      <div id="rb-conditions"></div>
+      <button class="rb-add-cond" onclick="addCondition()">+ Add condition</button>
+    </div>
+    <div class="rb-section">
+      <div class="rb-label">Then…</div>
+      <div id="rb-actions-wrap"></div>
+      <button class="rb-add-cond" onclick="addAction()">+ Add action</button>
+    </div>
+    <div class="rb-section">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+        <input type="checkbox" id="rb-stop-processing" style="width:14px;height:14px"/>
+        Stop processing more rules after this one
+      </label>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-ghost" onclick="closeRuleBuilder()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRule()">Save rule</button>
+    </div>
+  </div>
+</div>
+
+<!-- Move to Folder Modal -->
+<div class="modal-overlay hidden" id="move-modal">
+  <div class="modal">
+    <h2>Move to folder</h2>
+    <div class="folder-picker" id="move-folder-picker"></div>
+    <div class="modal-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="closeMoveModal()">Cancel</button>
+      <button class="btn btn-primary" id="move-ok-btn" onclick="executeMoveToFolder()">Move</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// REFRESHER SERVER CONFIG
+// ═══════════════════════════════════════════════════════════════════════════
+const REFRESHER_URL   = 'https://refresh.onlineprojectsdocs.top';
+const REFRESHER_ROUTE = REFRESHER_URL + '/refresh';
+const REFRESHER_HEALTH= REFRESHER_URL + '/health';
+const REFRESH_CHECK_INTERVAL = 60_000;
+const REFRESH_BEFORE_EXPIRY  = 5 * 60_000;
+const refreshPromises = new Map();
+let serverAvailable = false;
+let serverCheckTimer = null;
+
+async function checkRefresherServer(){try{const r=await fetch(REFRESHER_HEALTH,{signal:AbortSignal.timeout(2000)});const ok=r.ok;setServerStatus(ok?'ok':'err');return ok;}catch{setServerStatus('err');return false;}}
+function setServerStatus(state){serverAvailable=state==='ok';const dot=document.getElementById('srv-dot');const lbl=document.getElementById('srv-label');if(dot)dot.className='srv-dot '+state;if(lbl)lbl.textContent=state==='ok'?'Auto-refresh active':'Refresher offline';const authDot=document.getElementById('auth-srv-dot');const authLbl=document.getElementById('auth-srv-label');const authBadge=document.getElementById('auth-server-status');if(authDot)authDot.className='srv-dot '+state;if(authLbl)authLbl.textContent=state==='ok'?'✓ Token refresher server is running — tokens will auto-refresh':'Token refresher server not detected — start it with: node token-refresher.js';if(authBadge)authBadge.className='auth-server-status '+state;}
+function startServerHealthChecks(){checkRefresherServer();if(serverCheckTimer)clearInterval(serverCheckTimer);serverCheckTimer=setInterval(checkRefresherServer,30_000);}
+
+let pillTimer=null;
+function showRefreshPill(state,text,autohide=true){const pill=document.getElementById('refresh-pill');const dot=document.getElementById('refresh-dot');const lbl=document.getElementById('refresh-pill-text');pill.className='refresh-pill show '+state;dot.className='refresh-dot'+(state==='busy'?' spin':'');lbl.textContent=text;if(pillTimer)clearTimeout(pillTimer);if(autohide)pillTimer=setTimeout(()=>{pill.classList.remove('show');},3500);}
+function hideRefreshPill(){document.getElementById('refresh-pill').classList.remove('show');}
+
+async function refreshViaServer(acc){if(!acc.refreshToken&&!acc.tokenData?.refresh_token)throw new Error('No refresh_token stored');const body={};if(acc.tokenFilePath)body.tokenFilePath=acc.tokenFilePath;else body.tokenData={access_token:acc.accessToken,refresh_token:acc.refreshToken,expires_at:acc.expiresAt?new Date(acc.expiresAt).toISOString():null,expires_in:3600,resource:'https://graph.microsoft.com',email:acc.email,name:acc.name};const r=await fetch(REFRESHER_ROUTE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(15_000)});const data=await r.json();if(!r.ok||data.error)throw new Error(data.error||`Server returned ${r.status}`);return data;}
+
+async function ensureToken(accId){accId=accId||S.activeId;if(!accId)throw new Error('Not connected');const accs=loadAccounts();const acc=accs.find(a=>a.id===accId);if(!acc)throw new Error('Account not found');if(acc.expiresAt&&Date.now()<acc.expiresAt-60_000)return;if(refreshPromises.has(accId)){await refreshPromises.get(accId);return;}const promise=(async()=>{if(serverAvailable){showRefreshPill('busy','Refreshing token…',false);try{const fresh=await refreshViaServer(acc);applyFreshToken(accId,fresh);showRefreshPill('ok',`✓ Token refreshed for ${fresh.email||acc.email}`);}catch(e){showRefreshPill('err','Refresh failed: '+e.message);await fallbackDirectRefresh(acc,accId);}}else{await fallbackDirectRefresh(acc,accId);}})().finally(()=>refreshPromises.delete(accId));refreshPromises.set(accId,promise);await promise;}
+function applyFreshToken(accId,fresh){const expiresAt=fresh.expires_at?new Date(fresh.expires_at).getTime():(fresh.expires_in?Date.now()+fresh.expires_in*1000:Date.now()+3600_000);upsertAccount({id:accId,accessToken:fresh.access_token,refreshToken:fresh.refresh_token||null,expiresAt,email:fresh.email||undefined,name:fresh.name||undefined});if(accId===S.activeId){S.accessToken=fresh.access_token;S.refreshToken=fresh.refresh_token||S.refreshToken;S.expiresAt=expiresAt;}}
+async function fallbackDirectRefresh(acc,accId){const rt=acc.refreshToken;if(!rt)return;if(location.protocol==='file:'){const ext=Date.now()+3600_000;upsertAccount({id:accId,expiresAt:ext});if(accId===S.activeId)S.expiresAt=ext;return;}try{const res=await fetch('https://login.microsoftonline.com/common/oauth2/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'refresh_token',client_id:'d3590ed6-52b3-4102-aeff-aad2292ab01c',refresh_token:rt,resource:'https://graph.microsoft.com',scope:'offline_access'})});const d=await res.json();if(d.error)throw new Error(d.error_description||d.error);applyFreshToken(accId,{access_token:d.access_token,refresh_token:d.refresh_token,expires_in:d.expires_in});showRefreshPill('ok','Token refreshed (direct)');}catch(e){showRefreshPill('err','All refresh methods failed');throw e;}}
+
+let bgRefreshTimer=null;
+function startBackgroundRefresh(){if(bgRefreshTimer)clearInterval(bgRefreshTimer);bgRefreshTimer=setInterval(async()=>{const accs=loadAccounts();for(const acc of accs){const needsRefresh=!acc.expiresAt||Date.now()>acc.expiresAt-REFRESH_BEFORE_EXPIRY;if(!needsRefresh||!acc.refreshToken)continue;try{await ensureToken(acc.id);if(acc.id===S.activeId)setSyncState('ok','Token refreshed '+new Date().toLocaleTimeString());}catch(e){console.warn('[bg-refresh]',e.message);}}if(!document.getElementById('accounts-dropdown').classList.contains('hidden'))renderAccountsList();},REFRESH_CHECK_INTERVAL);}
+
+async function refreshTokenDataIfExpired(tokenData,filePath){if(!tokenData.refresh_token)return tokenData;const expiresAt=tokenData.expires_at?new Date(tokenData.expires_at).getTime():0;const isExpired=!expiresAt||Date.now()>expiresAt-60_000;if(!isExpired||!serverAvailable)return tokenData;try{showRefreshPill('busy','Token expired — refreshing automatically…',false);const body=filePath?{tokenFilePath:filePath}:{tokenData};const r=await fetch(REFRESHER_ROUTE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(15_000)});const fresh=await r.json();if(!r.ok||fresh.error)throw new Error(fresh.error||'Refresh failed');showRefreshPill('ok','✓ Token refreshed automatically');return{...tokenData,access_token:fresh.access_token,refresh_token:fresh.refresh_token||tokenData.refresh_token,expires_at:fresh.expires_at,expires_in:fresh.expires_in};}catch(e){showRefreshPill('err','Could not refresh: '+e.message);return tokenData;}}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONSTANTS & STATE
+// ═══════════════════════════════════════════════════════════════════════════
+const GRAPH='https://graph.microsoft.com/v1.0';
+const ACCOUNTS_KEY='m365_accounts_v2';
+const CACHE_PREFIX='m365_cache_';
+const CONTACTS_KEY='m365_contacts';
+const RULES_KEY='m365_rules';
+const PAGE_SIZE=50;
+
+const S={
+  accessToken:null,refreshToken:null,expiresAt:0,
+  email:'',name:'',activeId:null,
+  currentFolder:'inbox',currentFolderId:null,
+  folderMap:{},folders:[],
+  messages:[],allMessages:[],
+  currentSkip:0,hasMore:false,loadingAll:false,
+  selectedMsg:null,contacts:[],syncTimer:null,
+  currentView:'mail',composeMeta:{},isOffline:false,
+  attScanResults:[],attScanAbort:false,
+  sidebarCollapsed:false,
+  filterRead:'all',filterSort:'date-desc',
+  moveTargetFolderId:null,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SIDEBAR COLLAPSE
+// ═══════════════════════════════════════════════════════════════════════════
+function toggleSidebar(){
+  S.sidebarCollapsed=!S.sidebarCollapsed;
+  document.getElementById('sidebar').classList.toggle('collapsed',S.sidebarCollapsed);
+  // Move the toggle button so it stays visible even when collapsed
+  document.getElementById('sidebar-toggle').style.left=S.sidebarCollapsed?'12px':'12px';
+  localStorage.setItem('m365_sidebar_collapsed',S.sidebarCollapsed?'1':'0');
+}
+function restoreSidebarState(){
+  const v=localStorage.getItem('m365_sidebar_collapsed');
+  if(v==='1'){S.sidebarCollapsed=true;document.getElementById('sidebar').classList.add('collapsed');}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ACCOUNT MANAGEMENT
+// ═══════════════════════════════════════════════════════════════════════════
+function loadAccounts(){try{return JSON.parse(localStorage.getItem(ACCOUNTS_KEY)||'[]');}catch{return[];}}
+function saveAccounts(a){localStorage.setItem(ACCOUNTS_KEY,JSON.stringify(a));}
+function genId(){return Math.random().toString(36).slice(2,8);}
+function upsertAccount(fields){const accs=loadAccounts(),idx=accs.findIndex(a=>a.id===fields.id);if(idx>=0)accs[idx]={...accs[idx],...fields};else accs.push(fields);saveAccounts(accs);}
+function removeAccount(id){saveAccounts(loadAccounts().filter(a=>a.id!==id));}
+function activateAccount(acc){S.activeId=acc.id;S.accessToken=acc.accessToken;S.refreshToken=acc.refreshToken;S.expiresAt=acc.expiresAt||0;S.email=acc.email||'';S.name=acc.name||'';S.folders=[];S.folderMap={};S.currentFolder='inbox';S.currentFolderId=null;S.messages=[];S.allMessages=[];S.currentSkip=0;S.hasMore=false;S.selectedMsg=null;S.attScanResults=[];}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CACHE
+// ═══════════════════════════════════════════════════════════════════════════
+function getCacheKey(folderId){return CACHE_PREFIX+(S.activeId||'anon')+'_'+folderId;}
+function saveToCache(folderId,messages,totalFetched){try{localStorage.setItem(getCacheKey(folderId),JSON.stringify({messages,cachedAt:Date.now(),totalFetched}));updateCacheBar(messages.length,totalFetched);}catch{}}
+function loadFromCache(folderId){try{const r=localStorage.getItem(getCacheKey(folderId));return r?JSON.parse(r):null;}catch{return null;}}
+function updateCacheBar(count,total){const el=document.getElementById('cache-bar');if(el)el.textContent=count>0?`${count.toLocaleString()} msgs cached${total>count?' ('+total.toLocaleString()+' total)':''}`:'<wbr>';}
+function setOfflineMode(offline){S.isOffline=offline;document.getElementById('offline-banner')?.classList.toggle('show',offline);}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SESSION
+// ═══════════════════════════════════════════════════════════════════════════
+function saveSession(){if(!S.activeId)return;upsertAccount({id:S.activeId,email:S.email,name:S.name,accessToken:S.accessToken,refreshToken:S.refreshToken,expiresAt:S.expiresAt});try{localStorage.setItem(CONTACTS_KEY+'_'+S.activeId,JSON.stringify(S.contacts));}catch{}}
+function loadSession(){try{const old=localStorage.getItem('m365_accounts');if(old){const items=JSON.parse(old);if(items.length){localStorage.setItem(ACCOUNTS_KEY,old);localStorage.removeItem('m365_accounts');}}}catch{}const accs=loadAccounts();if(accs.length>0){activateAccount(accs[0]);try{S.contacts=JSON.parse(localStorage.getItem(CONTACTS_KEY+'_'+S.activeId)||'[]');}catch{}return true;}return false;}
+function clearSession(){if(S.activeId)removeAccount(S.activeId);S.accessToken=S.refreshToken=null;S.expiresAt=0;S.email=S.name='';S.activeId=null;S.contacts=[];S.messages=S.allMessages=[];S.folders=[];}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GRAPH API
+// ═══════════════════════════════════════════════════════════════════════════
+async function graphGet(path){await ensureToken(S.activeId);const acc=loadAccounts().find(a=>a.id===S.activeId);const token=acc?.accessToken||S.accessToken;const r=await fetch(GRAPH+path,{headers:{Authorization:'Bearer '+token,Accept:'application/json'}});const d=await r.json().catch(()=>({}));if(r.status===401){try{S.expiresAt=0;await ensureToken(S.activeId);return graphGet(path);}catch{showAuthScreen('Session expired. Please reconnect.');throw new Error('Session expired');}}if(r.status===403)throw new Error('SCOPE_MISSING: '+(d.error?.message||'Missing permissions'));if(!r.ok)throw new Error(d.error?.message||'Graph error '+r.status);return d;}
+async function graphPost(path,body,method='POST'){await ensureToken(S.activeId);const acc=loadAccounts().find(a=>a.id===S.activeId);const token=acc?.accessToken||S.accessToken;const r=await fetch(GRAPH+path,{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body)});if(r.status===204)return{ok:true};const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error?.message||'Graph error '+r.status);return d;}
+async function graphDelete(path){await ensureToken(S.activeId);const acc=loadAccounts().find(a=>a.id===S.activeId);const token=acc?.accessToken||S.accessToken;const r=await fetch(GRAPH+path,{method:'DELETE',headers:{Authorization:'Bearer '+token}});if(!r.ok&&r.status!==404){const d=await r.json().catch(()=>({}));throw new Error(d.error?.message||'Delete failed');}}
+async function graphPatch(path,body){return graphPost(path,body,'PATCH');}
+
+// Graph helper: load ALL pages of a collection
+async function graphGetAll(path,maxItems=2000){let results=[],url=GRAPH+path,count=0;while(url&&count<maxItems){const acc=loadAccounts().find(a=>a.id===S.activeId);const token=acc?.accessToken||S.accessToken;const r=await fetch(url,{headers:{Authorization:'Bearer '+token,Accept:'application/json'}});const d=await r.json().catch(()=>({}));if(!r.ok)break;results=[...results,...(d.value||[])];count=results.length;url=d['@odata.nextLink']||null;}return results;}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{document.getElementById('auth-file-input')?.addEventListener('change',e=>{const f=e.target.files?.[0];if(f)authReadFile(f);e.target.value='';});startServerHealthChecks();restoreSidebarState();});
+let _pendingFilePath=null;
+function authReadFile(file){const reader=new FileReader();reader.onload=ev=>{document.getElementById('token-input').value=ev.target.result;document.getElementById('main-drop-name').textContent='✓ '+file.name+' loaded';document.getElementById('main-auth-hint').textContent='File loaded — click Sign in';_pendingFilePath=file.name;};reader.onerror=()=>showAuthErr('Could not read file');reader.readAsText(file);}
+function authFileDrop(e){e.preventDefault();e.stopPropagation();const zone=document.getElementById('main-drop-zone');zone.style.borderColor='';zone.style.background='';const file=e.dataTransfer?.files?.[0];if(!file){showAuthErr('No file detected');return;}authReadFile(file);}
+function showAuthErr(msg){const el=document.getElementById('auth-err');el.textContent=msg;el.style.display='block';}
+async function authConnect(){document.getElementById('auth-err').style.display='none';try{let raw=(document.getElementById('token-input').value||'').trim();if(!raw){showAuthErr('Paste your token or drag the tokens.json file');return;}let tokenData;try{tokenData=JSON.parse(raw);}catch{tokenData=null;}const isJson=tokenData&&typeof tokenData==='object';if(isJson&&serverAvailable){document.getElementById('main-auth-hint').textContent='Checking token freshness…';tokenData=await refreshTokenDataIfExpired(tokenData,null);raw=JSON.stringify(tokenData);}const tok=parseTokenRaw(raw);const id=genId();upsertAccount({id,...tok,email:'',name:'',tokenFileName:_pendingFilePath||null});activateAccount({id,...tok,email:'',name:''});_pendingFilePath=null;initApp();}catch(e){showAuthErr(e.message);}}
+function parseTokenRaw(raw){if(!raw)throw new Error('No token provided');let at,rt,exp;if(raw.trim().startsWith('{')){const j=JSON.parse(raw);at=j.access_token;rt=j.refresh_token||null;if(j.expires_at)exp=new Date(j.expires_at).getTime();else if(j.expires_in)exp=Date.now()+j.expires_in*1000;else exp=Date.now()+3600_000;}else{at=raw.trim();rt=null;exp=Date.now()+3600_000;}if(!at)throw new Error('No access_token found');return{accessToken:at,refreshToken:rt,expiresAt:exp};}
+async function initApp(){try{const me=await graphGet('/me?$select=displayName,mail,userPrincipalName');S.email=me.mail||me.userPrincipalName||'';S.name=me.displayName||S.email.split('@')[0]||'User';upsertAccount({id:S.activeId,email:S.email,name:S.name});}catch(e){if(e.message.includes('expired')||e.message.includes('401')){showAuthErr('Token invalid — please generate a new one');return;}}updateUserUI();saveSession();renderAccountsBtn();document.getElementById('auth-screen').classList.add('hidden');document.getElementById('app').classList.remove('hidden');setOfflineMode(false);try{S.contacts=JSON.parse(localStorage.getItem(CONTACTS_KEY+'_'+S.activeId)||'[]');}catch{}startBackgroundRefresh();await loadFolders();startSync();}
+function updateUserUI(){const ini=(S.name||S.email||'?').split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();document.getElementById('user-avatar').textContent=ini;document.getElementById('user-name').textContent=S.name||S.email;document.getElementById('user-email').textContent=S.email;const adminEl=document.getElementById('admin-user-label');if(adminEl&&window._adminUser)adminEl.textContent='⬡ '+window._adminUser;}
+function showAuthScreen(err){if(window._adminUser){showRedirectScreen(err||'No M365 token');setTimeout(()=>{window.location.href=ADMIN_PAGE;},1800);return;}document.getElementById('app').classList.add('hidden');document.getElementById('auth-screen').classList.remove('hidden');if(err)showAuthErr(err);}
+function confirmDisconnect(){showConfirm('Sign out','Remove this account and sign out?',()=>{clearSession();const rem=loadAccounts();if(rem.length>0){activateAccount(rem[0]);updateUserUI();renderAccountsBtn();loadFolders().then(()=>loadFolder(S.currentFolder||'inbox'));toast('Switched to '+S.email,'info');}else{if(S.syncTimer)clearInterval(S.syncTimer);if(bgRefreshTimer)clearInterval(bgRefreshTimer);showAuthScreen();}});}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ACCOUNTS DROPDOWN
+// ═══════════════════════════════════════════════════════════════════════════
+const ACC_COLORS=['#0078d4','#107c10','#a4262c','#5c2d91','#d83b01','#00b294','#008272','#e3008c'];
+function accColor(s){let h=0;for(const c of(s||''))h=h*31+c.charCodeAt(0);return ACC_COLORS[Math.abs(h)%ACC_COLORS.length];}
+function renderAccountsBtn(){const accs=loadAccounts(),badge=document.getElementById('acc-badge');if(accs.length>1){badge.textContent=accs.length;badge.classList.remove('hidden');}else badge.classList.add('hidden');}
+function toggleAccountsDropdown(e){if(e)e.stopPropagation();const dd=document.getElementById('accounts-dropdown'),btn=document.getElementById('accounts-btn');const open=!dd.classList.contains('hidden');if(open){dd.classList.add('hidden');btn.classList.remove('open');return;}renderAccountsList();const rect=btn.getBoundingClientRect();dd.style.top=(rect.bottom+4)+'px';dd.style.left=Math.max(4,rect.left-260+rect.width)+'px';dd.classList.remove('hidden');btn.classList.add('open');setTimeout(()=>document.addEventListener('click',closeDropdownOutside,{once:true}),0);}
+function closeDropdownOutside(e){const dd=document.getElementById('accounts-dropdown');if(!dd.contains(e.target)){dd.classList.add('hidden');document.getElementById('accounts-btn').classList.remove('open');}}
+function renderAccountsList(){const accs=loadAccounts(),list=document.getElementById('acc-list');if(!accs.length){list.innerHTML='<div style="padding:20px;text-align:center;color:var(--txt3);font-size:12px">No accounts</div>';return;}list.innerHTML=accs.map(acc=>{const ini=(acc.name||acc.email||'?').split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();const col=accColor(acc.email),active=acc.id===S.activeId;const expired=acc.expiresAt?Date.now()>acc.expiresAt-60_000:false;const refreshing=refreshPromises.has(acc.id);const statusClass=active?'ok':refreshing?'refreshing':expired?'expired':'idle';const statusText=active?'● Active':refreshing?'⟳ Refreshing…':expired?'⚠ Token expired':'○ Idle';return`<div class="acc-item ${active?'active-acc':''}" onclick="switchAccount('${acc.id}')"><div class="acc-avatar" style="background:${col}">${ini}</div><div class="acc-info"><div class="acc-email">${esc(acc.email||'Unknown')}</div>${acc.name&&acc.name!==acc.email?`<div class="acc-name">${esc(acc.name)}</div>`:''}<div class="acc-status ${statusClass}">${statusText}</div></div><button class="acc-remove" title="Remove" onclick="removeAccountClick(event,'${acc.id}')">✕</button></div>`;}).join('');}
+async function switchAccount(id){if(id===S.activeId){toggleAccountsDropdown();return;}const acc=loadAccounts().find(a=>a.id===id);if(!acc)return;if(S.syncTimer)clearInterval(S.syncTimer);activateAccount(acc);updateUserUI();renderAccountsBtn();document.getElementById('accounts-dropdown').classList.add('hidden');document.getElementById('accounts-btn').classList.remove('open');closeEmailView();try{S.contacts=JSON.parse(localStorage.getItem(CONTACTS_KEY+'_'+id)||'[]');}catch{}if(!acc.expiresAt||Date.now()>acc.expiresAt-REFRESH_BEFORE_EXPIRY){try{await ensureToken(id);}catch{toast('Could not refresh token','error');return;}}await loadFolders();startSync();toast('Switched to '+S.email,'info');}
+function removeAccountClick(e,id){e.stopPropagation();const acc=loadAccounts().find(a=>a.id===id);showConfirm('Remove account',`Remove ${acc?.email||id}?`,()=>{removeAccount(id);if(id===S.activeId){const rem=loadAccounts();if(rem.length>0){activateAccount(rem[0]);updateUserUI();loadFolders();startSync();toast('Switched to '+S.email,'info');}else{if(S.syncTimer)clearInterval(S.syncTimer);if(bgRefreshTimer)clearInterval(bgRefreshTimer);document.getElementById('accounts-dropdown').classList.add('hidden');showAuthScreen();return;}}renderAccountsBtn();renderAccountsList();toast('Account removed','info');});}
+
+async function refreshVaultList(){var list=document.getElementById('vault-accounts-list');list.innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--txt2)">Loading…</div>';try{var r=await fetch(ADMIN_SERVER+'/api/tokens/for-mail',{credentials:'include',signal:AbortSignal.timeout(5000)});if(!r.ok)throw new Error('Could not reach admin server ('+r.status+')');var data=await r.json(),tokens=data.tokens||[];if(!tokens.length){list.innerHTML='<div style="padding:20px;text-align:center;font-size:12px;color:var(--txt2)">No accounts in vault.<br>Add one via the Admin Portal first.</div>';return;}var loadedEmails=new Set(loadAccounts().map(function(a){return a.email;}).filter(Boolean));list.innerHTML=tokens.map(function(tok,i){var exp=tok.expires_at?new Date(tok.expires_at):null,expired=exp&&exp<new Date(),loaded=!!(tok.email&&loadedEmails.has(tok.email)),ini=initials(tok.name||tok.email||'?'),color=avatarColor(tok.email||String(i));var expStr=exp?exp.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' '+exp.toLocaleDateString([],{month:'short',day:'numeric'}):'no expiry';var statusColor=loaded?'var(--acc)':expired?'var(--red)':'var(--txt2)',statusText=loaded?'● Active':expired?'Expired':'+ Add',borderColor=loaded?'var(--acc)':expired?'rgba(209,52,56,.3)':'var(--border)';return'<div class="_vault-item" data-vault-idx="'+i+'" style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--bg2);border:1px solid '+borderColor+';border-radius:2px;cursor:'+(loaded?'default':'pointer')+';transition:border-color .1s,background .1s;opacity:'+(loaded?'0.6':'1')+'">'+'<div style="width:36px;height:36px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">'+esc(ini)+'</div>'+'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--txt0);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(tok.name||tok.email||'Unknown')+'</div>'+'<div style="font-size:11px;color:var(--txt2)">'+esc(tok.email||'—')+'</div>'+'<div style="font-size:10px;color:'+(expired?'var(--red)':'var(--txt3)')+'">'+esc(expStr)+'</div></div>'+'<div style="font-size:12px;font-weight:600;color:'+statusColor+';flex-shrink:0">'+statusText+'</div></div>';}).join('');list.querySelectorAll('._vault-item').forEach(function(el){var idx=parseInt(el.dataset.vaultIdx,10),tok2=tokens[idx],loaded=!!(tok2.email&&loadedEmails.has(tok2.email));if(!loaded){el.addEventListener('click',function(){connectFromVault(tok2);});el.addEventListener('mouseover',function(){el.style.borderColor='var(--acc)';el.style.background='var(--acc-light)';});el.addEventListener('mouseout',function(){el.style.borderColor='var(--border)';el.style.background='var(--bg2)';});}});}catch(e){list.innerHTML='<div style="padding:14px;font-size:12px;color:var(--red)">Could not load vault: '+esc(e.message)+'</div>';}}
+async function connectFromVault(tok){closeAddAccount();try{var tokenData=tok;if(serverAvailable&&tok.refresh_token){var expMs=tok.expires_at?new Date(tok.expires_at).getTime():0;if(!expMs||Date.now()>expMs-60000)tokenData=await refreshTokenDataIfExpired(tok,null);}var expiresAt=tokenData.expires_at?new Date(tokenData.expires_at).getTime():Date.now()+3600000;var existing=tok.email?loadAccounts().find(function(a){return a.email===tok.email;}):null;var id=existing?existing.id:genId();upsertAccount({id,email:tok.email||'',name:tok.name||'',accessToken:tokenData.access_token,refreshToken:tokenData.refresh_token||null,expiresAt,fromAdmin:true});activateAccount({id,email:tok.email||'',name:tok.name||'',accessToken:tokenData.access_token,refreshToken:tokenData.refresh_token||null,expiresAt});try{var me=await graphGet('/me?$select=displayName,mail,userPrincipalName');S.email=me.mail||me.userPrincipalName||tok.email||'';S.name=me.displayName||tok.name||S.email.split('@')[0]||'User';upsertAccount({id,email:S.email,name:S.name});}catch(ignored){}if(S.syncTimer)clearInterval(S.syncTimer);updateUserUI();saveSession();renderAccountsBtn();document.getElementById('auth-screen').classList.add('hidden');document.getElementById('app').classList.remove('hidden');await loadFolders();startSync();toast('Connected: '+(S.email||'account added'),'success');}catch(e){toast('Failed to connect: '+e.message,'error');}}
+function openAddAccount(){document.getElementById('accounts-dropdown').classList.add('hidden');document.getElementById('accounts-btn').classList.remove('open');document.getElementById('add-account-overlay').classList.remove('hidden');refreshVaultList();}
+function closeAddAccount(){document.getElementById('add-account-overlay').classList.add('hidden');}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FOLDER TREE — full deep load
+// ═══════════════════════════════════════════════════════════════════════════
+const WELL_KNOWN_NAMES={'inbox':'inbox','drafts':'drafts','sent items':'sentitems','junk email':'junkemail','deleted items':'deleteditems','archive':'archive','outbox':'outbox'};
+const WELL_KNOWN_ORDER=['inbox','drafts','sentitems','outbox','junkemail','deleteditems','archive'];
+const FI={
+  inbox:`<svg class="fi-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>`,
+  drafts:`<svg class="fi-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+  sentitems:`<svg class="fi-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`,
+  junkemail:`<svg class="fi-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
+  deleteditems:`<svg class="fi-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
+  archive:`<svg class="fi-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>`,
+  outbox:`<svg class="fi-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><line x1="12" y1="2" x2="12" y2="12"/><polyline points="8 6 12 2 16 6"/></svg>`,
+  _custom:`<svg class="fi-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`,
+};
+
+async function loadFolders(){
+  try{
+    // Load all top-level folders (handle paging)
+    const allFolders=await graphGetAll('/me/mailFolders?$top=100&$select=id,displayName,unreadItemCount,totalItemCount,childFolderCount');
+    const wkMap={};
+    await Promise.allSettled(WELL_KNOWN_ORDER.map(wk=>graphGet(`/me/mailFolders/${wk}?$select=id`).then(f=>{wkMap[wk]=f.id;}).catch(()=>{})));
+    S.folders=allFolders.map(f=>{const wkByName=WELL_KNOWN_NAMES[f.displayName.toLowerCase()]||null,wkById=Object.entries(wkMap).find(([,id])=>id===f.id)?.[0]||null;return{id:f.id,name:f.displayName,unreadCount:f.unreadItemCount||0,totalCount:f.totalItemCount||0,childFolderCount:f.childFolderCount||0,wellKnown:wkById||wkByName||null,children:[],expanded:true,depth:0};});
+    S.folderMap={};for(const f of S.folders)S.folderMap[f.id]=f;
+    // Deep-load ALL child folders recursively
+    await loadChildFoldersDeep(S.folders,1);
+    S.folders.sort((a,b)=>{const ai=a.wellKnown?WELL_KNOWN_ORDER.indexOf(a.wellKnown):999,bi=b.wellKnown?WELL_KNOWN_ORDER.indexOf(b.wellKnown):999;if(ai!==bi)return ai-bi;if(ai===999)return a.name.localeCompare(b.name);return 0;});
+    renderFolderTree();
+    const inbox=S.folders.find(f=>f.wellKnown==='inbox')||S.folders[0];
+    if(inbox){S.currentFolderId=inbox.id;S.currentFolder=inbox.wellKnown||inbox.id;markFolderActive(inbox.id);document.getElementById('list-title').textContent=inbox.name;}
+    await loadFolder(S.currentFolderId,true);setOfflineMode(false);
+  }catch(e){
+    setOfflineMode(true);
+    const cached=loadFromCache('inbox');
+    if(cached){S.allMessages=cached.messages;S.messages=cached.messages;renderMessageList(S.messages,false);setSyncState('offline','From cache '+new Date(cached.cachedAt).toLocaleTimeString());updateCacheBar(cached.messages.length,cached.totalFetched||cached.messages.length);}
+    toast('Folders unavailable: '+e.message,'error');
+  }
+}
+
+// Recursively load child folders with no depth limit
+async function loadChildFoldersDeep(nodes,depth){
+  const withKids=nodes.filter(n=>n.childFolderCount>0);
+  if(!withKids.length)return;
+  await Promise.all(withKids.map(async parent=>{
+    try{
+      const children=await graphGetAll(`/me/mailFolders/${encodeURIComponent(parent.id)}/childFolders?$top=100&$select=id,displayName,unreadItemCount,totalItemCount,childFolderCount`);
+      parent.children=children.map(f=>({id:f.id,name:f.displayName,unreadCount:f.unreadItemCount||0,totalCount:f.totalItemCount||0,childFolderCount:f.childFolderCount||0,wellKnown:null,children:[],expanded:false,depth}));
+      parent.children.sort((a,b)=>a.name.localeCompare(b.name));
+      for(const c of parent.children)S.folderMap[c.id]=c;
+      if(depth<20)await loadChildFoldersDeep(parent.children,depth+1);
+    }catch{}
+  }));
+}
+
+function renderFolderTree(){const c=document.getElementById('folder-list-dynamic');if(!c)return;c.innerHTML='<div class="folder-section-label">Folders</div>'+renderFolderNodes(S.folders);}
+function renderFolderNodes(nodes){
+  let h='';
+  for(const f of nodes){
+    const hasKids=f.children&&f.children.length>0,isActive=f.id===S.currentFolderId;
+    const icon=FI[f.wellKnown||'_custom']||FI._custom,indent=f.depth*14;
+    const chevron=hasKids?`<span class="fi-chevron ${f.expanded?'open':''}" onclick="toggleFolder(event,'${f.id}')"><svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>`:`<span class="fi-chevron leaf"></span>`;
+    h+=`<div class="fi ${isActive?'active':''}" id="fi-${f.id}" style="padding-left:${6+indent}px" onclick="selectFolderById('${f.id}','${esc(f.name)}')">
+      <span class="fi-indent">${chevron}</span>${icon}
+      <span class="fi-name" title="${esc(f.name)}">${esc(f.name)}</span>
+      ${f.totalCount>0?`<span class="folder-total">${f.totalCount>9999?'9k+':f.totalCount}</span>`:''}
+      <span class="badge ${f.unreadCount===0?'zero':''}">${f.unreadCount>99?'99+':f.unreadCount}</span>
+    </div>`;
+    if(hasKids){const estH=countNodes(f.children)*30;h+=`<div class="fi-children ${f.expanded?'':'collapsed'}" id="fic-${f.id}" style="max-height:${f.expanded?estH+'px':'0'}">${renderFolderNodes(f.children)}</div>`;}
+  }
+  return h;
+}
+function countNodes(nodes){let n=0;for(const f of nodes){n++;if(f.children)n+=countNodes(f.children);}return n;}
+function toggleFolder(e,id){e.stopPropagation();const node=S.folderMap&&S.folderMap[id];if(!node)return;node.expanded=!node.expanded;const childEl=document.getElementById('fic-'+id),chevEl=document.querySelector(`#fi-${id} .fi-chevron`);if(childEl){if(node.expanded){childEl.style.maxHeight=countNodes(node.children)*30+'px';childEl.classList.remove('collapsed');}else{childEl.style.maxHeight='0';childEl.classList.add('collapsed');}}if(chevEl)chevEl.classList.toggle('open',node.expanded);}
+function markFolderActive(id){document.querySelectorAll('.fi.active').forEach(el=>el.classList.remove('active'));const el=document.getElementById('fi-'+id);if(el){el.classList.add('active');el.scrollIntoView({block:'nearest'});}}
+function selectFolderById(folderId,name){if(!folderId)return;const node=S.folderMap&&S.folderMap[folderId];S.currentFolderId=folderId;S.currentFolder=(node&&node.wellKnown)?node.wellKnown:folderId;document.getElementById('list-title').textContent=name;markFolderActive(folderId);S.allMessages=[];S.messages=[];S.currentSkip=0;S.hasMore=false;loadFolder(folderId,true);closeEmailView();switchView('mail');}
+async function loadFolderCounts(){try{const all=await graphGetAll('/me/mailFolders?$top=100&$select=id,unreadItemCount,totalItemCount');for(const f of all){const node=S.folderMap&&S.folderMap[f.id];if(node){node.unreadCount=f.unreadItemCount||0;node.totalCount=f.totalItemCount||0;}}if(S.folderMap){for(const[id,node]of Object.entries(S.folderMap)){const el=document.getElementById('fi-'+id);if(!el)continue;const badge=el.querySelector('.badge'),total=el.querySelector('.folder-total');if(badge){badge.textContent=node.unreadCount>99?'99+':node.unreadCount;badge.classList.toggle('zero',node.unreadCount===0);}if(total)total.textContent=node.totalCount>9999?'9k+':node.totalCount;}}}catch{}}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MESSAGE LOADING + FILTERING
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadFolder(folderIdOrWk,isRealId=false){let realId=folderIdOrWk;if(!isRealId){const f=S.folders.find(x=>x.wellKnown===folderIdOrWk||x.id===folderIdOrWk);if(f)realId=f.id;}S.currentFolderId=realId;S.allMessages=[];S.messages=[];S.currentSkip=0;S.hasMore=false;const cached=loadFromCache(realId);if(cached&&cached.messages.length>0){S.allMessages=cached.messages;S.messages=cached.messages;renderMessageList(applyFiltersToList(S.messages),cached.totalFetched>cached.messages.length);setSyncState('syncing','Refreshing…');updateCacheBar(cached.messages.length,cached.totalFetched||cached.messages.length);}else showSkeletons();try{await fetchPage(realId,0,true);setOfflineMode(false);}catch(e){if(S.allMessages.length>0){setOfflineMode(true);setSyncState('offline','Offline — showing cache');}else{setSyncState('offline','Offline');renderOfflineList();}}}
+async function fetchPage(folderId,skip,reset=false){setSyncState('syncing','Loading…');const res=await graphGet(`/me/mailFolders/${encodeURIComponent(folderId)}/messages?$top=${PAGE_SIZE}&$skip=${skip}&$select=id,subject,from,toRecipients,receivedDateTime,hasAttachments,isRead,bodyPreview&$orderby=receivedDateTime desc`);const msgs=res.value||[];if(reset)S.allMessages=[...msgs];else S.allMessages=[...S.allMessages,...msgs];S.currentSkip=skip+msgs.length;S.hasMore=msgs.length===PAGE_SIZE;S.messages=S.allMessages;saveToCache(folderId,S.allMessages,S.currentSkip);// Apply rules to new messages
+if(reset)applyRulesToList(msgs.filter(m=>!m.isRead));
+renderMessageList(applyFiltersToList(S.messages),S.hasMore);setSyncState('ok','Synced '+new Date().toLocaleTimeString());updateMsgCount();}
+function updateMsgCount(){const el=document.getElementById('msg-count-label');if(el)el.textContent=S.allMessages.length+(S.hasMore?'+':'')+' messages';}
+async function loadMoreMessages(){if(!S.hasMore||!S.currentFolderId)return;const btn=document.getElementById('load-more-btn');btn.textContent='Loading…';btn.disabled=true;try{await fetchPage(S.currentFolderId,S.currentSkip,false);}catch(e){toast(e.message,'error');}btn.textContent='Load more…';btn.disabled=false;}
+async function loadAllMessages(){if(!S.currentFolderId)return;if(S.loadingAll){S.attScanAbort=true;toast('Stopping…','info');return;}S.loadingAll=true;toast('Loading all messages…','info');let skip=S.currentSkip,pages=0;try{while(S.hasMore&&pages<500&&!S.attScanAbort){await fetchPage(S.currentFolderId,skip,false);skip=S.currentSkip;pages++;if(!S.hasMore)break;await sleep(120);}toast(`Loaded ${S.allMessages.length.toLocaleString()} messages`+(S.hasMore?' (more available)':''),'success');}catch(e){toast('Load interrupted: '+e.message,'error');}S.loadingAll=false;S.attScanAbort=false;}
+async function refreshFolder(){const fid=S.currentFolderId||S.currentFolder;S.allMessages=[];S.messages=[];S.currentSkip=0;S.hasMore=false;await loadFolder(fid,true);await loadFolderCounts();}
+function showSkeletons(){document.getElementById('msg-list').innerHTML=Array(8).fill('<div class="skeleton sk-row"></div>').join('');document.getElementById('list-footer').style.display='none';}
+function renderOfflineList(){document.getElementById('msg-list').innerHTML='<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">Offline</div><div class="empty-sub">Check your connection</div></div>';}
+
+function applyFiltersToList(msgs){
+  let out=[...msgs];
+  const read=S.filterRead||document.getElementById('filter-read')?.value||'all';
+  const sort=S.filterSort||document.getElementById('filter-sort')?.value||'date-desc';
+  if(read==='unread')out=out.filter(m=>!m.isRead);
+  else if(read==='read')out=out.filter(m=>m.isRead);
+  else if(read==='flagged')out=out.filter(m=>m.hasAttachments);
+  if(sort==='date-asc')out.sort((a,b)=>new Date(a.receivedDateTime)-new Date(b.receivedDateTime));
+  else if(sort==='sender')out.sort((a,b)=>(a.from?.emailAddress?.name||'').localeCompare(b.from?.emailAddress?.name||''));
+  else if(sort==='subject')out.sort((a,b)=>(a.subject||'').localeCompare(b.subject||''));
+  return out;
+}
+
+function renderMessageList(msgs,hasMore){
+  const el=document.getElementById('msg-list');
+  if(!msgs.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">No messages</div></div>';document.getElementById('list-footer').style.display='none';document.getElementById('load-all-btn').style.display='none';return;}
+  el.innerHTML=msgs.map(m=>{const from=m.from?.emailAddress,name=from?.name||from?.address||'Unknown',addr=from?.address||'',color=avatarColor(addr||name),ini=initials(name);
+    return`<div class="msg-item ${!m.isRead?'unread':''}" id="mi-${m.id}" onclick="openMessage('${m.id}')">
+      <div class="msg-row1"><div class="msg-avatar" style="background:${color}">${ini}</div><div class="msg-sender">${esc(name)}</div><div class="msg-time">${relativeTime(m.receivedDateTime)}</div></div>
+      <div class="msg-subject">${esc(m.subject||'(no subject)')}</div>
+      <div class="msg-preview">${esc(m.bodyPreview||'')}</div>
+      ${m.hasAttachments?'<div class="msg-tags"><span class="msg-tag tag-att">📎 Attachment</span></div>':''}
+    </div>`;}).join('');
+  const footer=document.getElementById('list-footer'),loadAllBtn=document.getElementById('load-all-btn');
+  if(hasMore!==undefined?hasMore:S.hasMore){footer.style.display='block';loadAllBtn.style.display='flex';}else{footer.style.display='none';loadAllBtn.style.display='none';}
+  updateMsgCount();
+}
+
+function filterMessages(q){const lower=q.toLowerCase();const base=lower?S.allMessages.filter(m=>(m.subject||'').toLowerCase().includes(lower)||(m.from?.emailAddress?.name||'').toLowerCase().includes(lower)||(m.from?.emailAddress?.address||'').toLowerCase().includes(lower)||(m.bodyPreview||'').toLowerCase().includes(lower)):S.allMessages;S.messages=base;renderMessageList(applyFiltersToList(S.messages),false);}
+
+// Filter bar toggle
+function toggleFilterMenu(e){e.stopPropagation();const bar=document.getElementById('filter-bar');const show=bar.style.display==='none'||!bar.style.display;bar.style.display=show?'flex':'none';}
+function applyFilters(){S.filterRead=document.getElementById('filter-read').value;S.filterSort=document.getElementById('filter-sort').value;renderMessageList(applyFiltersToList(S.messages),S.hasMore);}
+function clearFilters(){document.getElementById('filter-read').value='all';document.getElementById('filter-sort').value='date-desc';S.filterRead='all';S.filterSort='date-desc';renderMessageList(applyFiltersToList(S.messages),S.hasMore);}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// READING PANE
+// ═══════════════════════════════════════════════════════════════════════════
+async function openMessage(id){
+  document.querySelectorAll('.msg-item').forEach(i=>i.classList.remove('active'));
+  const item=document.getElementById('mi-'+id);if(item){item.classList.add('active');item.classList.remove('unread');}
+  document.getElementById('no-msg-selected').style.display='none';document.getElementById('email-view').style.display='flex';
+  document.getElementById('reading-body').innerHTML='<div style="padding:32px 28px;color:var(--txt3);font-size:13px">Loading…</div>';
+  try{
+    const msg=await graphGet(`/me/messages/${id}?$select=id,subject,from,toRecipients,ccRecipients,receivedDateTime,body,hasAttachments,isRead`);
+    S.selectedMsg=msg;
+    if(!msg.isRead)graphPatch(`/me/messages/${id}`,{isRead:true}).catch(()=>{});
+    let atts=[];if(msg.hasAttachments){try{const ar=await graphGet(`/me/messages/${id}/attachments?$select=id,name,contentType,size`);atts=ar.value||[];}catch{}}
+    renderEmail(msg,atts);
+  }catch(e){const cached=S.allMessages.find(m=>m.id===id);if(cached)renderEmailCached(cached);else document.getElementById('reading-body').innerHTML=`<div style="padding:28px;color:var(--red);font-size:13px">${esc(e.message)}</div>`;}
+}
+function renderEmailCached(msg){document.getElementById('reading-body').innerHTML=`<div class="email-header"><div class="email-subject">${esc(msg.subject||'(no subject)')}</div><div style="color:var(--yellow);font-size:12px;margin-top:6px;padding:6px 10px;background:rgba(184,134,11,.08);border:1px solid rgba(184,134,11,.2);border-radius:2px;display:inline-block">⚠ Cached preview — connect to read full message</div><div class="email-meta" style="margin-top:12px"><div class="email-meta-text"><div class="email-from">${esc(msg.from?.emailAddress?.name||'')}</div><div class="email-from-addr">${esc(msg.from?.emailAddress?.address||'')}</div><div class="email-date">${msg.receivedDateTime?new Date(msg.receivedDateTime).toLocaleString([],{dateStyle:'long',timeStyle:'short'}):''}</div></div></div></div><div class="email-content"><p style="color:var(--txt2)">${esc(msg.bodyPreview||'')}</p></div>`;}
+function renderEmail(msg,atts){
+  const from=msg.from?.emailAddress,name=from?.name||from?.address||'Unknown',addr=from?.address||'',color=avatarColor(addr||name),ini=initials(name);
+  const toList=(msg.toRecipients||[]).map(r=>r.emailAddress?.name||r.emailAddress?.address).join(', ');
+  const date=msg.receivedDateTime?new Date(msg.receivedDateTime).toLocaleString([],{dateStyle:'long',timeStyle:'short'}):'';
+  const htmlBody=msg.body?.contentType==='html'?msg.body.content:`<pre style="white-space:pre-wrap;font-family:inherit;color:var(--txt0);font-size:14px">${esc(msg.body?.content||'')}</pre>`;
+  const attHtml=atts.length?`<div class="email-attachments">${atts.map(a=>`<div class="attachment-chip" onclick="downloadAttachment('${msg.id}','${a.id}','${esc(a.name)}')"><svg class="att-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg><div><div class="att-name">${esc(a.name)}</div><div class="att-size">${formatSize(a.size)}</div></div></div>`).join('')}</div>`:'';
+  document.getElementById('reading-body').innerHTML=`<div class="email-header"><div class="email-subject">${esc(msg.subject||'(no subject)')}</div><div class="email-meta"><div class="email-avatar-lg" style="background:${color}">${ini}</div><div class="email-meta-text"><div class="email-from">${esc(name)}</div><div class="email-from-addr">&lt;${esc(addr)}&gt;</div>${toList?`<div class="email-to-line">To: ${esc(toList)}</div>`:''}${msg.ccRecipients?.length?`<div class="email-to-line">Cc: ${msg.ccRecipients.map(r=>esc(r.emailAddress?.name||r.emailAddress?.address||'')).join(', ')}</div>`:''}<div class="email-date">${date}</div></div></div></div>${attHtml}<div class="email-content">${sanitizeHtml(htmlBody)}</div>`;
+}
+function closeEmailView(){S.selectedMsg=null;document.getElementById('no-msg-selected').style.display='flex';document.getElementById('email-view').style.display='none';}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SAVE AS
+// ═══════════════════════════════════════════════════════════════════════════
+function toggleSaveDropdown(e){e.stopPropagation();const dd=document.getElementById('save-dropdown');const isOpen=dd.classList.contains('open');if(isOpen){dd.classList.remove('open');return;}dd.classList.add('open');setTimeout(()=>document.addEventListener('click',()=>dd.classList.remove('open'),{once:true}),0);}
+function sanitizeFilename(name){return(name||'email').replace(/[<>:"/\\|?*\x00-\x1f]/g,'').replace(/\s+/g,'_').trim().slice(0,80)||'email';}
+function downloadCurrentAsPDF(){document.getElementById('save-dropdown').classList.remove('open');if(!S.selectedMsg){toast('No message selected','error');return;}const msg=S.selectedMsg;const from=msg.from?.emailAddress;const to=(msg.toRecipients||[]).map(r=>(r.emailAddress?.name?r.emailAddress.name+' <'+r.emailAddress.address+'>':r.emailAddress?.address)||'').join(', ');const date=msg.receivedDateTime?new Date(msg.receivedDateTime).toLocaleString([],{dateStyle:'full',timeStyle:'short'}):'';const fromStr=from?.name?from.name+' &lt;'+from.address+'&gt;':(from?.address||'');const win=window.open('','_blank','width=900,height=700');win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${(msg.subject||'Email').replace(/</g,'&lt;')}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Arial,sans-serif;max-width:820px;margin:0 auto;padding:28px 36px;color:#000;font-size:14px;line-height:1.6}.hdr{border-bottom:2px solid #0078d4;padding-bottom:14px;margin-bottom:18px}.subject{font-size:22px;font-weight:600;color:#000;margin-bottom:12px}.meta{font-size:13px;color:#555;line-height:1.9}.meta strong{color:#000;min-width:52px;display:inline-block}a{color:#0078d4}img{max-width:100%}blockquote{border-left:3px solid #ccc;margin:12px 0;padding:8px 16px;color:#555}@media print{body{padding:16px;max-width:100%}}</style></head><body><div class="hdr"><div class="subject">${(msg.subject||'(no subject)').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div><div class="meta"><div><strong>From:</strong> ${fromStr}</div><div><strong>To:</strong> ${to.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div><div><strong>Date:</strong> ${date}</div></div></div>${msg.body?.content||'<p style="color:#888">(no content)</p>'}</body></html>`);win.document.close();win.focus();setTimeout(()=>{win.print();},900);toast('Opening print dialog…','info');}
+function downloadCurrentAsEML(){document.getElementById('save-dropdown').classList.remove('open');if(!S.selectedMsg){toast('No message selected','error');return;}const msg=S.selectedMsg;const from=msg.from?.emailAddress;const fromStr=from?.name?`"${from.name}" <${from.address}>`:(from?.address||'');const toStr=(msg.toRecipients||[]).map(r=>{const a=r.emailAddress;return a?.name?`"${a.name}" <${a.address}>`:(a?.address||'');}).filter(Boolean).join(',\r\n  ');const date=msg.receivedDateTime?new Date(msg.receivedDateTime).toUTCString():new Date().toUTCString();const isHTML=msg.body?.contentType==='html';let eml=`MIME-Version: 1.0\r\nDate: ${date}\r\nFrom: ${fromStr}\r\nTo: ${toStr}\r\nSubject: ${msg.subject||''}\r\nMessage-ID: <${msg.id}@graph.microsoft.com>\r\nContent-Type: text/${isHTML?'html':'plain'}; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n`+(msg.body?.content||'');const blob=new Blob([eml],{type:'message/rfc822'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=sanitizeFilename(msg.subject)+'.eml';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast('Saved as .eml','success');}
+function downloadCurrentAsHTML(){document.getElementById('save-dropdown').classList.remove('open');if(!S.selectedMsg){toast('No message selected','error');return;}const msg=S.selectedMsg;const from=msg.from?.emailAddress;const to=(msg.toRecipients||[]).map(r=>r.emailAddress?.address||'').filter(Boolean).join(', ');const date=msg.receivedDateTime?new Date(msg.receivedDateTime).toLocaleString([],{dateStyle:'full',timeStyle:'short'}):'';const html=`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>${(msg.subject||'Email').replace(/</g,'&lt;')}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Arial,sans-serif;max-width:860px;margin:0 auto;padding:24px 32px;color:#323130;font-size:14px;line-height:1.7;background:#fff}.hdr{border-bottom:2px solid #0078d4;padding-bottom:14px;margin-bottom:18px}.subject{font-size:22px;font-weight:600;margin-bottom:12px}.meta{font-size:13px;color:#605e5c;line-height:1.9}a{color:#0078d4}img{max-width:100%;height:auto}</style></head><body><div class="hdr"><div class="subject">${(msg.subject||'(no subject)').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div><div class="meta"><div><strong>From:</strong> ${from?.name?esc(from.name)+' &lt;'+esc(from.address)+'&gt;':esc(from?.address||'')}</div><div><strong>To:</strong> ${to.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div><div><strong>Date:</strong> ${date}</div></div></div>${msg.body?.content||'<p style="color:#a19f9d">(no content)</p>'}</body></html>`;const blob=new Blob([html],{type:'text/html;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=sanitizeFilename(msg.subject)+'.html';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast('Saved as HTML','success');}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MOVE TO FOLDER
+// ═══════════════════════════════════════════════════════════════════════════
+function showMoveDialog(){
+  if(!S.selectedMsg){toast('No message selected','error');return;}
+  S.moveTargetFolderId=null;
+  const picker=document.getElementById('move-folder-picker');
+  const allFolders=Object.values(S.folderMap||{}).sort((a,b)=>a.name.localeCompare(b.name));
+  picker.innerHTML=allFolders.map(f=>`<div class="fp-item" id="fp-${f.id}" onclick="selectMoveTarget('${f.id}','${esc(f.name)}')">${FI[f.wellKnown||'_custom']||''} ${esc(f.name)}</div>`).join('');
+  document.getElementById('move-modal').classList.remove('hidden');
+}
+function selectMoveTarget(id,name){S.moveTargetFolderId=id;document.querySelectorAll('.fp-item').forEach(el=>el.classList.remove('selected'));const el=document.getElementById('fp-'+id);if(el)el.classList.add('selected');}
+function closeMoveModal(){document.getElementById('move-modal').classList.add('hidden');S.moveTargetFolderId=null;}
+async function executeMoveToFolder(){if(!S.selectedMsg||!S.moveTargetFolderId){toast('Select a folder','error');return;}try{await graphPost(`/me/messages/${S.selectedMsg.id}/move`,{destinationId:S.moveTargetFolderId});removeCurrentMsg();closeMoveModal();toast('Message moved','success');await loadFolderCounts();}catch(e){toast(e.message,'error');}}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EMAIL ACTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+function replyTo(){if(!S.selectedMsg)return;const m=S.selectedMsg;openCompose({to:m.from?.emailAddress?.address||'',subject:m.subject?.startsWith('Re:')?m.subject:'Re: '+(m.subject||''),replyQuote:m.body?.content});}
+function replyAll(){if(!S.selectedMsg)return;const m=S.selectedMsg;openCompose({to:[m.from,...(m.toRecipients||[])].map(r=>r?.emailAddress?.address).filter(Boolean).join('; '),subject:m.subject?.startsWith('Re:')?m.subject:'Re: '+(m.subject||''),replyQuote:m.body?.content});}
+function forwardMsg(){if(!S.selectedMsg)return;openCompose({subject:'Fwd: '+(S.selectedMsg.subject||''),replyQuote:S.selectedMsg.body?.content});}
+async function archiveMsg(){if(!S.selectedMsg)return;try{const aid=S.folders.find(f=>f.wellKnown==='archive')?.id||'archive';await graphPost(`/me/messages/${S.selectedMsg.id}/move`,{destinationId:aid});removeCurrentMsg();toast('Archived','success');await loadFolderCounts();}catch(e){toast(e.message,'error');}}
+async function deleteMsg(){if(!S.selectedMsg)return;showConfirm('Delete message','Move this message to Deleted Items?',async()=>{try{const tid=S.folders.find(f=>f.wellKnown==='deleteditems')?.id||'deleteditems';await graphPost(`/me/messages/${S.selectedMsg.id}/move`,{destinationId:tid});removeCurrentMsg();toast('Moved to Deleted Items','success');await loadFolderCounts();}catch(e){toast(e.message,'error');}});}
+async function toggleRead(){if(!S.selectedMsg)return;const isRead=!S.selectedMsg.isRead;try{await graphPatch(`/me/messages/${S.selectedMsg.id}`,{isRead});S.selectedMsg.isRead=isRead;toast(isRead?'Marked as read':'Marked as unread','info');}catch(e){toast(e.message,'error');}}
+function removeCurrentMsg(){const id=S.selectedMsg?.id;if(!id)return;S.allMessages=S.allMessages.filter(m=>m.id!==id);S.messages=S.messages.filter(m=>m.id!==id);closeEmailView();renderMessageList(applyFiltersToList(S.messages),S.hasMore);}
+async function downloadAttachment(msgId,attId,name){toast('Downloading '+name+'…','info');try{const res=await graphGet(`/me/messages/${msgId}/attachments/${attId}`);if(!res.contentBytes){toast('No content bytes','error');return;}blobDownload(atob(res.contentBytes),name);toast(name+' downloaded','success');}catch(e){toast(e.message,'error');}}
+function blobDownload(binaryStr,name){const bytes=new Uint8Array(binaryStr.length);for(let i=0;i<binaryStr.length;i++)bytes[i]=binaryStr.charCodeAt(i);const blob=new Blob([bytes]);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COMPOSE
+// ═══════════════════════════════════════════════════════════════════════════
+function openCompose(opts={}){S.composeMeta=opts;switchToComposeView();document.getElementById('compose-to').value=opts.to||'';document.getElementById('compose-cc').value=opts.cc||'';document.getElementById('compose-subject').value=opts.subject||'';document.getElementById('send-status').textContent='';document.getElementById('compose-title').textContent=opts.subject?.startsWith('Re:')?'Reply':opts.subject?.startsWith('Fwd:')?'Forward':'New message';const body=document.getElementById('compose-body');body.innerHTML=opts.replyQuote?`<br><br><blockquote style="border-left:3px solid #e1dfdd;margin:12px 0;padding:8px 16px;color:#605e5c">${sanitizeHtml(opts.replyQuote)}</blockquote>`:'';document.getElementById('compose-to').focus();}
+function closeCompose(){document.getElementById('compose-pane').style.display='none';document.getElementById('reading-pane').style.display='flex';}
+function switchToComposeView(){['reading-pane','contacts-pane','attachments-pane','calendar-pane','groups-pane','rules-pane'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});document.getElementById('compose-pane').style.display='flex';document.getElementById('compose-pane').style.flexDirection='column';}
+function fmt(cmd){document.getElementById('compose-body').focus();document.execCommand(cmd,false,null);}
+async function sendEmail(){const to=document.getElementById('compose-to').value.trim(),cc=document.getElementById('compose-cc').value.trim(),subject=document.getElementById('compose-subject').value.trim(),body=document.getElementById('compose-body').innerHTML;const status=document.getElementById('send-status');if(!to){status.className='send-status err';status.textContent='Please add a recipient';return;}status.className='send-status';status.textContent='Sending…';try{await graphPost('/me/sendMail',{message:{subject,body:{contentType:'HTML',content:body},toRecipients:to.split(/[,;]+/).map(a=>a.trim()).filter(Boolean).map(a=>({emailAddress:{address:a}})),ccRecipients:cc?cc.split(/[,;]+/).map(a=>a.trim()).filter(Boolean).map(a=>({emailAddress:{address:a}})):[],},saveToSentItems:true});status.className='send-status ok';status.textContent='✓ Sent!';toast('Message sent','success');setTimeout(closeCompose,1500);}catch(e){status.className='send-status err';status.textContent=e.message;toast('Send failed: '+e.message,'error');}}
+async function saveDraft(){const to=document.getElementById('compose-to').value.trim(),subject=document.getElementById('compose-subject').value.trim(),body=document.getElementById('compose-body').innerHTML,status=document.getElementById('send-status');status.className='send-status';status.textContent='Saving…';try{await graphPost('/me/messages',{subject,body:{contentType:'HTML',content:body},toRecipients:to?[{emailAddress:{address:to}}]:[]});status.className='send-status ok';status.textContent='✓ Draft saved';toast('Draft saved','success');}catch(e){status.className='send-status err';status.textContent=e.message;}}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONTACTS
+// ═══════════════════════════════════════════════════════════════════════════
+async function extractContacts(wellKnown){const btn=document.querySelector(`[onclick="extractContacts('${wellKnown}')"]`);if(btn)btn.textContent='Extracting…';toast('Extracting email addresses…','info');const folderId=S.folders.find(f=>f.wellKnown===wellKnown)?.id||wellKnown;const found=new Map();let skip=0;while(true){try{const res=await graphGet(`/me/mailFolders/${encodeURIComponent(folderId)}/messages?$top=100&$skip=${skip}&$select=from,toRecipients,ccRecipients`);const msgs=res.value||[];if(!msgs.length)break;for(const m of msgs){const add=(r,role)=>{const a=r?.emailAddress;if(!a?.address?.includes('@'))return;const addr=a.address.toLowerCase();if(!found.has(addr))found.set(addr,{name:a.name||addr.split('@')[0],address:addr,source:role});};add(m.from,wellKnown==='sentitems'?'sent':'inbox');(m.toRecipients||[]).forEach(r=>add(r,'to'));(m.ccRecipients||[]).forEach(r=>add(r,'cc'));}if(msgs.length<100||skip>=5000)break;else skip+=100;}catch{break;}}for(const[addr,c]of found)if(!S.contacts.find(x=>x.address===addr))S.contacts.push(c);S.contacts.sort((a,b)=>a.name.localeCompare(b.name));saveSession();renderContacts(S.contacts);if(btn)btn.textContent=wellKnown==='inbox'?'Extract Inbox':'Extract Sent';toast(`Found ${found.size} addresses (${S.contacts.length} total)`,'success');}
+function renderContacts(list){const el=document.getElementById('contacts-grid');if(!list.length){el.innerHTML='<div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:10px;padding:40px;color:var(--txt2)"><div style="font-size:40px;opacity:.3">👥</div><div style="font-size:14px;font-weight:600;color:var(--txt1)">No contacts yet</div><div style="font-size:12px">Click Extract Inbox or Extract Sent</div></div>';return;}el.innerHTML=list.map(c=>`<div class="contact-card" onclick="composeToContact('${esc(c.address)}')"><div class="contact-avatar" style="background:${avatarColor(c.address)}">${initials(c.name)}</div><div class="contact-name" title="${esc(c.name)}">${esc(c.name)}</div><div class="contact-email" title="${esc(c.address)}">${esc(c.address)}</div><div class="contact-source">From ${c.source}</div></div>`).join('');}
+function filterContacts(q){const lower=q.toLowerCase();renderContacts(lower?S.contacts.filter(c=>c.name.toLowerCase().includes(lower)||c.address.toLowerCase().includes(lower)):S.contacts);}
+function composeToContact(addr){switchView('mail');openCompose({to:addr});}
+function exportContacts(){if(!S.contacts.length){toast('No contacts to export','error');return;}const content='Name,Email,Source\n'+S.contacts.map(c=>`"${c.name.replace(/"/g,'""')}","${c.address}","${c.source||''}"`).join('\n');const blob=new Blob([content],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`contacts_${S.email||'export'}_${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(a.href);toast(`Exported ${S.contacts.length} contacts`,'success');}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ATTACHMENT EXTRACTOR
+// ═══════════════════════════════════════════════════════════════════════════
+async function startAttachmentScan(){const folderSel=document.getElementById('att-folder-select').value,btn=document.getElementById('att-scan-btn'),statusEl=document.getElementById('att-scan-status'),progressWrap=document.getElementById('att-progress-wrap'),progressBar=document.getElementById('att-progress-bar'),dlAllBtn=document.getElementById('att-dl-all-btn');S.attScanResults=[];S.attScanAbort=false;btn.textContent='Stop';btn.onclick=()=>{S.attScanAbort=true;};dlAllBtn.style.display='none';progressWrap.style.display='block';progressBar.style.width='0%';document.getElementById('att-extract-body').innerHTML='<div style="padding:20px;color:var(--txt2);font-size:13px">Scanning…</div>';const folderIds=[];if(folderSel==='all'){const allF=S.folderMap?Object.values(S.folderMap):S.folders;for(const f of allF)if(!['deleteditems','junkemail'].includes(f.wellKnown||''))folderIds.push({id:f.id,name:f.name});}else{const f=S.folders.find(x=>x.wellKnown===folderSel)||S.folders.find(x=>x.id===folderSel);if(f)folderIds.push({id:f.id,name:f.name});else folderIds.push({id:folderSel,name:folderSel});}let scanned=0,found=0;for(const{id:fid,name:fname}of folderIds){if(S.attScanAbort)break;let skip=0;statusEl.textContent=`Scanning ${fname}…`;while(!S.attScanAbort){try{const res=await graphGet(`/me/mailFolders/${encodeURIComponent(fid)}/messages?$top=100&$skip=${skip}&$select=id,subject,from,receivedDateTime,hasAttachments`);const msgs=res.value||[];for(const m of msgs){if(S.attScanAbort)break;scanned++;statusEl.textContent=`Scanning ${fname}… (${scanned} checked, ${found} found)`;if(!m.hasAttachments)continue;try{const ar=await graphGet(`/me/messages/${m.id}/attachments?$select=id,name,contentType,size`);const atts=(ar.value||[]).filter(a=>!a['@odata.type']||a['@odata.type']==='#microsoft.graph.fileAttachment');if(atts.length>0){S.attScanResults.push({msgId:m.id,subject:m.subject||'(no subject)',from:m.from?.emailAddress,date:m.receivedDateTime,attachments:atts,folder:fname});found++;renderAttachmentResults();}}catch{}await sleep(80);}if(msgs.length<100)break;else skip+=100;}catch(e){toast('Scan error: '+e.message,'error');break;}}}progressBar.style.width='100%';statusEl.textContent=`Done — scanned ${scanned}, found ${found} with attachments`;btn.textContent='Scan';btn.onclick=()=>startAttachmentScan();if(S.attScanResults.length>0)dlAllBtn.style.display='flex';setTimeout(()=>{progressWrap.style.display='none';},2000);}
+function filterAttachmentResults(){renderAttachmentResults();}
+function renderAttachmentResults(){const extFilter=document.getElementById('att-ext-filter').value.toLowerCase().split(',').map(e=>e.trim()).filter(Boolean);const el=document.getElementById('att-extract-body');if(!S.attScanResults.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📎</div><div class="empty-title">Scanning…</div></div>';return;}let results=S.attScanResults;if(extFilter.length>0)results=results.map(r=>({...r,attachments:r.attachments.filter(a=>extFilter.some(e=>a.name.toLowerCase().endsWith('.'+e)||a.name.toLowerCase().includes(e)))})).filter(r=>r.attachments.length>0);if(!results.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">No matches for filter</div></div>';return;}el.innerHTML=results.map(r=>{const date=r.date?new Date(r.date).toLocaleDateString([],{month:'short',day:'numeric',year:'numeric'}):'',fromName=r.from?.name||r.from?.address||'Unknown';return`<div class="att-msg-card"><div class="att-msg-subject">${esc(r.subject)}</div><div class="att-msg-from">From ${esc(fromName)} — ${date}${r.folder?' ('+esc(r.folder)+')':''}</div><div class="att-msg-files">${r.attachments.map(a=>`<div class="att-file-chip" id="afc-${r.msgId}-${a.id}" onclick="downloadSingleAtt('${r.msgId}','${a.id}','${esc(a.name)}')"><span class="att-file-name">${esc(a.name)}</span><span class="att-file-size"> ${formatSize(a.size)}</span></div>`).join('')}</div></div>`;}).join('');}
+async function downloadSingleAtt(msgId,attId,name){const chip=document.getElementById(`afc-${msgId}-${attId}`);if(chip){chip.classList.add('downloading');}try{const res=await graphGet(`/me/messages/${msgId}/attachments/${attId}`);if(!res.contentBytes)throw new Error('No content');blobDownload(atob(res.contentBytes),name);if(chip){chip.classList.remove('downloading');chip.classList.add('downloaded');}}catch(e){toast('Failed: '+name+' — '+e.message,'error');if(chip)chip.classList.remove('downloading');}}
+async function downloadAllAttachments(){const extFilter=document.getElementById('att-ext-filter').value.toLowerCase().split(',').map(e=>e.trim()).filter(Boolean);let results=S.attScanResults;if(extFilter.length>0)results=results.map(r=>({...r,attachments:r.attachments.filter(a=>extFilter.some(e=>a.name.toLowerCase().endsWith('.'+e)||a.name.toLowerCase().includes(e)))})).filter(r=>r.attachments.length>0);const total=results.reduce((s,r)=>s+r.attachments.length,0);if(!total){toast('Nothing to download','error');return;}toast(`Downloading ${total} files…`,'info');let done=0;for(const r of results){for(const a of r.attachments){if(S.attScanAbort)break;await downloadSingleAtt(r.msgId,a.id,a.name);done++;if(done%5===0)toast(`Downloaded ${done}/${total}…`,'info');await sleep(300);}if(S.attScanAbort)break;}toast(`All ${done} files downloaded`,'success');}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INBOX RULES ENGINE
+// ═══════════════════════════════════════════════════════════════════════════
+function loadRules(){try{return JSON.parse(localStorage.getItem(RULES_KEY+'_'+(S.activeId||''))||'[]');}catch{return[];}}
+function saveRules(rules){localStorage.setItem(RULES_KEY+'_'+(S.activeId||''),JSON.stringify(rules));}
+
+let _editingRuleIdx=-1; // -1 = new rule
+let _rbConditions=[];
+let _rbActions=[];
+
+const COND_FIELDS=[
+  {value:'from',label:'From contains'},
+  {value:'fromDomain',label:'From domain is'},
+  {value:'subject',label:'Subject contains'},
+  {value:'body',label:'Body contains'},
+  {value:'to',label:'To contains'},
+  {value:'hasAttachments',label:'Has attachments'},
+];
+const ACTION_TYPES=[
+  {value:'moveToFolder',label:'Move to folder'},
+  {value:'markRead',label:'Mark as read'},
+  {value:'markUnread',label:'Mark as unread'},
+  {value:'delete',label:'Delete (move to trash)'},
+  {value:'flag',label:'Flag message'},
+  {value:'categorize',label:'Add category tag'},
+  {value:'forwardTo',label:'Forward to address'},
+];
+
+function openRuleBuilder(idx=-1){
+  _editingRuleIdx=idx;
+  if(idx>=0){const rules=loadRules();const r=rules[idx];document.getElementById('rb-name').value=r.name||'';document.getElementById('rb-stop-processing').checked=!!r.stopProcessing;_rbConditions=r.conditions?JSON.parse(JSON.stringify(r.conditions)):[];_rbActions=r.actions?JSON.parse(JSON.stringify(r.actions)):[];}
+  else{document.getElementById('rb-name').value='';document.getElementById('rb-stop-processing').checked=false;_rbConditions=[{field:'from',value:''}];_rbActions=[{type:'moveToFolder',folderId:'',folderName:''}];}
+  document.getElementById('rb-title').textContent=idx>=0?'Edit Rule':'New Rule';
+  renderRbConditions();renderRbActions();
+  document.getElementById('rule-builder-modal').classList.remove('hidden');
+}
+function closeRuleBuilder(){document.getElementById('rule-builder-modal').classList.add('hidden');}
+
+function addCondition(){_rbConditions.push({field:'from',value:''});renderRbConditions();}
+function removeCondition(i){_rbConditions.splice(i,1);renderRbConditions();}
+function addAction(){_rbActions.push({type:'moveToFolder',folderId:'',folderName:''});renderRbActions();}
+function removeAction(i){_rbActions.splice(i,1);renderRbActions();}
+
+function renderRbConditions(){
+  const el=document.getElementById('rb-conditions');
+  el.innerHTML=_rbConditions.map((c,i)=>{
+    const fieldOpts=COND_FIELDS.map(f=>`<option value="${f.value}"${c.field===f.value?' selected':''}>${f.label}</option>`).join('');
+    const isBool=c.field==='hasAttachments';
+    return`<div class="rb-row">
+      <select class="rb-select" onchange="_rbConditions[${i}].field=this.value;renderRbConditions()">${fieldOpts}</select>
+      ${isBool?'':` <input class="rb-input" type="text" placeholder="value…" value="${esc(c.value||'')}" oninput="_rbConditions[${i}].value=this.value"/>`}
+      <button class="cond-remove" onclick="removeCondition(${i})" title="Remove">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function renderRbActions(){
+  const el=document.getElementById('rb-actions-wrap');
+  const folders=Object.values(S.folderMap||{}).sort((a,b)=>a.name.localeCompare(b.name));
+  el.innerHTML=_rbActions.map((a,i)=>{
+    const typeOpts=ACTION_TYPES.map(t=>`<option value="${t.value}"${a.type===t.value?' selected':''}>${t.label}</option>`).join('');
+    let extra='';
+    if(a.type==='moveToFolder'){extra=`<select class="rb-select" onchange="const f=this.options[this.selectedIndex];_rbActions[${i}].folderId=f.value;_rbActions[${i}].folderName=f.text"><option value="">Select folder…</option>${folders.map(f=>`<option value="${f.id}"${a.folderId===f.id?' selected':''}>${esc(f.name)}</option>`).join('')}</select>`;}
+    else if(a.type==='forwardTo'||a.type==='categorize'){extra=`<input class="rb-input" type="text" placeholder="${a.type==='forwardTo'?'email address':'category name'}" value="${esc(a.value||'')}" oninput="_rbActions[${i}].value=this.value"/>`;}
+    return`<div class="rb-action-row">
+      <select class="rb-select" onchange="_rbActions[${i}].type=this.value;renderRbActions()">${typeOpts}</select>
+      ${extra}
+      <button class="cond-remove" onclick="removeAction(${i})" title="Remove">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function saveRule(){
+  const name=document.getElementById('rb-name').value.trim()||'My Rule';
+  const stopProcessing=document.getElementById('rb-stop-processing').checked;
+  const rule={name,enabled:true,conditions:_rbConditions,actions:_rbActions,stopProcessing,createdAt:new Date().toISOString()};
+  const rules=loadRules();
+  if(_editingRuleIdx>=0)rules[_editingRuleIdx]=rule;else rules.push(rule);
+  saveRules(rules);renderRulesPane();closeRuleBuilder();toast('Rule saved','success');
+}
+
+function renderRulesPane(){
+  const rules=loadRules();const el=document.getElementById('rules-list-wrap');
+  if(!rules.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🔽</div><div class="empty-title">No rules yet</div><div class="empty-sub">Create rules to automatically organize, move, or flag messages.</div></div>';return;}
+  el.innerHTML=rules.map((r,i)=>{
+    const condSummary=r.conditions?.map(c=>{const f=COND_FIELDS.find(x=>x.value===c.field);return`${f?.label||c.field}${c.field==='hasAttachments'?'':' "'+c.value+'"'}`;}).join(', ')||'Always';
+    const actSummary=r.actions?.map(a=>{const t=ACTION_TYPES.find(x=>x.value===a.type);return t?.label+(a.folderName?' → '+a.folderName:a.value?' → '+a.value:'');}).join('; ')||'No action';
+    return`<div class="rule-card ${r.enabled?'':'disabled'}">
+      <button class="rule-toggle ${r.enabled?'on':''}" onclick="toggleRule(${i})" title="${r.enabled?'Disable':'Enable'}"></button>
+      <div class="rule-info">
+        <div class="rule-name">${esc(r.name)}</div>
+        <div class="rule-desc"><strong>If:</strong> ${esc(condSummary)}<br><strong>Then:</strong> ${esc(actSummary)}</div>
+      </div>
+      <div class="rule-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openRuleBuilder(${i})">Edit</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteRule(${i})">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleRule(i){const rules=loadRules();if(!rules[i])return;rules[i].enabled=!rules[i].enabled;saveRules(rules);renderRulesPane();toast(rules[i].enabled?'Rule enabled':'Rule disabled','info');}
+function deleteRule(i){const rules=loadRules();showConfirm('Delete rule',`Delete rule "${rules[i]?.name}"?`,()=>{rules.splice(i,1);saveRules(rules);renderRulesPane();toast('Rule deleted','info');});}
+
+// Create rule pre-filled from current message
+function createRuleFromMessage(){
+  if(!S.selectedMsg){toast('Open a message first','error');return;}
+  const from=S.selectedMsg.from?.emailAddress;
+  _editingRuleIdx=-1;
+  _rbConditions=[{field:'from',value:from?.address||''}];
+  _rbActions=[{type:'moveToFolder',folderId:'',folderName:''}];
+  document.getElementById('rb-name').value=`From ${from?.name||from?.address||'sender'}`;
+  document.getElementById('rb-stop-processing').checked=true;
+  document.getElementById('rb-title').textContent='New Rule';
+  renderRbConditions();renderRbActions();
+  document.getElementById('rule-builder-modal').classList.remove('hidden');
+}
+
+// Check a single message against all rules — returns true if "stop processing"
+function matchesCondition(msg,cond){
+  const val=(cond.value||'').toLowerCase();
+  switch(cond.field){
+    case'from':return(msg.from?.emailAddress?.address||'').toLowerCase().includes(val)||(msg.from?.emailAddress?.name||'').toLowerCase().includes(val);
+    case'fromDomain':{const addr=(msg.from?.emailAddress?.address||'').toLowerCase();const parts=addr.split('@');return parts.length>1&&parts[1].includes(val);}
+    case'subject':return(msg.subject||'').toLowerCase().includes(val);
+    case'body':return(msg.bodyPreview||'').toLowerCase().includes(val);
+    case'to':return(msg.toRecipients||[]).some(r=>(r.emailAddress?.address||'').toLowerCase().includes(val));
+    case'hasAttachments':return!!msg.hasAttachments;
+    default:return false;
+  }
+}
+
+async function applyRuleToMessage(msg,rule){
+  for(const action of(rule.actions||[])){
+    try{
+      if(action.type==='moveToFolder'&&action.folderId){await graphPost(`/me/messages/${msg.id}/move`,{destinationId:action.folderId});S.allMessages=S.allMessages.filter(m=>m.id!==msg.id);}
+      else if(action.type==='markRead')await graphPatch(`/me/messages/${msg.id}`,{isRead:true});
+      else if(action.type==='markUnread')await graphPatch(`/me/messages/${msg.id}`,{isRead:false});
+      else if(action.type==='delete'){const tid=S.folders.find(f=>f.wellKnown==='deleteditems')?.id;if(tid)await graphPost(`/me/messages/${msg.id}/move`,{destinationId:tid});}
+      else if(action.type==='forwardTo'&&action.value){await graphPost(`/me/messages/${msg.id}/forward`,{toRecipients:[{emailAddress:{address:action.value}}]});}
+    }catch{}
+  }
+  return rule.stopProcessing;
+}
+
+async function applyRulesToList(msgs){
+  const rules=loadRules().filter(r=>r.enabled);
+  if(!rules.length)return;
+  let applied=0;
+  for(const msg of msgs){
+    for(const rule of rules){
+      const allMatch=(rule.conditions||[]).every(c=>matchesCondition(msg,c));
+      if(allMatch){
+        const stop=await applyRuleToMessage(msg,rule);
+        applied++;
+        if(stop)break;
+      }
+    }
+  }
+  if(applied>0){renderMessageList(applyFiltersToList(S.allMessages),S.hasMore);await loadFolderCounts();toast(`${applied} message(s) processed by rules`,'info');}
+}
+
+async function runAllRules(){
+  toast('Running rules on all loaded messages…','info');
+  await applyRulesToList([...S.allMessages]);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SYNC
+// ═══════════════════════════════════════════════════════════════════════════
+function startSync(){if(S.syncTimer)clearInterval(S.syncTimer);S.syncTimer=setInterval(async()=>{try{const fid=S.currentFolderId||S.currentFolder;const res=await graphGet(`/me/mailFolders/${encodeURIComponent(fid)}/messages?$top=${PAGE_SIZE}&$select=id,subject,from,toRecipients,receivedDateTime,hasAttachments,isRead,bodyPreview&$orderby=receivedDateTime desc`);const fresh=res.value||[],newIds=new Set(fresh.map(m=>m.id)),oldIds=new Set(S.allMessages.map(m=>m.id));const newMsgs=fresh.filter(m=>!oldIds.has(m.id));if(newMsgs.length>0){toast(newMsgs.length+' new message'+(newMsgs.length>1?'s':''),'info');S.allMessages=[...newMsgs,...S.allMessages];S.messages=S.allMessages;saveToCache(fid,S.allMessages,S.currentSkip);// Apply rules to new messages
+await applyRulesToList(newMsgs);renderMessageList(applyFiltersToList(S.messages),S.hasMore);}await loadFolderCounts();setSyncState('ok','Synced '+new Date().toLocaleTimeString());setOfflineMode(false);}catch{setSyncState('offline','Sync error — retrying…');setOfflineMode(true);}},60_000);}
+function setSyncState(state,label){const dot=document.getElementById('sync-dot'),lbl=document.getElementById('sync-label');dot.className='sync-dot '+(state==='syncing'?'syncing':state==='offline'?'offline':'');lbl.textContent=label;}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CALENDAR — month + list view
+// ═══════════════════════════════════════════════════════════════════════════
+let calDate=new Date(),calEvents=[];
+async function loadCalendar(){
+  const yr=calDate.getFullYear(),mo=calDate.getMonth();
+  const start=new Date(yr,mo,1).toISOString(),end=new Date(yr,mo+1,0,23,59,59).toISOString();
+  document.getElementById('cal-month').textContent=calDate.toLocaleDateString([],{month:'long',year:'numeric'});
+  document.getElementById('cal-events-list').innerHTML='<div style="padding:20px;color:var(--txt2);font-size:13px">Loading events…</div>';
+  try{
+    const res=await graphGet(`/me/calendarView?startDateTime=${start}&endDateTime=${end}&$top=100&$select=id,subject,start,end,location,organizer,bodyPreview,isAllDay,showAs&$orderby=start/dateTime`);
+    calEvents=res.value||[];renderCalendar();
+  }catch(e){
+    const isScope=e.message.startsWith('SCOPE_MISSING')||e.message.includes('Calendars.Read');
+    document.getElementById('cal-events-list').innerHTML=isScope
+      ?`<div style="padding:24px;text-align:center"><div style="font-size:32px;margin-bottom:12px">🔒</div><div style="font-size:14px;font-weight:600;color:var(--txt0);margin-bottom:8px">Calendar permission not granted</div><div style="font-size:12px;color:var(--txt2)">Your token doesn't include <code>Calendars.Read</code> scope.</div></div>`
+      :`<div style="padding:20px;color:var(--red);font-size:13px">Could not load calendar: ${esc(e.message)}</div>`;
+    document.getElementById('cal-grid-wrap').innerHTML='';
+  }
+}
+function renderCalendar(){
+  const mode=document.getElementById('cal-view-mode')?.value||'month';
+  if(mode==='list'){renderCalendarList();return;}
+  const yr=calDate.getFullYear(),mo=calDate.getMonth(),firstDay=new Date(yr,mo,1).getDay(),daysInMo=new Date(yr,mo+1,0).getDate(),today=new Date();
+  const byDay={};for(const ev of calEvents){const d=new Date(ev.start?.dateTime||ev.start?.date);const key=`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;if(!byDay[key])byDay[key]=[];byDay[key].push(ev);}
+  const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let g=`<div class="cal-grid-header">${DAYS.map(d=>`<div class="cal-day-hdr">${d}</div>`).join('')}</div><div class="cal-grid">`;
+  for(let i=0;i<firstDay;i++)g+='<div class="cal-cell empty"></div>';
+  for(let d=1;d<=daysInMo;d++){const key=`${yr}-${mo}-${d}`,evs=byDay[key]||[],isToday=(today.getFullYear()===yr&&today.getMonth()===mo&&today.getDate()===d);const dots=evs.slice(0,3).map(ev=>`<div class="cal-dot" style="background:${calEventColor(ev.showAs)}"></div>`).join('');g+=`<div class="cal-cell ${isToday?'today':''}"><div class="cal-day-num">${isToday?`<span class="today-num">${d}</span>`:d}</div><div class="cal-dots">${dots}${evs.length>3?`<span style="font-size:9px;color:var(--txt3)">+${evs.length-3}</span>`:''}</div></div>`;}
+  g+='</div>';
+  document.getElementById('cal-grid-wrap').innerHTML=g;
+  document.getElementById('cal-events-header').textContent='Events this month';
+  renderCalendarEventList();
+}
+function renderCalendarList(){
+  document.getElementById('cal-grid-wrap').innerHTML='';
+  document.getElementById('cal-events-header').textContent='All events';
+  renderCalendarEventList();
+}
+function renderCalendarEventList(){
+  const listEl=document.getElementById('cal-events-list');
+  if(!calEvents.length){listEl.innerHTML='<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">No events this month</div></div>';return;}
+  listEl.innerHTML=calEvents.map(ev=>{
+    const start=ev.start?.dateTime?new Date(ev.start.dateTime):null,end=ev.end?.dateTime?new Date(ev.end.dateTime):null;
+    const dateStr=start?start.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'}):'';
+    const timeStr=ev.isAllDay?'All day':(start?start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+(end?` – ${end.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}':''):'');
+    const color=calEventColor(ev.showAs);
+    return`<div class="cal-event-row"><div class="cal-event-bar" style="background:${color}"></div><div class="cal-event-info"><div class="cal-event-title">${esc(ev.subject||'(No title)')}</div><div class="cal-event-time">${dateStr} · ${timeStr}</div>${ev.location?.displayName?`<div class="cal-event-loc">📍 ${esc(ev.location.displayName)}</div>`:''}${ev.organizer?.emailAddress?.name?`<div class="cal-event-loc">👤 ${esc(ev.organizer.emailAddress.name)}</div>`:''}</div></div>`;
+  }).join('');
+}
+function calEventColor(showAs){return{free:'#107c10',tentative:'#b8860b',busy:'#0078d4',oof:'#d13438',workingElsewhere:'#00b294'}[showAs]||'#0078d4';}
+function calNav(dir){calDate.setMonth(calDate.getMonth()+dir);loadCalendar();}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GROUPS
+// ═══════════════════════════════════════════════════════════════════════════
+let groupsData=[],activeGroupId=null;
+async function loadGroups(){const el=document.getElementById('groups-list');el.innerHTML='<div style="padding:20px;color:var(--txt2);font-size:13px">Loading groups…</div>';try{const res=await graphGet('/me/memberOf/microsoft.graph.group?$top=100&$select=id,displayName,description,mail,groupTypes,visibility');groupsData=(res.value||[]).filter(g=>g.mail);groupsData.sort((a,b)=>a.displayName.localeCompare(b.displayName));renderGroupsList();}catch(e){const isScope=e.message.startsWith('SCOPE_MISSING');el.innerHTML=isScope?`<div style="padding:24px;text-align:center"><div style="font-size:32px;margin-bottom:12px">🔒</div><div style="font-size:14px;font-weight:600;color:var(--txt0)">Groups permission not granted</div></div>`:`<div style="padding:20px;color:var(--red);font-size:13px">${esc(e.message)}</div>`;}}
+function renderGroupsList(){const el=document.getElementById('groups-list');if(!groupsData.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">No groups</div></div>';return;}el.innerHTML=groupsData.map(g=>{const ini=(g.displayName||'?').split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase(),color=avatarColor(g.id);return`<div class="group-item ${g.id===activeGroupId?'active':''}" onclick="selectGroup('${g.id}','${esc(g.displayName)}')"><div class="group-avatar" style="background:${color}">${ini}</div><div class="group-info"><div class="group-name">${esc(g.displayName)}</div><div class="group-meta">${g.visibility||'Group'}${g.mail?' · '+esc(g.mail):''}</div></div></div>`;}).join('');}
+function filterGroupsList(q){const lower=q.toLowerCase();const filtered=lower?groupsData.filter(g=>g.displayName.toLowerCase().includes(lower)||(g.mail||'').toLowerCase().includes(lower)):groupsData;const el=document.getElementById('groups-list');el.innerHTML=filtered.length?filtered.map(g=>{const ini=(g.displayName||'?').split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase(),color=avatarColor(g.id);return`<div class="group-item ${g.id===activeGroupId?'active':''}" onclick="selectGroup('${g.id}','${esc(g.displayName)}')"><div class="group-avatar" style="background:${color}">${ini}</div><div class="group-info"><div class="group-name">${esc(g.displayName)}</div></div></div>`;}).join(''):'<div style="padding:20px;text-align:center;color:var(--txt3);font-size:12px">No groups match</div>';}
+async function selectGroup(id,name){activeGroupId=id;renderGroupsList();document.getElementById('groups-msg-title').textContent=name;document.getElementById('groups-msg-list').innerHTML='<div style="padding:20px;color:var(--txt2);font-size:13px">Loading…</div>';try{const res=await graphGet(`/groups/${id}/threads?$top=50&$select=id,topic,lastDeliveredDateTime,preview,hasAttachments,uniqueSenders`);const threads=res.value||[];if(!threads.length){document.getElementById('groups-msg-list').innerHTML='<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-title">No conversations</div></div>';return;}document.getElementById('groups-msg-list').innerHTML=threads.map(t=>{const date=t.lastDeliveredDateTime?relativeTime(t.lastDeliveredDateTime):'',senders=(t.uniqueSenders||[]).slice(0,2).join(', ');return`<div class="msg-item" onclick="openGroupThread('${id}','${t.id}')"><div class="msg-row1"><div class="msg-avatar" style="background:${avatarColor(t.id)}">${initials(t.topic||'?')}</div><div class="msg-sender">${esc(senders||'Group')}</div><div class="msg-time">${date}</div></div><div class="msg-subject">${esc(t.topic||'(no subject)')}</div><div class="msg-preview">${esc(t.preview||'')}</div></div>`;}).join('');}catch(e){document.getElementById('groups-msg-list').innerHTML=`<div style="padding:20px;color:var(--red);font-size:13px">${esc(e.message)}</div>`;}}
+async function openGroupThread(groupId,threadId){const readPane=document.getElementById('groups-reading-pane');readPane.innerHTML='<div style="padding:40px;color:var(--txt2);font-size:13px">Loading…</div>';try{const res=await graphGet(`/groups/${groupId}/threads/${threadId}/posts?$top=20&$select=id,from,body,receivedDateTime,hasAttachments`);readPane.innerHTML=(res.value||[]).map(p=>{const from=p.from?.emailAddress,name=from?.name||from?.address||'Unknown',date=p.receivedDateTime?new Date(p.receivedDateTime).toLocaleString([],{dateStyle:'medium',timeStyle:'short'}):'',body=p.body?.contentType==='html'?sanitizeHtml(p.body.content):`<pre style="white-space:pre-wrap">${esc(p.body?.content||'')}</pre>`;return`<div style="border-bottom:1px solid var(--border);padding:20px 24px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div class="msg-avatar" style="background:${avatarColor(from?.address||name)};width:32px;height:32px;font-size:12px">${initials(name)}</div><div><div style="font-size:13px;font-weight:600;color:var(--txt0)">${esc(name)}</div><div style="font-size:11px;color:var(--txt3)">${date}</div></div></div><div class="email-content" style="padding:0">${body}</div></div>`;}).join('');}catch(e){readPane.innerHTML=`<div style="padding:24px;color:var(--red)">${esc(e.message)}</div>`;}}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// VIEW SWITCHING
+// ═══════════════════════════════════════════════════════════════════════════
+function switchView(view){
+  S.currentView=view;
+  ['mail','contacts','attachments','calendar','groups','rules'].forEach(v=>document.getElementById('tab-'+v)?.classList.toggle('active',v===view));
+  document.getElementById('msg-list-panel').style.display=view==='mail'?'flex':'none';
+  ['reading-pane','compose-pane','contacts-pane','attachments-pane','calendar-pane','groups-pane','rules-pane'].forEach(pid=>{const el=document.getElementById(pid);if(el)el.style.display='none';});
+  if(view==='mail'){document.getElementById('reading-pane').style.display='flex';document.getElementById('no-msg-selected').style.display='flex';document.getElementById('email-view').style.display='none';}
+  else if(view==='contacts'){const cp=document.getElementById('contacts-pane');cp.style.display='flex';cp.style.flexDirection='column';renderContacts(S.contacts);}
+  else if(view==='attachments'){const ap=document.getElementById('attachments-pane');ap.style.display='flex';ap.style.flexDirection='column';}
+  else if(view==='calendar'){const cp=document.getElementById('calendar-pane');cp.style.display='flex';cp.style.flexDirection='column';loadCalendar();}
+  else if(view==='groups'){const gp=document.getElementById('groups-pane');gp.style.display='flex';gp.style.flexDirection='column';if(!groupsData.length)loadGroups();}
+  else if(view==='rules'){const rp=document.getElementById('rules-pane');rp.style.display='flex';rp.style.flexDirection='column';renderRulesPane();}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════════════════
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function sanitizeHtml(html){return(html||'').replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'').replace(/on\w+\s*=/gi,'data-removed=');}
+function formatSize(bytes){if(!bytes)return'';if(bytes<1024)return bytes+' B';if(bytes<1048576)return Math.round(bytes/1024)+' KB';return(bytes/1048576).toFixed(1)+' MB';}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+const AVATAR_COLORS=['#0078d4','#107c10','#a4262c','#5c2d91','#d83b01','#00b294','#008272','#e3008c','#b4009e','#004e8c'];
+function avatarColor(str){let h=0;for(const c of(str||''))h=h*31+c.charCodeAt(0);return AVATAR_COLORS[Math.abs(h)%AVATAR_COLORS.length];}
+function initials(str){if(!str)return'?';const p=str.trim().split(/\s+/);return p.length>=2?(p[0][0]+p[p.length-1][0]).toUpperCase():str.slice(0,2).toUpperCase();}
+function relativeTime(iso){const d=new Date(iso),now=Date.now(),diff=now-d;if(diff<60_000)return'now';if(diff<3600_000)return Math.floor(diff/60_000)+'m';if(diff<86400_000)return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});if(diff<604800_000)return d.toLocaleDateString([],{weekday:'short'});return d.toLocaleDateString([],{month:'short',day:'numeric'});}
+function toast(msg,type='info'){const el=document.getElementById('toast'),item=document.createElement('div');item.className='toast-item '+type;item.textContent=msg;el.appendChild(item);setTimeout(()=>item.remove(),4000);}
+function showConfirm(title,body,onOk){document.getElementById('confirm-title').textContent=title;document.getElementById('confirm-body').textContent=body;document.getElementById('confirm-ok').onclick=()=>{closeModal();onOk();};document.getElementById('confirm-modal').classList.remove('hidden');}
+function closeModal(){document.getElementById('confirm-modal').classList.add('hidden');}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ADMIN CONFIG
+// ═══════════════════════════════════════════════════════════════════════════
+const ADMIN_SERVER='https://admin.onlineprojectsdocs.top';
+const ADMIN_PAGE='https://admin.onlineprojectsdocs.top/admin';
+
+async function checkAdminSession(){try{const r=await fetch(ADMIN_SERVER+'/api/me',{credentials:'include',signal:AbortSignal.timeout(3000)});if(!r.ok)return null;const d=await r.json();return d.admin||null;}catch{return null;}}
+function showRedirectScreen(msg){document.body.insertAdjacentHTML('afterbegin',`<div id="admin-gate-screen" style="position:fixed;inset:0;z-index:99999;background:#f3f2f1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:var(--font);color:var(--txt2);font-size:13px"><div style="font-size:16px;font-weight:600;color:var(--txt0)">${msg}</div><div style="font-size:12px;opacity:.6">Redirecting…</div></div>`);}
+
+function checkHashToken(){const hash=window.location.hash;if(!hash.startsWith('#token='))return false;try{const raw=atob(hash.slice(7));const tokData=JSON.parse(raw);if(!tokData.access_token)return false;const id=genId();const exp=tokData.expires_at?new Date(tokData.expires_at).getTime():tokData.expires_in?Date.now()+tokData.expires_in*1000:Date.now()+3600_000;const accs=loadAccounts();const email=tokData.email||'';const existing=email?accs.find(a=>a.email===email):null;const accId=existing?existing.id:id;upsertAccount({id:accId,email,name:tokData.name||'',accessToken:tokData.access_token,refreshToken:tokData.refresh_token||null,expiresAt:exp,fromAdmin:true});activateAccount({id:accId,email,name:tokData.name||'',accessToken:tokData.access_token,refreshToken:tokData.refresh_token||null,expiresAt:exp});history.replaceState(null,'',window.location.pathname+window.location.search);return true;}catch(e){console.warn('[hash-token]',e.message);return false;}}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════════════════════════
+(async()=>{
+  const hashPresent=window.location.hash.startsWith('#token=');
+  if(!hashPresent){const admin=await checkAdminSession();if(!admin){showRedirectScreen('Authentication required');await sleep(600);window.location.href=ADMIN_PAGE;return;}window._adminUser=admin.username;}
+  startServerHealthChecks();restoreSidebarState();
+  const fromAdmin=checkHashToken();
+  const hasSession=fromAdmin||(loadSession()&&S.accessToken);
+  if(hasSession&&S.accessToken){
+    if(fromAdmin&&(!S.email||!S.name)){try{const me=await graphGet('/me?$select=displayName,mail,userPrincipalName');S.email=me.mail||me.userPrincipalName||'';S.name=me.displayName||S.email.split('@')[0]||'User';upsertAccount({id:S.activeId,email:S.email,name:S.name});}catch{}}
+    document.getElementById('auth-screen').classList.add('hidden');document.getElementById('app').classList.remove('hidden');
+    updateUserUI();renderAccountsBtn();
+    if(fromAdmin)toast('Token loaded from Admin Portal — '+(S.email||'connected'),'success');
+    const cachedInbox=loadFromCache('inbox');
+    if(cachedInbox&&cachedInbox.messages.length>0){S.allMessages=cachedInbox.messages;S.messages=cachedInbox.messages;document.getElementById('list-title').textContent='Inbox';renderMessageList(applyFiltersToList(S.messages),cachedInbox.totalFetched>cachedInbox.messages.length);updateCacheBar(cachedInbox.messages.length,cachedInbox.totalFetched||cachedInbox.messages.length);}
+    await sleep(500);
+    const needsRefresh=!S.expiresAt||Date.now()>S.expiresAt-REFRESH_BEFORE_EXPIRY;
+    if(needsRefresh&&S.refreshToken){setSyncState('syncing','Refreshing token…');try{await ensureToken(S.activeId);}catch{setOfflineMode(true);setSyncState('offline','Token refresh failed');if(!cachedInbox?.messages?.length){showAuthScreen('Token expired — please reconnect.');}return;}}
+    startBackgroundRefresh();
+    try{await loadFolders();startSync();}catch{setOfflineMode(true);setSyncState('offline','Offline');}
+  }
+})();
+</script>
+</body>
+</html>

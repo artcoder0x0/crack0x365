@@ -1,0 +1,53 @@
+{
+  "saved_at": "2026-03-23T21:03:08.742Z",
+  "expires_at": "2026-03-23T23:20:13.742Z",
+  "token_file": "tokens_857DF0.json",
+  "access_token": "eyJ0eXAiOiJKV1QiLCJub25jZSI6InkxUXdiUHNGNy02WmlpbVJBZnJGNlh1a2pVSXY0Z3kyS3VIbzRMLWlOM2MiLCJhbGciOiJSUzI1NiIsIng1dCI6IlFaZ045SHFOa0dORU00R2VLY3pEMDJQY1Z2NCIsImtpZCI6IlFaZ045SHFOa0dORU00R2VLY3pEMDJQY1Z2NCJ9.eyJhdWQiOiJodHRwczovL2dyYXBoLm1pY3Jvc29mdC5jb20iLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC9mOGNkZWYzMS1hMzFlLTRiNGEtOTNlNC01ZjU3MWU5MTI1NWEvIiwiaWF0IjoxNzc0Mjk5NDg2LCJuYmYiOjE3NzQyOTk0ODYsImV4cCI6MTc3NDMwODAxMiwiYWNyIjoiMSIsImFpbyI6IkFaUUFhLzhiQUFBQUM4QjBYVUcyMEFKZWtwNzdHN0lXUDgyRDlnb21JV2xwbG9oaXhIenliV3QrL1dsVmRib1FSRStPQktvZnViSlp4MlQ0QlFDc0hBZzhpNWk5enlSdnhaYW1lTHFYNktTeE5YNTVON29uZzN2blRKSUZmbTdudWpHZnFEbVpiSHBNK2d0UjBVeklsQ3N2cmZ0K1ZLTWZXK3RGQWJmL3lneElPaExRc3p6SmJ0eUNoTUZHVEtVanZYVTlrR2NhT2pDcCIsImFsdHNlY2lkIjoiMTpsaXZlLmNvbTowMDAzMDAwMUE0NEM5OUMzIiwiYW1yIjpbInB3ZCJdLCJhcHBfZGlzcGxheW5hbWUiOiJNaWNyb3NvZnQgT2ZmaWNlIiwiYXBwaWQiOiJkMzU5MGVkNi01MmIzLTQxMDItYWVmZi1hYWQyMjkyYWIwMWMiLCJhcHBpZGFjciI6IjAiLCJlbWFpbCI6ImRhbW9sYWFkZWxla2UyMDI1QG91dGxvb2suY29tIiwiZmFtaWx5X25hbWUiOiJBZGVsZWtlIiwiZ2l2ZW5fbmFtZSI6IkRhbW9sYSIsImlkcCI6ImxpdmUuY29tIiwiaWR0eXAiOiJ1c2VyIiwiaXBhZGRyIjoiMTM4LjE5OS43LjE4MyIsInBsYXRmIjoiMTQiLCJyaCI6IjEuQVFJQU1lX04tQjZqU2t1VDVGOVhIcEVsV2dNQUFBQUFBQUFBd0FBQUFBQUFBQUFCQUVnQ0FBLiIsInNjcCI6IkF1ZGl0TG9nLkNyZWF0ZSBDYWxlbmRhci5SZWFkV3JpdGUgQ2FsZW5kYXJzLlJlYWQuU2hhcmVkIENhbGVuZGFycy5SZWFkV3JpdGUgQ29udGFjdHMuUmVhZFdyaXRlIERhdGFMb3NzUHJldmVudGlvblBvbGljeS5FdmFsdWF0ZSBEaXJlY3RvcnkuQWNjZXNzQXNVc2VyLkFsbCBEaXJlY3RvcnkuUmVhZC5BbGwgRmlsZXMuUmVhZCBGaWxlcy5SZWFkLkFsbCBGaWxlcy5SZWFkV3JpdGUuQWxsIEZpbGVTdG9yYWdlQ29udGFpbmVyLlNlbGVjdGVkIEdyb3VwLlJlYWQuQWxsIEdyb3VwLlJlYWRXcml0ZS5BbGwgSW5mb3JtYXRpb25Qcm90ZWN0aW9uUG9saWN5LlJlYWQgTWFpbC5SZWFkV3JpdGUgTWFpbC5TZW5kIE5vdGVzLkNyZWF0ZSBPcmdhbml6YXRpb24uUmVhZC5BbGwgUGVvcGxlLlJlYWQgUGVvcGxlLlJlYWQuQWxsIFByaW50ZXIuUmVhZC5BbGwgUHJpbnRlclNoYXJlLlJlYWRCYXNpYy5BbGwgUHJpbnRKb2IuQ3JlYXRlIFByaW50Sm9iLlJlYWRXcml0ZUJhc2ljIFJlcG9ydHMuUmVhZC5BbGwgU2Vuc2l0aXZlSW5mb1R5cGUuRGV0ZWN0IFNlbnNpdGl2ZUluZm9UeXBlLlJlYWQuQWxsIFNlbnNpdGl2aXR5TGFiZWwuRXZhbHVhdGUgVGFza3MuUmVhZFdyaXRlIFRlYW1NZW1iZXIuUmVhZFdyaXRlLkFsbCBUZWFtc1RhYi5SZWFkV3JpdGVGb3JDaGF0IFVzZXIuUmVhZC5BbGwgVXNlci5SZWFkQmFzaWMuQWxsIFVzZXIuUmVhZFdyaXRlIFVzZXJzLlJlYWQiLCJzaWQiOiIwMGJhY2M2OS0wMThhLTFhNTgtMzcxNC03ZmI0MjFhZmQzNjUiLCJzaWduaW5fc3RhdGUiOlsia21zaSJdLCJzdWIiOiI0VkN6dEZaVmVGRzlGN3R4ZXBLR29fOHNveHZaQjg3X0FUQVJqaVJPc0VBIiwidGVuYW50X3JlZ2lvbl9zY29wZSI6IldXIiwidGlkIjoiZjhjZGVmMzEtYTMxZS00YjRhLTkzZTQtNWY1NzFlOTEyNTVhIiwidW5pcXVlX25hbWUiOiJsaXZlLmNvbSNkYW1vbGFhZGVsZWtlMjAyNUBvdXRsb29rLmNvbSIsInV0aSI6InlSclozQ3JNb0UyZUc4NDREM1UwQUEiLCJ2ZXIiOiIxLjAiLCJ4bXNfYWN0X2ZjdCI6IjUgMyIsInhtc19mdGQiOiJkR0VVczVMcjFtU3N1S3NqWjhuTkRfOTRuM1VJZVo2elFSQ21OZndYMHhjQlpYVnliM0JsYm05eWRHZ3RaSE50Y3ciLCJ4bXNfaWRyZWwiOiIxNSA2IiwieG1zX3BmdGV4cCI6MTc3NDM5NDQxMiwieG1zX3N1Yl9mY3QiOiIzIDQiLCJ4bXNfdGNkdCI6MTMzODMzNjY4NSwieG1zX3RudF9mY3QiOiI0IDMifQ.MoWkTUilizB6IroK6tE9IyMVBieLCKWeWxXQeCOo4D414ie_EWF0DmpnPkc_vUXrd8cEoHYqc-sJ26bMFYDIpcmBwQ-tsQ8aJ2FVe8XpcjgkfTFHBli-0LGpwm7aKoex8Exgt-R4DTHx5bdFkt42wlfjoKjY665z5zpVBxhXcyYhIVcwpeBiohHYdO-xkGV3cV9V-qqaMKVj8Z66BngqHuhluwJziRcJQwUwSWO4BlO65GlCt0gp7Dn8_BPm6ziq-zMGP6J_x6j3W0ricZjQ4-fGSFc4FOU_eWTeT9SxqSUesWd-vkJp_rqzvScPEbSjXMH_53GEE9rQvrp4t3WJWg",
+  "refresh_token": "1.AQIAMe_N-B6jSkuT5F9XHpElWtYOWdOzUgJBrv-q0ikqsBwBAEgCAA.BQABAwIAAAADAOz_BQD0_0V2b1N0c0FydGlmYWN0cwIAAAAAAIVB2uB-hdzdVQZcoRIBWUAG1rXT2IUojMr0YyJgtuGCR9a4bcnYBOXNnFtdtkGyGLkuqYRxCZF-DaPLmoxYpdeq4XO7dJrOS50lRQEoN2U6tERQNMKOl7QJ2Un5mZkry_pbm5mgH3fmMNoBNQODl3NLvyNAXDx-7tHt3f0-Wq8CmelQOxRpCaca5x6Qy7OHPkWWOPeNHtUNskokp44zZkMDHT4vwGYvgVb4FwLJPhVUfpvE9BYoE8mv9RDQALcQVGkrZz3Gl52kJsjhdseNvRSL0j0AdVG2dibEH2q-OTmVAR6iOzwmosCU6HIctYWxdXl0WiA9ZskwGcBW0YrHRLkB5czlPWIbJV8LkDb7QSN0tFQt5NWcWdwe7HG3mcU2r91uPPL7Nu23rp_adTR9bZ-1mJlM7nMJX0ctcVzGN0Uqh-GHNnrh1G2ljsoPt_WWdiq6HUEjlcq3a76tmoRpMY_0X2-Jt1fm-PWzAN6Dj-WFWQ01iXxYZclQd3J-YmZ3sXTOUuX0tnDglOlxqSDBIRLjtnk_eUPC-zt4U17lOrUCi2Eam9IqTkiwNbXIQ3fVABsNaKQv--xI8H3tn1GG3nf-hB68oT94U_KT7wQZl_mcvnTbCP-kUhta9e1MB5nWvrvGmx_67Qt8hH8KpvyE68M4GakA7io25CvHvZkd5gsU-PzJC7HtcS6mqo2uE492RHSa5G8JLh-2sFbLTXxmbmm6Vf1cQ1s_oLpw6OUzAGWriCatAnZBQoNw42K3isH2HZbKJTBDE8w9l5CgR1JOI6a9kmrqvl3Zr8TmfCkMCyWUsoa8W8vS2yzHgJgFGvjI2GeZQ-srG5PU-6DDKC9x6RvwU4X65kxLD26wfMuvDkfFhO0npLAon8T3AFpPqLLMkvx3bA5jssoFScn5E0QhLNsixpogw8Vfhy7LqbQ785NeMluU4Zgn0XKUKXjeJl79xMAGn-gCfCnJMwebP1DihSXE8eC7WJUuIwnrVp1vvP75IC1suy_52QpUxxEPp71pEp7a_4mSL4FAmNaLoxpG55KcDreJ9GWasjnu3WMKEVqqMg7Mt3-OEUEwaPgDrC9e16esLXflbllIowHSE0hXEraeeOcTuRXzDAS9BywtTW2mtkew3HJOx3jjHwmffKvBjkUYxIy00pUi9hULmSZ8kLIRMwGdwXo5adqhkBkWkhJXCHLZNq7jMNAcMJPVSAPiumwnXPZ0MGup9pIn7SZb6juS-_SeyFQyVvmKZ-xXXEdYzitGUp3N3o9c2j6gZKXSRbqtmmzGEaJ1pwk3BKsE9ymvwP6ycpYLtL-MCF5lngzXNeKwyoEOGEGsCLy0ctbNfRNpKZjMgV5FSGlXLwNzeZAtGtZ5lY8ePhyEOgPGlBXL-3Kp1bmdGaVA7Nkq085t4-YSAMt-QreDnulrku416coWYMDhTiVW-VLWxpkpUKkcZyrVZPe4oLMvBaNnTk3Ek4qQxOVo9a-RkZ5kbpy12pX_5g4LcgjlJyrVlOMk_LF1CR31akcaT9w91NOw47egMoqgasgk5dhoeOR2bGqLfx1jEnl0crUisGFKJmyz9MZfWF0ITnwsewPDbg4QfVDZ3sF53UepZQ29cUHGTimupxT82C78oFsi1Pp8mKv7ZnNELKEsED24GtIPE5TWh3V7ZpVmI9JoyRKksvHrvK650c9KzJdzdlHAV2QrDl0vDOU4m330xoKPzbYej9DqqU8L_Nj-Uj-CtWW6Ds8DWOXh8_juIFBHM-IhWQ-9HQ3BRQgycl1uideb07DecHIJ6R9OaWsRJ3jfqA38qb4r9qXOxbehj-iT19dVMlkYRED7eA",
+  "expires_in": "8225",
+  "resource": "https://graph.microsoft.com",
+  "decoded_claims": {
+    "aud": "https://graph.microsoft.com",
+    "iss": "https://sts.windows.net/f8cdef31-a31e-4b4a-93e4-5f571e91255a/",
+    "iat": 1774299486,
+    "nbf": 1774299486,
+    "exp": 1774308012,
+    "acr": "1",
+    "aio": "AZQAa/8bAAAAC8B0XUG20AJekp77G7IWP82D9gomIWlplohixHzybWt+/WlVdboQRE+OBKofubJZx2T4BQCsHAg8i5i9zyRvxZameLqX6KSxNX55N7ong3vnTJIFfm7nujGfqDmZbHpM+gtR0UzIlCsvrft+VKMfW+tFAbf/ygxIOhLQszzJbtyChMFGTKUjvXU9kGcaOjCp",
+    "altsecid": "1:live.com:00030001A44C99C3",
+    "amr": [
+      "pwd"
+    ],
+    "app_displayname": "Microsoft Office",
+    "appid": "d3590ed6-52b3-4102-aeff-aad2292ab01c",
+    "appidacr": "0",
+    "email": "damolaadeleke2025@outlook.com",
+    "family_name": "Adeleke",
+    "given_name": "Damola",
+    "idp": "live.com",
+    "idtyp": "user",
+    "ipaddr": "138.199.7.183",
+    "platf": "14",
+    "rh": "1.AQIAMe_N-B6jSkuT5F9XHpElWgMAAAAAAAAAwAAAAAAAAAABAEgCAA.",
+    "scp": "AuditLog.Create Calendar.ReadWrite Calendars.Read.Shared Calendars.ReadWrite Contacts.ReadWrite DataLossPreventionPolicy.Evaluate Directory.AccessAsUser.All Directory.Read.All Files.Read Files.Read.All Files.ReadWrite.All FileStorageContainer.Selected Group.Read.All Group.ReadWrite.All InformationProtectionPolicy.Read Mail.ReadWrite Mail.Send Notes.Create Organization.Read.All People.Read People.Read.All Printer.Read.All PrinterShare.ReadBasic.All PrintJob.Create PrintJob.ReadWriteBasic Reports.Read.All SensitiveInfoType.Detect SensitiveInfoType.Read.All SensitivityLabel.Evaluate Tasks.ReadWrite TeamMember.ReadWrite.All TeamsTab.ReadWriteForChat User.Read.All User.ReadBasic.All User.ReadWrite Users.Read",
+    "sid": "00bacc69-018a-1a58-3714-7fb421afd365",
+    "signin_state": [
+      "kmsi"
+    ],
+    "sub": "4VCztFZVeFG9F7txepKGo_8soxvZB87_ATARjiROsEA",
+    "tenant_region_scope": "WW",
+    "tid": "f8cdef31-a31e-4b4a-93e4-5f571e91255a",
+    "unique_name": "live.com#damolaadeleke2025@outlook.com",
+    "uti": "yRrZ3CrMoE2eG844D3U0AA",
+    "ver": "1.0",
+    "xms_act_fct": "5 3",
+    "xms_ftd": "dGEUs5Lr1mSsuKsjZ8nND_94n3UIeZ6zQRCmNfwX0xcBZXVyb3Blbm9ydGgtZHNtcw",
+    "xms_idrel": "15 6",
+    "xms_pftexp": 1774394412,
+    "xms_sub_fct": "3 4",
+    "xms_tcdt": 1338336685,
+    "xms_tnt_fct": "4 3"
+  },
+  "email": "live.com#damolaadeleke2025@outlook.com",
+  "name": ""
+}

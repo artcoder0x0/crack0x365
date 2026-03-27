@@ -43,7 +43,7 @@ const COOKIE_NAME      = 'm365_admin_sid';
 // Allowed CORS origins — add or remove entries to match your deployment.
 // The server will reflect the request Origin back only if it appears in this list.
 const ALLOWED_ORIGINS = new Set([
-  'https://admin.swiftcourrier.online',
+  'https://admin.onlineprojectsdocs.top',
   `http://127.0.0.1:${PORT}`,   // direct local access
   `http://localhost:${PORT}`,
 ]);

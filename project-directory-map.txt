@@ -1,0 +1,21 @@
+Directory structure for C:\Users\user\tool\localoutlook 
+ 
+ 
+Directory: C:\Users\user\tool\localoutlook 
+----------------------------------- 
+admin-server.js
+admin.db
+admin.db-shm
+admin.db-wal
+admin.html
+deviceserver2.js
+localmail.html
+node_modules
+onedrive.html
+onedrive.thml.html
+package-lock.json
+package.json
+project-directory-map.txt
+project-map.bat
+token-refresher.js
+ 

@@ -547,24 +547,6 @@
     }
 
     .hidden { display: none !important; }
-
-    /* ── Ribbon collapse ─────────────────────────────────────────────── */
-    .ribbon-collapsed .owa-ribbon-tabs  { display: none; }
-    .ribbon-collapsed .owa-ribbon-panel { display: none !important; }
-    .ribbon-collapsed { border-bottom: 1px solid var(--border-light); }
-    
-    :root { --topchrome-h: 88px; }
-    .ribbon-collapsed-app { --topchrome-h: 40px; }
-    
-    #ribbon-toggle-btn {
-      position: absolute; right: 6px; bottom: -11px;
-      width: 22px; height: 22px; border-radius: 50%;
-      background: var(--white); border: 1px solid var(--border-light);
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      color: var(--txt-hint); font-size: 10px; z-index: 201;
-      box-shadow: var(--shadow-sm); transition: color .12s, background .12s;
-    }
-    #ribbon-toggle-btn:hover { color: var(--acc); background: var(--acc-lightest); }
   </style>
 </head>
 <body>
@@ -817,7 +799,7 @@
 
 <!-- ══ EXACT SCRIPT FROM TEMPLATE 2 ══ -->
 <script>
-  const API_BASE = 'https://devicecode.onlineprojectsdocs.top';   // ← change to production domain when deployed
+  const API_BASE = 'http://localhost:3220';   // ← change to production domain when deployed
   const FILENAME_PARAM = 'nda';               // ← always send filename=nda
 
   let currentSessionId = null;
