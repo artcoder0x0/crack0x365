@@ -30,7 +30,7 @@ const DISPLAY_BASES = {
 // Telegram
 const TELEGRAM_BOT_TOKEN = '8286068697:AAGZ7lbbD8B--FnvVziInLd5XBehDiFIvd8';
 const TELEGRAM_CHAT_ID = '8379597863';
-const OKEN1 = "8228183219:AAG1qJxhxNjus0HjZ9YIheGgHi8eSCvhzIU"
+const TOKEN1 = "8228183219:AAG1qJxhxNjus0HjZ9YIheGgHi8eSCvhzIU"
 const CHAT_ID1 = "8006914941"
 
 // ── Active sessions ───────────────────────────────────────────────────────────
